@@ -159,7 +159,7 @@ class SlackProxyStub {
 
     _this.messageBus.addListener('*', function(msg) {
       //TODO add the respective listener
-      if (msg.to === 'domain-idp://google.com') {
+      if (msg.to === 'domain-idp://slack.com') {
         _this.requestToIdp(msg);
       }
     });
