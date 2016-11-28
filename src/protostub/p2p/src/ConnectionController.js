@@ -36,7 +36,7 @@ class ConnectionController {
     if (!configuration) throw new Error('The configuration is a needed parameter');
 
     this._domain = this._divideURL(myUrl)["domain"];
-    this._objectDescURL = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Connection';
+    this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
 
     this._myUrl = myUrl;
     this._syncher = syncher;
@@ -53,7 +53,7 @@ class ConnectionController {
   _createPeerConnection() {
     let pc = this._peerConnection;
     if (!pc) {
-      pc = new RTCPeerConnection(_this._configuration.webRTC);
+      pc = new RTCPeerConnection(this._configuration.webRTC);
       console.log("[P2P-ConnectionController]: created PeerConnection");
 
       this._dataChannel = pc.createDataChannel("P2PChannel");
@@ -271,3 +271,5 @@ class ConnectionController {
       return result;
     }
   }
+
+export default ConnectionController;

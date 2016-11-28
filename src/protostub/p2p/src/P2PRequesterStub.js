@@ -43,7 +43,7 @@ class P2PRequesterStub {
   constructor(runtimeProtoStubURL, miniBus, configuration) {
 
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter');
-    if (!minibus) throw new Error('The bus is a required parameter');
+    if (!miniBus) throw new Error('The bus is a required parameter');
     if (!configuration) throw new Error('The configuration is a required parameter');
     if (!configuration.p2pHandler) throw new Error('The p2pHandler is a required attribute in the configuration parameter');
 
@@ -56,7 +56,7 @@ class P2PRequesterStub {
     });
 
     this._syncher = new Syncher(runtimeProtoStubURL, miniBus, configuration);
-    this._connectionController = new ConnectionController(this.runtimeProtoStubURL, this._syncher, this._configuration);
+    this._connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration);
 
     this._syncher.onNotification((event) => {
       console.log('+[P2PRequesterStub] On Syncher Notification: ', event);

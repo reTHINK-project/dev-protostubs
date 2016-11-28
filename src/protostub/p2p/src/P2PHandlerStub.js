@@ -42,7 +42,7 @@ class P2PHandlerStub {
    */
   constructor(runtimeProtoStubURL, miniBus, configuration) {
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter');
-    if (!minibus) throw new Error('The bus is a required parameter');
+    if (!miniBus) throw new Error('The bus is a required parameter');
     if (!configuration) throw new Error('The configuration is a required parameter');
 
     this._runtimeProtoStubURL = runtimeProtoStubURL;
@@ -104,7 +104,7 @@ class P2PHandlerStub {
   _createConnectionController(invitationEvent) {
 
     return new Promise((resolve, reject) => {
-      let connectionController = new ConnectionController(this.runtimeProtoStubURL, this._syncher, this._configuration);
+      let connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration);
       connectionController.observe( invitationEvent ).then( () => {
         // create the reporter automatically
         connectionController.report(invitationEvent.from).then( () => {
