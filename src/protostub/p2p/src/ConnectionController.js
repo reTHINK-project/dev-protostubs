@@ -167,7 +167,7 @@ class ConnectionController {
     }
 
     sendMessage(m) {
-      this._dataChannel.send(JSON.stringify(m));
+      this._dataChannel.send(m);
     }
 
     cleanup() {
@@ -256,6 +256,8 @@ class ConnectionController {
 
     _onDataChannelOpen() {
       console.log('[P2P-ConnectionController] DataChannel opened');
+      // let msg = this._caller ? "hello from requesterStub" : "hello from handlerStub";
+      // this._dataChannel.send(msg);
     }
 
     _onDataChannelError(e) {

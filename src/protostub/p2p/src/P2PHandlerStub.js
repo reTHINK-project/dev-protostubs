@@ -120,7 +120,7 @@ class P2PHandlerStub {
       // TODO: verify: is this selection correct?
       let connectionController = this._connectionControllers[msg.to];
       if ( connectionController )
-        connectionController.sendMessage(msg);
+        connectionController.sendMessage(JSON.stringify(msg));
     }
   }
 

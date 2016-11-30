@@ -113,7 +113,7 @@ class P2PRequesterStub {
   _sendChannelMsg(msg) {
     if ( this._filter(msg) ) {
       if ( this._connectionController ) {
-        this._connectionController.sendMessage(msg);
+        this._connectionController.sendMessage(JSON.stringify(msg));
       }
     }
   }
