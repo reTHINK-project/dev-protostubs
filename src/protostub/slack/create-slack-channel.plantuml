@@ -1,0 +1,61 @@
+
+@startuml "create-slack-channel.png"
+
+autonumber
+
+participant "Slack Protostub" as stub
+participant "Slack API" as api
+participant "Hyperty" as hy
+participant "Group Chat Reporter" as chat
+participant "Group Chat Observer" as chatO
+
+== Group Chat creation by Hyperty  ==
+
+hy -> hy : syncher.create()
+
+create chat
+hy -> chat : new()
+
+chat -> stub : create msg
+
+stub -> stub : onNotification()
+
+alt data object is public
+  stub -> api : channels.create()
+  stub -> api : channels.invite()
+else data object is private
+  stub -> api : groups.create()
+  stub -> api : groups.invite()
+end
+
+stub -> stub : syncher.subscribe()
+
+
+stub -> chat : subscribe message
+chat -> chat : onSubscription(event)
+chat -> chat : event.accept()
+
+stub <-- chat : subscribe OK response message
+
+create chatO
+stub -> chatO : new()
+
+== Messages Exchange ==
+
+hy -> chat : addChild(msg)
+
+chat -> chatO : create child message
+
+chatO -> stub : onChild(msg)
+
+stub -> api : chat.postMessage(msg)
+
+api -> stub : message.channels event
+
+chatO <- api : addChild(msg)
+
+chat <- stub : create child message
+
+hy <- chat : onChild(msg)
+
+@enduml
