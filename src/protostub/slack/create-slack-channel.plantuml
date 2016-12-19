@@ -3,11 +3,11 @@
 
 autonumber
 
-participant "Slack Protostub" as stub
 participant "Slack API" as api
-participant "Hyperty" as hy
-participant "Group Chat Reporter" as chat
+participant "Slack Protostub" as stub
 participant "Group Chat Observer" as chatO
+participant "Group Chat Reporter" as chat
+participant "Hyperty" as hy
 
 == Group Chat creation by Hyperty  ==
 
@@ -52,9 +52,9 @@ stub -> api : chat.postMessage(msg)
 
 api -> stub : message.channels event
 
-chatO <- api : addChild(msg)
+chatO <- stub : addChild(msg)
 
-chat <- stub : create child message
+chat <- chatO : create child message
 
 hy <- chat : onChild(msg)
 

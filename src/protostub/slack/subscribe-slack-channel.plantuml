@@ -1,0 +1,65 @@
+
+@startuml "subscribe-slack-channel.png"
+
+autonumber
+
+participant "Slack API" as api
+participant "Slack Protostub" as stub
+participant "Group Chat Reporter" as chat
+participant "Group Chat Observer" as chatO
+participant "Hyperty" as hy
+
+== Discover Slack Channel ==
+
+hy -> hy : discovery.searchObject(..)
+
+hy -> stub : read discovery message
+
+stub -> api : channels.list
+stub <-- api : return channels
+
+loop for each channel creates a new communication data object
+  create chat
+  stub -> chat : new()
+
+end
+
+hy <-- stub : read discovery response message /n containing list of discovered channels
+
+
+== Group Chat creation by Hyperty  ==
+
+hy -> hy : syncher.subscribe()
+
+hy -> chat : subscribe message
+chat -> stub : onSubscription(event)
+
+stub -> api : channels.join()
+
+stub -> chat : event.accept()
+
+hy <-- chat : subscribe OK response message
+
+create chatO
+hy -> chatO : new()
+
+
+== Messages Exchange ==
+
+hy -> chatO : addChild(msg)
+
+chatO -> chat : create child message
+
+chat -> stub : onChild(msg)
+
+stub -> api : chat.postMessage(msg)
+
+api -> stub : message.channels event
+
+chat <- stub : addChild(msg)
+
+chatO <- chat : create child message
+
+hy <- chatO : onChild(msg)
+
+@enduml
