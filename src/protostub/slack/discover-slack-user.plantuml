@@ -1,0 +1,35 @@
+
+@startuml "discover-slack-user.png"
+
+autonumber
+
+participant "Slack API" as api
+participant "Slack Protostub" as stub
+participant "Hyperty" as hy
+
+== Discover User  ==
+
+hy -> hy : discovery.discoverHyperty()
+
+hy -> stub : read discovery msg
+
+stub -> stub : check Schemas and Resources
+
+stub -> api : users.info()
+
+alt user found
+
+stub <-- api : user profile
+
+stub --> hy : 200 OK response message
+
+else user not found
+
+stub <-- api : user not found
+
+stub --> hy : 2404 Not Found response message
+
+end
+
+
+@enduml
