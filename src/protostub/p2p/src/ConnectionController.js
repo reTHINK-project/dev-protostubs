@@ -167,6 +167,7 @@ class ConnectionController {
     }
 
     sendMessage(m) {
+      console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
       this._dataChannel.send(m);
     }
 
@@ -187,6 +188,7 @@ class ConnectionController {
         this._onDataChannelError(e);
       };
       this._dataChannel.onmessage = (m) => {
+        console.log("[P2P-ConnectionController] <-- incoming msg: ", m);
         if (this._onDataChannelMessage)
           this._onDataChannelMessage(m);
       };
