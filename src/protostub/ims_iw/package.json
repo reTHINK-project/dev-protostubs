@@ -1,0 +1,38 @@
+{
+  "name": "ims_iwstub",
+  "version": "1.0.0",
+  "description": "A protostub to interact with an IMS lab environment.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reTHINK-project/dev-protostubs.git"
+  },
+  "author": "David Vílchez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reTHINK-project/dev-protostubs/issues"
+  },
+  "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
+  "devDependencies": {
+    "babel-preset-es2015": "6.18.0",
+    "babelify": "7.3.0",
+    "browserify": "13.1.1",
+    "chai": "3.5.0",
+    "karma": "1.3.0",
+    "karma-browserify": "5.1.0",
+    "karma-chrome-launcher": "2.0.0",
+    "karma-mocha": "1.3.0",
+    "karma-mocha-reporter": "2.2.1",
+    "mocha": "3.2.0",
+    "proxyquireify": "3.2.1",
+    "watchify": "3.8.0",
+    "webrtc-adapter": "2.1.0"
+  },
+  "dependencies": {
+    "sdp-transform": "1.7.0",
+    "service-framework": "github:rethink-project/dev-service-framework#v0.5.1",
+    "sip.js": "0.7.5"
+  }
+}
