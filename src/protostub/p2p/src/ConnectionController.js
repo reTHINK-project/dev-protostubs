@@ -166,6 +166,11 @@ class ConnectionController {
       this._onDataChannelMessage = callback;
     }
 
+    onStatusUpdate(callback) {
+      // add a connection status update callback
+      this._onStatusUpdate = callback;
+    }
+
     sendMessage(m) {
       console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
       this._dataChannel.send(m);
@@ -258,16 +263,20 @@ class ConnectionController {
 
     _onDataChannelOpen() {
       console.log('[P2P-ConnectionController] DataChannel opened');
-      // let msg = this._caller ? "hello from requesterStub" : "hello from handlerStub";
-      // this._dataChannel.send(msg);
+      if ( this._onStatusUpdate )
+        this._onStatusUpdate("live");
     }
 
     _onDataChannelError(e) {
       console.log('[P2P-ConnectionController] DataChannel error: ', e);
+      if ( this._onStatusUpdate )
+        this._onStatusUpdate("disconnected", "" + e);
     }
 
     _onDataChannelClose() {
       console.log('[P2P-ConnectionController] DataChannel closed: ');
+      if ( this._onStatusUpdate )
+        this._onStatusUpdate("disconnected", "closed");
     }
 
 

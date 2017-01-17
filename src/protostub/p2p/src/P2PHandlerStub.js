@@ -66,6 +66,9 @@ class P2PHandlerStub {
         case 'create':
           this._createConnectionController(event).then( (connectionController) => {
             this._connectionControllers[event.from] = connectionController;
+            connectionController.onStatusUpdate( (status, reason) => {
+              this._sendStatus(status, reason);
+            });
             connectionController.onMessage( (m) => {
               this._deliver(m);
             });
