@@ -54,7 +54,7 @@ class ConnectionController {
   _createPeerConnection() {
     let pc = this._peerConnection;
     if (!pc) {
-      pc = new RTCPeerConnection(this._configuration.webRTC);
+      pc = new RTCPeerConnection(this._configuration);
       console.log("[P2P-ConnectionController]: created PeerConnection");
 
       // add handler for datachannel creation from peer side
