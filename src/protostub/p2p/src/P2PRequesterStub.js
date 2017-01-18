@@ -57,6 +57,9 @@ class P2PRequesterStub {
 
     this._syncher = new Syncher(runtimeProtoStubURL, miniBus, configuration);
     this._connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration, true);
+    this._connectionController.onStatusUpdate( (status, reason) => {
+      this._sendStatus(status, reason);
+    });
 
     this._syncher.onNotification((event) => {
       console.log('+[P2PRequesterStub] On Syncher Notification: ', event);
