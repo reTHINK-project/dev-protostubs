@@ -36,10 +36,10 @@ class SlackProxyStub {
 
     switch (msg.body.method) {
       case 'generateAssertion':
-          _this.replyMessage(msg, {});
+          _this.replyMessage(msg, {assertion: '', idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}, infoToken: '', interworking: {access_token: '', domain: 'quobis.com' }});
         break;
       case 'validateAssertion':
-          _this.replyMessage(msg, {});
+          _this.replyMessage(msg, {identity: 'identity@idp.com', contents: 'content'});
         break;
       default:
         break;
