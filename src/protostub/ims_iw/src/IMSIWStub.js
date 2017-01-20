@@ -49,51 +49,53 @@ class IMSIWStub {
 		this._runtimeURL = configuration.runtimeURL
 		this._connection = new ConnectionController(configuration)
 		this._bus = miniBus
-		this._syncher = new Syncher(runtimeProtoStubURL, miniBus, configuration)
-
+		this._syncher = new Syncher(this._runtimeProtoStubURL, miniBus, configuration)
+        console.log('protostub url', this._runtimeProtoStubURL)
 		let that = this
-		this._syncher.onNotification((event) => {
-			event.ack(200)
-			console.log('notification', event)
+        miniBus.addListener('*', function(msg) { 
+            console.log('NEW MSG ->', msg);
+            if(msg.body.identity) {
+                if (that._filter(msg)) {
+                    console.log('ON PROTOSTUB(filter): ', msg);
+                    if (msg.body.value.schema) {
+                        let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'));
+                        that._syncher.subscribe(that._objectDescURL, dataObjectUrl)
+                            .then(dataObjectObserver => {
+                                console.log('subscribeaaa', dataObjectObserver)
+                                    let context = that._connection.invite(dataObjectObserver)
+                                    context.on('fail', (e) => console.log('fail', e))
+                                    context.on('accepted', (e) => {
+                                        console.log('accepted', e)
+                                            let dataObject = {
+                                                name : 'Connection',
+                                                status : '',
+                                                owner : dataObjectUrl,
+                                                connectionDescription : {},
+                                                iceCandidates : []
+                                            }
+                                        that._syncher.create(that._objectDescURL, [msg.body.source], dataObject).then((objReporter) => {
+                                            objReporter.onSubscription(function(event) {
+                                                console.info('-------- Receiver received subscription request --------- \n');
+                                                event.accept(); // all subscription requested are accepted
+                                            });
+                                            objReporter.data.connectionDescription = e.body
+                                        })
+                                    })
+                                context.on('rejected', (e) => console.log('rejected', e))
+                            })
+                    }
+                }
+            }
+        });
 
-			if(event.type === 'create') {
-				console.log('descriptor', that._objectDescURL)
-				that._syncher.subscribe(that._objectDescURL, event.url)
-					.then(dataObjectObserver => {
-						console.log('subscribeaaa', dataObjectObserver)
-						let context = that._connection.invite(dataObjectObserver)
-						context.on('fail', (e) => console.log('fail', e))
-						context.on('accepted', (e) => {
-							console.log('accepted', e)
-							let dataObject = {
-								name : 'Connection',
-								status : '',
-								owner : event.url,
-								connectionDescription : {},
-								iceCandidates : []
-							}
-							that._syncher.create(that._objectDescURL, [event.from], dataObject).then((objReporter) => {
-								objReporter.onSubscription(function(event) {
-									console.info('-------- Receiver received subscription request --------- \n');
-									event.accept(); // all subscription requested are accepted
-								});
-								objReporter.data.connectionDescription = e.body
-							})
-						})
-						context.on('rejected', (e) => console.log('rejected', e))
-					})
-			}
-			//case 'delete':
-			//  // TODO: question regarding code in Connector: --> there it deletes all controllers --> why?
-			//  console.log("+[P2PRequesterStub] deleting connection handler for " + event.from)
-
-			//  //disconnect(); or clean dataobject
-			//  break;
-
-			//default:
-		})
 		this.connect()
 	}
+
+    _filter(msg) {
+        if (msg.body && msg.body.via === this._runtimeProtoStubURL)
+            return false;
+        return true;
+    }
 
 	/**
 	 * Try to open the connection. Connection is auto managed, there is no need to call this explicitly.

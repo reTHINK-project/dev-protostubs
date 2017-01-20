@@ -1,7 +1,7 @@
 /**
 * Identity Provider Proxy Protocol Stub
 */
-class SlackProxyStub {
+class IMSIWProxyStub {
 
   /**
   * Constructor of the IdpProxy Stub
@@ -36,7 +36,10 @@ class SlackProxyStub {
 
     switch (msg.body.method) {
       case 'generateAssertion':
-          _this.replyMessage(msg, {assertion: '', idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}, infoToken: '', interworking: {access_token: '', domain: 'quobis.com' }});
+            let access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+            let infoToken = {picture: '', email: 'david.vilchez@quobis.com', family_name: 'vilchez', given_name: 'david'};
+            let assertion = btoa(JSON.stringify({tokenID: access_token, email: 'david.vilchez@quobis.com', id: ''}));
+            _this.replyMessage(msg, {assertion: assertion, idp: {domain: 'quobis.com', protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: access_token, domain: 'quobis.com' }});
         break;
       case 'validateAssertion':
           _this.replyMessage(msg, {identity: 'identity@idp.com', contents: 'content'});
@@ -70,8 +73,8 @@ class SlackProxyStub {
  */
 export default function activate(url, bus, config) {
   return {
-    name: 'SlackProxyStub',
-    instance: new SlackProxyStub(url, bus, config)
+    name: 'IMSIWProxyStub',
+    instance: new IMSIWProxyStub(url, bus, config)
   };
 }
 
