@@ -46,6 +46,7 @@ class ConnectionController {
     this._dataObjectReporter;
     this._peerUrl;
     this._dataChannel;
+    this._onStatusUpdate;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -105,7 +106,7 @@ class ConnectionController {
   Creates a syncher object and invite the given peerUrl to subscribe for it.
   Also creates the local offer, performs setLocalDescription and publishes the offer via the reporter object.
   **/
-  report(peerUrl) {
+  report(peerUrl, ownRuntimeUrl) {
     if ( ! this._peerUrl )
       this._peerUrl = peerUrl;
     return new Promise((resolve, reject) => {
@@ -123,6 +124,7 @@ class ConnectionController {
           name: "P2PConnection",
           status: "",
           owner: this._myUrl,
+          runtimeURL : ownRuntimeUrl,           // put the own runtimeURL to the dataObject (as discussed with Paulo)
           connectionDescription: {},
           iceCandidates: []
         }

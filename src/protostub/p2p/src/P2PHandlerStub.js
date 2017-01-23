@@ -64,6 +64,10 @@ class P2PHandlerStub {
       switch (event.type) {
 
         case 'create':
+          // as discussed with Paulo, we expect the "remoteRuntimeURL" as field "runtimeURL" in the initial dataObject
+          // emit the "create" event as requested in issue: https://github.com/reTHINK-project/dev-protostubs/issues/5
+          this._sendStatus("create", undefined, event.runtimeURL );
+
           this._createConnectionController(event).then( (connectionController) => {
             this._connectionControllers[event.from] = connectionController;
             connectionController.onStatusUpdate( (status, reason) => {
@@ -110,7 +114,7 @@ class P2PHandlerStub {
       let connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration, false);
       connectionController.observe( invitationEvent ).then( () => {
         // create the reporter automatically
-        connectionController.report(invitationEvent.from, false).then( () => {
+        connectionController.report(invitationEvent.from, this._runtimeURL).then( () => {
           resolve(connectionController);
         })
       })
@@ -127,15 +131,18 @@ class P2PHandlerStub {
     }
   }
 
-  _sendStatus(value, reason) {
+  _sendStatus(value, reason, remoteRuntimeURL ) {
     let msg = {
       type: 'update',
       from: this._runtimeProtoStubURL,
       to: this._runtimeProtoStubURL + '/status',
       body: {
-        value: value
+        value: value,
       }
     };
+    if ( remoteRuntimeURL )
+      msg.body.resource = remoteRuntimeURL;
+
     if (reason) {
       msg.body.desc = reason;
     }
