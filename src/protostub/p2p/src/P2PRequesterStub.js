@@ -87,13 +87,12 @@ class P2PRequesterStub {
       }
     });
 
-    // the target handler stub url must be present in the configuration as "remoteRuntimeURL" attribute
-    if ( this._configuration.remoteRuntimeURL )
-      this.connect( this._configuration.remoteRuntimeURL );
+    // the target handler stub url must be present in the configuration as "p2pHandler" attribute
+    if ( this._configuration.p2pHandler )
+      this.connect( this._configuration.p2pHandler );
   }
 
   connect(handlerURL) {
-    // the target handler stub url must be present in the configuration as "remoteRuntimeURL" attribute
     this._connectionController.report( handlerURL, this._runtimeURL ).then( () => {
       this._connectionController.onMessage( (m) => {
         this._deliver(m);
