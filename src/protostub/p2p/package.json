@@ -4,9 +4,17 @@
   "description": "Implementation of the P2P handler and requester stub",
   "main": "",
   "scripts": {
-    "build": "mkdir -p dist/ && babel --presets es2015 src/ --out-dir dist/",
+    "prepare": "mkdir -p dist",
+    "build_handler": "browserify src/P2PHandlerStub.js --standalone activate -o dist/P2PHandlerProtoStub.js",
+    "build_requester": "browserify src/P2PRequesterStub.js --standalone activate -o dist/P2PRequesterProtoStub.js",
+    "build": "npm run prepare && npm run build_handler && npm run build_requester",
     "start": "npm run build",
-    "init-setup": "npm init && npm install -g babel-cli && npm install"
+    "init-setup": "npm install browserify babelify && npm install"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
   },
   "repository": {
     "type": "git",
@@ -14,7 +22,8 @@
   },
   "keywords": [
     "reThink",
-    "webRTC", "p2p"
+    "webRTC",
+    "p2p"
   ],
   "author": "reThink Project",
   "contributors": [
@@ -34,6 +43,7 @@
     "url": "^0.11.0"
   },
   "dependencies": {
-    "promise": "^7.0.4"
+    "service-framework": "github:rethink-project/dev-service-framework",
+    "webrtc-adapter": "^3.1.0"
   }
 }
