@@ -78,7 +78,7 @@ class IMSIWStub {
                                                 console.info('-------- Receiver received subscription request --------- \n');
                                                 event.accept(); // all subscription requested are accepted
                                             });
-                                            objReporter.data.connectionDescription = e.body
+                                            objReporter.data.connectionDescription = { type: 'answer', sdp: e.body }
                                         })
                                     })
                                 context.on('rejected', (e) => console.log('rejected', e))
