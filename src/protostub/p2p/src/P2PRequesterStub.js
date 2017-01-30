@@ -93,8 +93,7 @@ class P2PRequesterStub {
   }
 
   connect(handlerURL) {
-    // the target handler stub url must be present in the configuration as "p2pHandler" attribute
-    this._connectionController.report( handlerURL ).then( () => {
+    this._connectionController.report( handlerURL, this._runtimeURL ).then( () => {
       this._connectionController.onMessage( (m) => {
         this._deliver(m);
       });
