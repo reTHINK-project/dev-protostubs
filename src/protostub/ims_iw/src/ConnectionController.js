@@ -34,13 +34,24 @@ class ConnectionController {
 	connect() {
 		if(this.userAgent)
 			return this.userAgent
-
-		this.userAgent = new SIP.UA({
-			uri: this.configuration.uri,
-			wsServers: [this.configuration.server],
-			authorizationUser: this.configuration.authorizationUser,
-			password: this.configuration.password
-		})
+        
+        //this.userAgent = new SIP.UA({
+        //    uri: this.configuration.uri,
+        //    wsServers: [ this.configuration.server ],
+        //    password: this.configuration.password
+        //})
+        fetch('https://localhost:1337/credential/1', { method: 'GET'})
+            .then(res => {
+                res.json()
+                    .then(user => {
+                        console.log('eph', user)
+                        this.userAgent = new SIP.UA({
+                            uri: user.username,
+                            wsServers: user.uris,
+                            password: user.password
+                        })
+                    })
+            })
 	}
 
 	invite(dataObjectObserver) {
@@ -80,7 +91,7 @@ class ConnectionController {
 			sdp: transform.write(sdp)
 		}
 
-		let context = new InviteClientContext(this.userAgent, 'sip:anton.roman@quobis.com', options)
+		let context = new InviteClientContext(this.userAgent, 'sip:anton@xuaps.com', options)
 		this.userAgent.afterConnected(context.invite.bind(context))
 		return context;
 		//console.log('invite')
