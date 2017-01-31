@@ -5,7 +5,8 @@ let slackInfo = {
   redirectURI: location.origin,
   codeEndpoint: 'https://slack.com/oauth/authorize?',
   tokenEndpoint: 'https://slack.com/api/oauth.access?',
-  scope: 'chat:write:user'
+  infoEndpoint: 'https://slack.com/api/users.info?',
+  scope: 'client'
 };
 
 //function to parse the query string in the given URL to obatin certain values
@@ -91,6 +92,8 @@ let idp = {
   validateAssertion: (assertion, origin) => {
     return new Promise(function(resolve,reject) {
 
+      console.log('assertion - >', assertion);
+      console.log('origin - >', origin);
       console.log('MYPROXY - VALIDATING');
       resolve({identity: 'identity@idp.com', contents: 'content'});
 
@@ -122,15 +125,33 @@ let idp = {
 
         let requestUrl = s.codeEndpoint + 'client_id=' + s.clientID + '&scope=' + s.scope + '&redirect_uri=' +  s.redirectURI;
 
+        console.log('first url ', requestUrl, 'done');
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
       } else {
         let code = urlParser(hint, 'code');
         console.log('code', code);
         exchangeCode(code).then(function(value) {
-          console.log('value', value);
-          let assertion = btoa(JSON.stringify({tokenID: value.access_token}));
-          resolve({assertion: assertion, idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}});
+
+          console.log('value AFTER exchangeCode', value);
+
+          let infoUrl = s.infoEndpoint + 'token=' + value.access_token + '&user=' + value.user_id;
+
+          sendHTTPRequest('GET', infoUrl).then(function(info) {
+            console.log('info->', info);
+
+            let profile = info.user.profile;
+            let infoToken = {picture: profile.image_original, email: profile.email, family_name: profile.last_name, given_name: profile.first_name};
+
+            let assertion = btoa(JSON.stringify({tokenID: value.access_token, email: profile.email, id: info.user.id}));
+
+            let toResolve = {assertion: assertion, idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: value.access_token, domain: 'slack.com' }};
+            console.log('RESOLVING THIS OBJECT', toResolve);
+            resolve(toResolve);
+          }, function(error) {
+            console.log('error->', error);
+          });
+
         });
 
       }
