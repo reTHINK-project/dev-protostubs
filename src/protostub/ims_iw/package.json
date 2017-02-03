@@ -5,6 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "browserify": {
+     "transform": [
+       "babelify"
+     ]
+   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/reTHINK-project/dev-protostubs.git"
@@ -18,6 +23,8 @@
   "devDependencies": {
     "babel-preset-es2015": "6.18.0",
     "babelify": "7.3.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-env": "^1.1.8",
     "browserify": "13.1.1",
     "chai": "3.5.0",
     "karma": "1.3.0",
@@ -32,7 +39,7 @@
   },
   "dependencies": {
     "sdp-transform": "1.7.0",
-    "service-framework": "github:rethink-project/dev-service-framework#v0.5.1",
+    "service-framework": "github:rethink-project/dev-service-framework#dev-p2p-interworking-merge",
     "sip.js": "0.7.5"
   }
 }
