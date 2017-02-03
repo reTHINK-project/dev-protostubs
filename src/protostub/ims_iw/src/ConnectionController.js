@@ -24,6 +24,43 @@ import SIP from 'sip.js'
 import transform from 'sdp-transform'
 import InviteClientContext from './InviteClientContext'
 
+let addCandidatesToSDP = (txtSdp, candidates) => {
+    let sdp = transform.parse(txtSdp)
+    sdp.media[0].candidates = []
+    sdp.media[1].candidates = []
+    candidates.forEach(candidate => {
+        let parts = candidate.candidate.substring(10).split(' ')
+            let c = {
+                foundation: parts[0],
+                component: parts[1],
+                transport: parts[2].toLowerCase(),
+                priority: parts[3],
+                ip: parts[4],
+                port: parts[5],
+                type: parts[7],
+                generation: '0'
+            }
+        for (var i = 8; i < parts.length; i += 2) {
+            if (parts[i] === 'raddr') {
+                c.raddr = parts[i + 1]
+            } else if (parts[i] === 'rport') {
+                c.rport = parts[i + 1]
+            } else if (parts[i] === 'generation') {
+                c.generation = parts[i + 1]
+            } else if (parts[i] === 'tcptype') {
+                c.tcptype = parts[i + 1]
+            } else if (parts[i] === 'network-id') {
+                c['network-id'] = parts[i + 1]
+            } else if (parts[i] === 'network-cost') {
+                c['network-cost'] = parts[i + 1]
+            }
+        }
+        sdp.media.filter(m=>m.type === candidate.sdpMid)[0].candidates.push(c)
+    })
+
+    return transform.write(sdp)
+}
+
 class ConnectionController {
 	constructor(configuration) {
 		if (!configuration) throw new Error('The configuration is a needed parameter')
@@ -31,87 +68,35 @@ class ConnectionController {
 		this.configuration = configuration
 	}
 
-	connect() {
-		if(this.userAgent)
-			return this.userAgent
-        
-        //this.userAgent = new SIP.UA({
-        //    uri: this.configuration.uri,
-        //    wsServers: [ this.configuration.server ],
-        //    password: this.configuration.password
-        //})
-        fetch('https://localhost:1337/credential/1', { method: 'GET'})
-            .then(res => {
-                res.json()
-                    .then(user => {
-                        console.log('eph', user)
-                        this.userAgent = new SIP.UA({
-                            uri: user.username,
-                            wsServers: user.uris,
-                            password: user.password
+	connect(accessToken) {
+        return new Promise((resolve, reject) => {
+            if(this.userAgent)
+                return resolve()
+            
+            fetch(this.configuration.credential_server, { method: 'GET', headers: { 'Authorization': `Bearer: ${accessToken}`}})
+                .then(res => {
+                    res.json()
+                        .then(user => {
+                            this.userAgent = new SIP.UA({
+                                uri: user.username,
+                                wsServers: user.uris,
+                                password: user.password
+                            })
+                            resolve()
                         })
-                    })
-            })
+                })
+        })
 	}
 
-	invite(dataObjectObserver) {
-		let sdp = transform.parse(dataObjectObserver.data.connectionDescription.sdp)
-		sdp.media[0].candidates = []
-		sdp.media[1].candidates = []
-		dataObjectObserver.data.iceCandidates.forEach(candidate => {
-			let parts = candidate.candidate.substring(10).split(' ')
-			let c = {
-				foundation: parts[0],
-				component: parts[1],
-				transport: parts[2].toLowerCase(),
-				priority: parts[3],
-				ip: parts[4],
-				port: parts[5],
-				type: parts[7],
-				generation: '0'
-			}
-			for (var i = 8; i < parts.length; i += 2) {
-				if (parts[i] === 'raddr') {
-					c.raddr = parts[i + 1]
-				} else if (parts[i] === 'rport') {
-					c.rport = parts[i + 1]
-				} else if (parts[i] === 'generation') {
-					c.generation = parts[i + 1]
-				} else if (parts[i] === 'tcptype') {
-					c.tcptype = parts[i + 1]
-				} else if (parts[i] === 'network-id') {
-					c['network-id'] = parts[i + 1]
-				} else if (parts[i] === 'network-cost') {
-					c['network-cost'] = parts[i + 1]
-				}
-			}
-			sdp.media.filter(m=>m.type === candidate.sdpMid)[0].candidates.push(c)
-		})
+	invite(to, dataObjectObserver) {
 		let options = {
-			sdp: transform.write(sdp)
+			sdp: addCandidatesToSDP(dataObjectObserver.data.connectionDescription.sdp,
+                         dataObjectObserver.data.iceCandidates)
 		}
 
-		let context = new InviteClientContext(this.userAgent, 'sip:anton@xuaps.com', options)
+		let context = new InviteClientContext(this.userAgent, to.replace('//', ''), options)
 		this.userAgent.afterConnected(context.invite.bind(context))
-		return context;
-		//console.log('invite')
-		//this.userAgent.invite('sip:david.vilchez2@demo.quobis.com',
-		//	{
-		//		media: {
-		//			constraints: {
-		//				audio: true,
-		//				video: true
-		//			}
-		//		}
-		//	})
-	}
-
-	onMessage(callback) {
-		// add the message callback
-	}
-
-	sendMessage(m) {
-
+		return context
 	}
 }
 

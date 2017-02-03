@@ -1,3 +1,5 @@
+let domain = 'xuaps.com'
+
 /**
 * Identity Provider Proxy Protocol Stub
 */
@@ -12,15 +14,14 @@ class IMSIWProxyStub {
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
   constructor(runtimeProtoStubURL, bus, config) {
-    let _this = this;
-    _this.runtimeProtoStubURL = runtimeProtoStubURL;
-    _this.messageBus = bus;
-    _this.config = config;
+    this.runtimeProtoStubURL = runtimeProtoStubURL
+    this.messageBus = bus
+    this.config = config
 
-    _this.messageBus.addListener('*', function(msg) {
+    this.messageBus.addListener('*', msg => {
       //TODO add the respective listener
-      if (msg.to === 'domain-idp://quobis.com') {
-        _this.requestToIdp(msg);
+      if (msg.to === `domain-idp://${domain}`) {
+        this.requestToIdp(msg)
       }
     });
   }
@@ -31,22 +32,56 @@ class IMSIWProxyStub {
   * @param {message}  message received in the messageBus
   */
   requestToIdp(msg) {
-    let _this = this;
-    let params = msg.body.params;
+    let params = msg.body.params
 
     switch (msg.body.method) {
       case 'generateAssertion':
-            let access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-            let infoToken = {picture: '', email: 'david.vilchez@quobis.com', family_name: 'vilchez', given_name: 'david'};
-            let assertion = btoa(JSON.stringify({tokenID: access_token, email: 'david.vilchez@quobis.com', id: ''}));
-            _this.replyMessage(msg, {assertion: assertion, idp: {domain: 'quobis.com', protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: access_token, domain: 'quobis.com' }});
-        break;
+        this.generateAssertion(params.contents, params.origin, params.usernameHint)
+            .then(value => this.replyMessage(msg, value))
+            .catch(error => this.replyMessage(msg, error))
+        break
       case 'validateAssertion':
-          _this.replyMessage(msg, {identity: 'identity@idp.com', contents: 'content'});
-        break;
+        this.replyMessage(msg, {identity: 'identity@idp.com', contents: 'content'})
+        break
       default:
-        break;
+        break
     }
+  }
+
+  generateAssertion (contents, origin, hint)  {
+
+    console.log('contents->', contents);
+    console.log('origin->', origin);
+    console.log('hint->', hint);
+
+    return new Promise((resolve, reject) => {
+
+      //the hint field contains the information obtained after the user authentication
+      // if the hint content is not present, then rejects the value with the URL to open the page to authenticate the user
+      if (!hint) {
+        let requestUrl =`https://accounts.google.com/o/oauth2/v2/auth?scope=email%20profile&state=%2Fprofile&redirect_uri=https%3A%2F%2Flocalhost&response_type=token&client_id=808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com`
+        console.log('first url ', requestUrl, 'done');
+        reject({name: 'IdPLoginError', loginUrl: requestUrl});
+      } else {
+          let accessToken = this._urlParser(hint, 'access_token');
+          let infoToken = {picture: '', email: 'email@email.com', family_name: '', given_name: ''};
+          let assertion = btoa(JSON.stringify({tokenID: accessToken, email: 'email@email.com', id: 1}));
+          let toResolve = {assertion: assertion, idp: {domain: domain, protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: accessToken, domain: domain }};
+          console.log('RESOLVING THIS OBJECT', toResolve);
+          resolve(toResolve);
+      }
+    });
+  }
+
+  _urlParser(url, name) {
+      name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
+      let regexS = '[\\#&?]' + name + '=([^&#]*)';
+      let regex = new RegExp(regexS);
+      let results = regex.exec(url);
+      if (results === null)
+          return '';
+      else
+          return results[1];
   }
 
   /**
@@ -56,11 +91,9 @@ class IMSIWProxyStub {
   * @param  {value}     value to include in the new message to send
   */
   replyMessage(msg, value) {
-    let _this = this;
+    let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to, body: {code: 200, value: value}}
 
-    let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to, body: {code: 200, value: value}};
-
-    _this.messageBus.postMessage(message);
+    this.messageBus.postMessage(message)
   }
 }
 

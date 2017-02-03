@@ -24,11 +24,20 @@
 import { Syncher } from 'service-framework/dist/Syncher'
 import ConnectionController from './ConnectionController'
 
+class Connection {
+    constructor(dataObjectUrl) {
+        this.name = 'Connection'
+        this.status = ''
+        this.owner = dataObjectUrl
+        this.connectionDescription = {}
+        this.iceCandidates = []
+    }
+}
 
 /**
  * ProtoStub Interface
  */
-class IMSIWStub {
+class IMSIWProtoStub {
 
 	/**
 	 * Initialise the protocol stub including as input parameters its allocated
@@ -44,80 +53,59 @@ class IMSIWStub {
 		if (!miniBus) throw new Error('The bus is a required parameter')
 		if (!configuration) throw new Error('The configuration is a required parameter')
 
-		this._objectDescURL = 'hyperty-catalogue://catalogue.' + configuration.domain + '/.well-known/dataschema/Connection'
 		this._runtimeProtoStubURL = runtimeProtoStubURL
-		this._runtimeURL = configuration.runtimeURL
 		this._connection = new ConnectionController(configuration)
 		this._bus = miniBus
 		this._syncher = new Syncher(this._runtimeProtoStubURL, miniBus, configuration)
-        console.log('protostub url', this._runtimeProtoStubURL)
-		let that = this
-        miniBus.addListener('*', function(msg) { 
-            console.log('NEW MSG ->', msg);
-            if(msg.body.identity) {
-                if (that._filter(msg)) {
-                    console.log('ON PROTOSTUB(filter): ', msg);
-                    if (msg.body.value.schema) {
-                        let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'));
-                        that._syncher.subscribe(that._objectDescURL, dataObjectUrl)
-                            .then(dataObjectObserver => {
-                                console.log('subscribeaaa', dataObjectObserver)
-                                    let context = that._connection.invite(dataObjectObserver)
-                                    context.on('fail', (e) => console.log('fail', e))
-                                    context.on('accepted', (e) => {
-                                        console.log('accepted', e)
-                                            let dataObject = {
-                                                name : 'Connection',
-                                                status : '',
-                                                owner : dataObjectUrl,
-                                                connectionDescription : {},
-                                                iceCandidates : []
-                                            }
-                                        that._syncher.create(that._objectDescURL, [msg.body.source], dataObject).then((objReporter) => {
-                                            objReporter.onSubscription(function(event) {
-                                                console.info('-------- Receiver received subscription request --------- \n');
-                                                event.accept(); // all subscription requested are accepted
-                                            });
-                                            objReporter.data.connectionDescription = { type: 'answer', sdp: e.body }
-                                        })
-                                    })
-                                context.on('rejected', (e) => console.log('rejected', e))
-                            })
-                    }
-                }
-            }
-        });
 
-		this.connect()
+        miniBus.addListener('*', (msg) => { 
+            console.log('NEW MSG ->', msg)
+            if(msg.body.identity && this._filter(msg) && msg.body.value.schema) {
+                this._subscribe(msg)
+            }
+        })
 	}
+
+    _subscribe(msg) {
+        let schema = msg.body.value.schema
+        let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
+
+        this._syncher.subscribe(schema, dataObjectUrl)
+            .then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, schema, msg))
+    }
+
+    _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {
+        this._connection.connect(msg.body.identity)
+            .then(() => {
+                let context = this._connection.invite(msg.to, dataObjectObserver)
+                context.on('accepted', (e) => this._returnSDP(e, dataObjectUrl, schema, msg))
+                context.on('fail', (e) => console.log('fail', e))
+                context.on('rejected', (e) => console.log('rejected', e))
+            })
+    }
+
+    _returnSDP(e, dataObjectUrl, schema, msg) {
+        let dataObject = new Connection(dataObjectUrl)
+
+        this._syncher.create(schema, [msg.body.source], dataObject).then((objReporter) => {
+            objReporter.onSubscription(function(event) {
+                console.info('-------- Receiver received subscription request --------- \n')
+                event.accept()
+            });
+            objReporter.data.connectionDescription = { type: 'answer', sdp: e.body }
+        })
+    }
 
     _filter(msg) {
         if (msg.body && msg.body.via === this._runtimeProtoStubURL)
             return false;
         return true;
     }
-
-	/**
-	 * Try to open the connection. Connection is auto managed, there is no need to call this explicitly.
-	 * However, if "disconnect()" is called, it's necessary to call this to enable connections again.
-	 * A status message is sent to "runtimeProtoStubURL/status", containing the value "connected" if successful, or "disconnected" if some error occurs.
-	 */
-	connect() {
-		this._connection.connect()
-	}
-
-	/**
-	 * It will disconnect and order to stay disconnected. Reconnection tries, will not be attempted, unless "connect()" is called.
-	 * A status message is sent to "runtimeProtoStubURL/status" with value "disconnected".
-	 */
-	disconnect() {
-
-	}
 }
 
 export default function activate(url, bus, config) {
 	return {
-		name: 'IMSIWStub',
-		instance: new IMSIWStub(url, bus, config)
+		name: 'IMSIWProtoStub',
+		instance: new IMSIWProtoStub(url, bus, config)
 	}
 }
