@@ -27,7 +27,8 @@ import InviteClientContext from './InviteClientContext'
 let addCandidatesToSDP = (txtSdp, candidates) => {
     let sdp = transform.parse(txtSdp)
     sdp.media[0].candidates = []
-    sdp.media[1].candidates = []
+    if(sdp.media.length>1)
+        sdp.media[1].candidates = []
     candidates.forEach(candidate => {
         let parts = candidate.candidate.substring(10).split(' ')
             let c = {

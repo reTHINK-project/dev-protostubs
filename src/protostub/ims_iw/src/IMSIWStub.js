@@ -75,6 +75,7 @@ class IMSIWProtoStub {
     }
 
     _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {
+        console.log('call', dataObjectObserver)
         this._connection.connect(msg.body.identity)
             .then(() => {
                 let context = this._connection.invite(msg.to, dataObjectObserver)

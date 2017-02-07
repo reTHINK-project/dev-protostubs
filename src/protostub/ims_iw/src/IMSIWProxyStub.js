@@ -1,4 +1,4 @@
-let domain = 'xuaps.com'
+let domain = 'rethink-project.eu'
 
 /**
 * Identity Provider Proxy Protocol Stub
