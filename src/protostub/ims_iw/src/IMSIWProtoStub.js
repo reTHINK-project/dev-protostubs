@@ -58,16 +58,16 @@ class IMSIWProtoStub {
 		this._bus = miniBus
 		this._syncher = new Syncher(this._runtimeProtoStubURL, miniBus, configuration)
 
-        miniBus.addListener('*', (msg) => { 
+        miniBus.addListener('*', (msg) => {
             console.log('NEW MSG ->', msg)
-            if(msg.body.identity && this._filter(msg) && msg.body.value.schema) {
+            if(msg.body.identity && this._filter(msg) && msg.body.schema) {
                 this._subscribe(msg)
             }
         })
 	}
 
     _subscribe(msg) {
-        let schema = msg.body.value.schema
+        let schema = msg.body.schema
         let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
 
         this._syncher.subscribe(schema, dataObjectUrl)

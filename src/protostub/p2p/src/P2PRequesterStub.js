@@ -47,6 +47,8 @@ class P2PRequesterStub {
     if (!configuration) throw new Error('The configuration is a required parameter');
     // if (!configuration.p2pHandler) throw new Error('The p2pHandler is a required attribute in the configuration parameter');
 
+    console.log('+[P2PRequesterStub] deployed ', runtimeProtoStubURL);
+
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._runtimeURL = configuration.runtimeURL;
     this._configuration = configuration;
