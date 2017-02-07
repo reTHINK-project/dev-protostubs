@@ -50,6 +50,7 @@ class P2PHandlerStub {
     this._configuration = configuration;
     this._bus = miniBus;
     this._bus.addListener('*', (msg) => {
+
         this._sendChannelMsg(msg);
     });
 
@@ -155,6 +156,8 @@ class P2PHandlerStub {
    * @return {boolean} true if it's to be deliver in the MessageNode
    */
   _filter(msg) {
+    // todo: only try to send when connected (live status)
+
     if (msg.body && msg.body.via === this._runtimeProtoStubURL)
       return false;
     return true;

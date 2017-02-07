@@ -45,14 +45,13 @@ class SlackProtoStub {
         _this._open(msg.body.identity, ()=> {
           if (_this._filter(msg)) {
             console.log('ON PROTOSTUB - AFTER FILTER->', msg);
+            let schemaUrl = msg.body.schema;
+            if (schemaUrl && msg.body.value.name) {
 
-            if (msg.body.schema && msg.body.value.name) {
-
-              let schemaSplitted =  msg.body.schema.split('/');
+              let schemaSplitted =  schemaUrl.split('/');
 
               if (schemaSplitted[schemaSplitted.length - 1] === 'Communication') {
-
-                _this._subscribe(msg.body.schema, msg.from).then((result) => {
+                _this._subscribe(schemaUrl, msg.from).then((result) => {
                   console.log('ON PROTOSTUB - IS IT subscribed->', result);
                   if (result) {
                     _this._token = token;
@@ -184,6 +183,7 @@ class SlackProtoStub {
     let _this = this;
 
     return new Promise(function(resolve) {
+
       _this._subscribedList.forEach(function(obj) {
         if (obj.urlDataObj === urlDataObj && obj.subscribed)
           resolve(true);
@@ -198,10 +198,9 @@ class SlackProtoStub {
 
       return _this._syncher.subscribe(objectDescURL, dataObjectUrl).then((observer) => {
         _this._observer = observer;
-        console.log('ON PROTOSTUB SYNCHER observer', observer);
         _this._subscribedList.push(subscription);
         console.log('ON PROTOSTUB - subscribed', dataObjectUrl);
-
+        console.log('ON PROTOSTUB - Observer', observer);
         observer.onAddChild((child) => {
           console.info('ON PROTOSTUB - Observer - Add Child: ', child);
           if (_this._channelID !== '' && child.value.message) {

@@ -91,7 +91,7 @@ class ConnectionController {
     return new Promise((resolve, reject) => {
 
       this._syncher.subscribe(this._objectDescURL, invitationEvent.url).then((dataObjectObserver) => {
-        console.info('+[P2PHandlerStub] got Data Object Observer', dataObjectObserver);
+        console.info('+[P2P-ConnectionController] got Data Object Observer', dataObjectObserver);
         this._setupObserver(dataObjectObserver);
         resolve();
 
@@ -174,6 +174,7 @@ class ConnectionController {
     }
 
     sendMessage(m) {
+      // todo: only send if data channeld is connected
       console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
       this._dataChannel.send(m);
     }
