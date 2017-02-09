@@ -45,12 +45,13 @@ class P2PHandlerStub {
     if (!miniBus) throw new Error('The bus is a required parameter');
     if (!configuration) throw new Error('The configuration is a required parameter');
 
+    console.log('+[P2PHandlerStub.constructor] config is: ', configuration);
+
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._runtimeURL = configuration.runtimeURL;
     this._configuration = configuration;
     this._bus = miniBus;
     this._bus.addListener('*', (msg) => {
-
         this._sendChannelMsg(msg);
     });
 
@@ -65,14 +66,15 @@ class P2PHandlerStub {
       switch (event.type) {
 
         case 'create':
+
           // as discussed with Paulo, we expect the "remoteRuntimeURL" as field "runtimeURL" in the initial dataObject
           // emit the "create" event as requested in issue: https://github.com/reTHINK-project/dev-protostubs/issues/5
-          this._sendStatus("create", undefined, event.runtimeURL );
+          this._sendStatus("create", undefined, event.value.runtimeURL );
 
           this._createConnectionController(event).then( (connectionController) => {
             this._connectionControllers[event.from] = connectionController;
-            connectionController.onStatusUpdate( (status, reason) => {
-              this._sendStatus(status, reason);
+            connectionController.onStatusUpdate( (status, reason, remoteRuntimeURL) => {
+              this._sendStatus(status, reason, remoteRuntimeURL);
             });
             connectionController.onMessage( (m) => {
               this._deliver(m);
@@ -114,8 +116,11 @@ class P2PHandlerStub {
     return new Promise((resolve, reject) => {
       let connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration, false);
       connectionController.observe( invitationEvent ).then( () => {
+        console.log("+[P2PHandlerStub] observer setup successful")
         // create the reporter automatically
         connectionController.report(invitationEvent.from, this._runtimeURL).then( () => {
+          console.log("+[P2PHandlerStub] reporter setup successful")
+          this._sendStatus("in-progress", undefined, invitationEvent.value.runtimeURL );
           resolve(connectionController);
         })
       })
@@ -157,7 +162,6 @@ class P2PHandlerStub {
    */
   _filter(msg) {
     // todo: only try to send when connected (live status)
-
     if (msg.body && msg.body.via === this._runtimeProtoStubURL)
       return false;
     return true;

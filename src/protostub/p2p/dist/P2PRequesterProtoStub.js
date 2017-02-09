@@ -497,7 +497,34 @@ module.exports = SDPUtils;
 
 },{}],2:[function(require,module,exports){
 // version: 0.5.1
-// date: Wed Feb 01 2017 10:11:49 GMT+0000 (WET)
+// date: Fri Jan 20 2017 15:48:10 GMT+0000 (WET)
+// licence: 
+/**
+* Copyright 2016 PT Inovação e Sistemas SA
+* Copyright 2016 INESC-ID
+* Copyright 2016 QUOBIS NETWORKS SL
+* Copyright 2016 FRAUNHOFER-GESELLSCHAFT ZUR FOERDERUNG DER ANGEWANDTEN FORSCHUNG E.V
+* Copyright 2016 ORANGE SA
+* Copyright 2016 Deutsche Telekom AG
+* Copyright 2016 Apizee
+* Copyright 2016 TECHNISCHE UNIVERSITAT BERLIN
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+**/
+
+
+// version: 0.5.1
+// date: Fri Jan 20 2017 11:04:49 GMT+0000 (WET)
 // licence: 
 /**
 * Copyright 2016 PT Inovação e Sistemas SA
@@ -2936,42 +2963,16 @@ function divideURL(url) {
 
   if (!url) throw Error('URL is needed to split');
 
-  function recurse(value) {
-    var regex = /([a-zA-Z-]*)(:\/\/(?:\.)?|:)([-a-zA-Z0-9@:%._\+~#=]{2,256})([-a-zA-Z0-9@:%._\+~#=\/]*)/gi;
-    var subst = '$1,$3,$4';
-    var parts = value.replace(regex, subst).split(',');
-    return parts;
+  // let re = /([a-zA-Z-]*)?:\/\/(?:\.)?([-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b)*(\/[\/\d\w\.-]*)*(?:[\?])*(.+)*/gi;
+  var re = /([a-zA-Z-]*):\/\/(?:\.)?([-a-zA-Z0-9@:%._\+~#=]{2,256})([-a-zA-Z0-9@:%._\+~#=\/]*)/gi;
+  var subst = '$1,$2,$3';
+  var parts = url.replace(re, subst).split(',');
+
+  // If the url has no protocol, the default protocol set is https
+  if (parts[0] === url) {
+    parts[0] = 'https';
+    parts[1] = url;
   }
-
-  var parts = recurse(url);
-
-  // If the url has no scheme
-  if (parts[0] === url && !parts[0].includes('@')) {
-
-    var _result = {
-      type: "",
-      domain: url,
-      identity: ""
-    };
-
-    console.error('[DivideURL] DivideURL don\'t support url without scheme. Please review your url address', url);
-
-    return _result;
-  }
-
-  // check if the url has the scheme and includes an @
-  if (parts[0] === url && parts[0].includes('@')) {
-    var scheme = parts[0] === url ? 'smtp' : parts[0];
-    parts = recurse(scheme + '://' + parts[0]);
-  }
-
-  // if the domain includes an @, divide it to domain and identity respectively
-  if (parts[1].includes('@')) {
-    parts[2] = parts[0] + '://' + parts[1];
-    parts[1] = parts[1].substr(parts[1].indexOf('@') + 1);
-  } /*else if (parts[2].includes('/')) {
-    parts[2] = parts[2].substr(parts[2].lastIndexOf('/')+1);
-    }*/
 
   var result = {
     type: parts[0],
@@ -4594,7 +4595,7 @@ var Syncher = function () {
     bus.addListener(owner, function (msg) {
       //ignore msg sent by himself
       if (msg.from !== owner) {
-        console.info('[Syncher] Syncher-RCV: ', msg);
+        console.log('Syncher-RCV: ', msg);
         switch (msg.type) {
           case 'forward':
             _this._onForward(msg);break;
@@ -4908,7 +4909,7 @@ var Syncher = function () {
       };
 
       if (_this._onNotificationHandler) {
-        console.info('[Syncher] NOTIFICATION-EVENT: ', event);
+        console.log('NOTIFICATION-EVENT: ', event);
         _this._onNotificationHandler(event);
       }
     }
@@ -5567,6 +5568,7 @@ exports.DataObjectObserver = _DataObjectObserver2.default;
 /***/ })
 /******/ ]);
 });
+
 },{}],3:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -8046,7 +8048,7 @@ var ConnectionController = function () {
   }, {
     key: 'sendMessage',
     value: function sendMessage(m) {
-      // todo: only send if data channeld is connected
+      // todo: only send if data channel is connected
       console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
       this._dataChannel.send(m);
     }
@@ -8227,8 +8229,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 * limitations under the License.
 **/
 
-// TODO: integrate the status eventing
-
 exports.default = activate;
 
 var _Syncher = require('service-framework/dist/Syncher');
@@ -8241,10 +8241,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// TODO: integrate the status eventing
+
 /**
  * ProtoStub Interface
  */
-var P2PHandlerStub = function () {
+var P2PRequesterStub = function () {
 
   /**
    * Initialise the protocol stub including as input parameters its allocated
@@ -8254,119 +8256,113 @@ var P2PHandlerStub = function () {
    * @param  {Message.Message}                           busPostMessage     configuration
    * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
    */
-  function P2PHandlerStub(runtimeProtoStubURL, miniBus, configuration) {
+  function P2PRequesterStub(runtimeProtoStubURL, miniBus, configuration) {
     var _this = this;
 
-    _classCallCheck(this, P2PHandlerStub);
+    _classCallCheck(this, P2PRequesterStub);
 
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter');
     if (!miniBus) throw new Error('The bus is a required parameter');
     if (!configuration) throw new Error('The configuration is a required parameter');
+    // if (!configuration.p2pHandler) throw new Error('The p2pHandler is a required attribute in the configuration parameter');
 
+    console.log('+[P2PRequesterStub.constructor] config is: ', configuration);
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._runtimeURL = configuration.runtimeURL;
+    this._remoteRuntimeURL = configuration.remoteRuntimeURL; // required for status events
     this._configuration = configuration;
     this._bus = miniBus;
     this._bus.addListener('*', function (msg) {
-
       _this._sendChannelMsg(msg);
     });
 
-    this._connectionControllers = {};
-
     this._syncher = new _Syncher.Syncher(runtimeProtoStubURL, miniBus, configuration);
-    this._syncher.onNotification(function (event) {
+    this._connectionController = new _ConnectionController2.default(this._runtimeProtoStubURL, this._syncher, this._configuration, true);
+    this._connectionController.onStatusUpdate(function (status, reason) {
+      _this._sendStatus(status, reason);
+    });
 
-      console.log('+[P2PHandlerStub] On Syncher Notification: ', event);
+    this._syncher.onNotification(function (event) {
+      console.log('+[P2PRequesterStub] On Syncher Notification: ', event);
       event.ack(200);
 
       switch (event.type) {
 
         case 'create':
-          // as discussed with Paulo, we expect the "remoteRuntimeURL" as field "runtimeURL" in the initial dataObject
-          // emit the "create" event as requested in issue: https://github.com/reTHINK-project/dev-protostubs/issues/5
-          _this._sendStatus("create", undefined, event.runtimeURL);
-
-          _this._createConnectionController(event).then(function (connectionController) {
-            _this._connectionControllers[event.from] = connectionController;
-            connectionController.onStatusUpdate(function (status, reason) {
-              _this._sendStatus(status, reason);
+          // incoming observe invitation from peer
+          if (_this._connectionController) {
+            _this._connectionController.observe(event).then(function () {
+              console.log("+[P2PRequesterStub] observer created ");
             });
-            connectionController.onMessage(function (m) {
-              _this._deliver(m);
-            });
-          });
+          }
           break;
 
         case 'delete':
-          // TODO: question code in Connector --> there it deletes all controllers --> why?
-          console.log("+[P2PHandlerStub] deleting connection handler for " + event.from);
-          var connectionController = _this._connectionControllers[event.from];
+          // TODO: question regarding code in Connector: --> there it deletes all controllers --> why?
+          console.log("+[P2PRequesterStub] deleting connection handler for " + event.from);
 
-          if (connectionController) {
-            connectionController.cleanup();
-            delete _this._connectionControllers[event.from];
-          }
+          disconnect();
           break;
 
         default:
       }
     });
+
+    this._sendStatus("create");
+
+    // the target handler stub url must be present in the configuration as "p2pHandler" attribute
+    if (this._configuration.p2pHandler) this.connect(this._configuration.p2pHandler);
   }
 
-  /**
-   * To disconnect the protocol stub.
-   */
-
-
-  _createClass(P2PHandlerStub, [{
-    key: 'disconnect',
-    value: function disconnect() {
+  _createClass(P2PRequesterStub, [{
+    key: 'connect',
+    value: function connect(handlerURL) {
       var _this2 = this;
 
-      // cleanup ALL connectionControllers
-      Object.keys(this._connectionControllers).forEach(function (key) {
-        _this2._controllers[key].cleanup();;
-        delete _this2._controllers[key];
+      this._connectionController.report(handlerURL, this._runtimeURL).then(function () {
+        // send "in-progress" event, if the syncher.create was done
+        _this2._sendStatus("in-progress");
+        _this2._connectionController.onMessage(function (m) {
+          console.log("+[P2PRequesterStub] onMessage: ", m);
+          _this2._deliver(m);
+        });
+        console.log("+[P2PRequesterStub] setup reporter object successfully");
       });
     }
-  }, {
-    key: '_createConnectionController',
-    value: function _createConnectionController(invitationEvent) {
-      var _this3 = this;
 
-      return new Promise(function (resolve, reject) {
-        var connectionController = new _ConnectionController2.default(_this3._runtimeProtoStubURL, _this3._syncher, _this3._configuration, false);
-        connectionController.observe(invitationEvent).then(function () {
-          // create the reporter automatically
-          connectionController.report(invitationEvent.from, _this3._runtimeURL).then(function () {
-            resolve(connectionController);
-          });
-        });
-      });
+    /**
+     * To disconnect the protocol stub.
+     */
+
+  }, {
+    key: 'disconnect',
+    value: function disconnect() {
+      if (this._connectionController) {
+        this._connectionController.cleanup();
+        this._connectionController = null;
+      }
     }
   }, {
     key: '_sendChannelMsg',
     value: function _sendChannelMsg(msg) {
       if (this._filter(msg)) {
-        // TODO: verify: is this selection correct?
-        var connectionController = this._connectionControllers[msg.to];
-        if (connectionController) connectionController.sendMessage(JSON.stringify(msg));
+        if (this._connectionController) {
+          this._connectionController.sendMessage(JSON.stringify(msg));
+        }
       }
     }
   }, {
     key: '_sendStatus',
-    value: function _sendStatus(value, reason, remoteRuntimeURL) {
+    value: function _sendStatus(value, reason) {
       var msg = {
         type: 'update',
         from: this._runtimeProtoStubURL,
         to: this._runtimeProtoStubURL + '/status',
         body: {
-          value: value
+          value: value,
+          resource: this._remoteRuntimeURL
         }
       };
-      if (remoteRuntimeURL) msg.body.resource = remoteRuntimeURL;
-
       if (reason) {
         msg.body.desc = reason;
       }
@@ -8382,8 +8378,6 @@ var P2PHandlerStub = function () {
   }, {
     key: '_filter',
     value: function _filter(msg) {
-      // todo: only try to send when connected (live status)
-
       if (msg.body && msg.body.via === this._runtimeProtoStubURL) return false;
       return true;
     }
@@ -8403,13 +8397,13 @@ var P2PHandlerStub = function () {
     }
   }]);
 
-  return P2PHandlerStub;
+  return P2PRequesterStub;
 }();
 
 function activate(url, bus, config) {
   return {
-    name: 'P2PHandlerStub',
-    instance: new P2PHandlerStub(url, bus, config)
+    name: 'P2PRequesterStub',
+    instance: new P2PRequesterStub(url, bus, config)
   };
 }
 module.exports = exports['default'];

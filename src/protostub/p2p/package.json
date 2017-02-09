@@ -5,8 +5,8 @@
   "main": "",
   "scripts": {
     "prepare": "mkdir -p dist",
-    "build_handler": "browserify src/P2PHandlerStub.js --standalone activate -o dist/P2PHandlerProtoStub.js",
-    "build_requester": "browserify src/P2PRequesterStub.js --standalone activate -o dist/P2PRequesterProtoStub.js",
+    "build_handler": "browserify src/P2PHandlerProtoStub.js --standalone activate -o dist/P2PHandlerProtoStub.js",
+    "build_requester": "browserify src/P2PRequesterProtoStub.js --standalone activate -o dist/P2PRequesterProtoStub.js",
     "build": "npm run prepare && npm run build_handler && npm run build_requester",
     "start": "npm run build",
     "init-setup": "npm install browserify babelify && npm install"

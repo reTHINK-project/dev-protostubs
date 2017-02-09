@@ -174,7 +174,7 @@ class ConnectionController {
     }
 
     sendMessage(m) {
-      // todo: only send if data channeld is connected
+      // todo: only send if data channel is connected
       console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
       this._dataChannel.send(m);
     }

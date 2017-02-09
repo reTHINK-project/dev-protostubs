@@ -47,8 +47,10 @@ class P2PRequesterStub {
     if (!configuration) throw new Error('The configuration is a required parameter');
     // if (!configuration.p2pHandler) throw new Error('The p2pHandler is a required attribute in the configuration parameter');
 
+    console.log('+[P2PRequesterStub.constructor] config is: ', configuration);
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._runtimeURL = configuration.runtimeURL;
+    this._remoteRuntimeURL = configuration.remoteRuntimeURL;  // required for status events
     this._configuration = configuration;
     this._bus = miniBus;
     this._bus.addListener('*', (msg) => {
@@ -87,6 +89,8 @@ class P2PRequesterStub {
       }
     });
 
+    this._sendStatus("create");
+
     // the target handler stub url must be present in the configuration as "p2pHandler" attribute
     if ( this._configuration.p2pHandler )
       this.connect( this._configuration.p2pHandler );
@@ -94,7 +98,10 @@ class P2PRequesterStub {
 
   connect(handlerURL) {
     this._connectionController.report( handlerURL, this._runtimeURL ).then( () => {
+      // send "in-progress" event, if the syncher.create was done
+      this._sendStatus("in-progress");
       this._connectionController.onMessage( (m) => {
+        console.log("+[P2PRequesterStub] onMessage: ", m);
         this._deliver(m);
       });
       console.log("+[P2PRequesterStub] setup reporter object successfully");
@@ -126,7 +133,8 @@ class P2PRequesterStub {
       from: this._runtimeProtoStubURL,
       to: this._runtimeProtoStubURL + '/status',
       body: {
-        value: value
+        value: value,
+        resource: this._remoteRuntimeURL
       }
     };
     if (reason) {
