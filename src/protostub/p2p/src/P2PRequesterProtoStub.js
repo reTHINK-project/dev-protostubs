@@ -140,6 +140,7 @@ class P2PRequesterStub {
     if (reason) {
       msg.body.desc = reason;
     }
+    console.log("+[P2PrequesterStub] sending status update: ", msg);
     this._bus.postMessage(msg);
   }
 

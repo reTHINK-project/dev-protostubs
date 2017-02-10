@@ -47,6 +47,7 @@ class ConnectionController {
     this._peerUrl;
     this._dataChannel;
     this._onStatusUpdate;
+    this._remoteRuntimeURL;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -87,6 +88,7 @@ class ConnectionController {
   **/
   observe(invitationEvent) {
     this._peerUrl = invitationEvent.from;
+    this._remoteRuntimeURL = invitationEvent.value.runtimeURL;
 
     return new Promise((resolve, reject) => {
 
@@ -267,7 +269,7 @@ class ConnectionController {
     _onDataChannelOpen() {
       console.log('[P2P-ConnectionController] DataChannel opened');
       if ( this._onStatusUpdate )
-        this._onStatusUpdate("live");
+        this._onStatusUpdate("live", undefined, this._remoteRuntimeURL);
     }
 
     _onDataChannelError(e) {

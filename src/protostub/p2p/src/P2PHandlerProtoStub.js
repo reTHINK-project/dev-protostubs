@@ -152,6 +152,7 @@ class P2PHandlerStub {
     if (reason) {
       msg.body.desc = reason;
     }
+    console.log("+[P2PHandlerStub] sending status update: ", msg);
     this._bus.postMessage(msg);
   }
 
