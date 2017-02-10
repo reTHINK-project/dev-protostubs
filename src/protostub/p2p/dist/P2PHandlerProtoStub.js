@@ -343,6 +343,15 @@ SDPUtils.writeRtpDescription = function(kind, caps) {
     sdp += SDPUtils.writeFmtp(codec);
     sdp += SDPUtils.writeRtcpFb(codec);
   });
+  var maxptime = 0;
+  caps.codecs.forEach(function(codec) {
+    if (codec.maxptime > maxptime) {
+      maxptime = codec.maxptime;
+    }
+  });
+  if (maxptime > 0) {
+    sdp += 'a=maxptime:' + maxptime + '\r\n';
+  }
   sdp += 'a=rtcp-mux\r\n';
 
   caps.headerExtensions.forEach(function(extension) {
@@ -389,7 +398,6 @@ SDPUtils.parseRtpEncodingParameters = function(mediaSection) {
         ssrc: primarySsrc,
         codecPayloadType: parseInt(codec.parameters.apt, 10),
         rtx: {
-          payloadType: codec.payloadType,
           ssrc: secondarySsrc
         }
       };
@@ -464,10 +472,22 @@ SDPUtils.writeMediaSection = function(transceiver, caps, type, stream) {
     sdp += 'a=' + msid;
     sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].ssrc +
         ' ' + msid;
+    if (transceiver.sendEncodingParameters[0].rtx) {
+      sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].rtx.ssrc +
+          ' ' + msid;
+      sdp += 'a=ssrc-group:FID ' +
+          transceiver.sendEncodingParameters[0].ssrc + ' ' +
+          transceiver.sendEncodingParameters[0].rtx.ssrc +
+          '\r\n';
+    }
   }
   // FIXME: this should be written by writeRtpDescription.
   sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].ssrc +
       ' cname:' + SDPUtils.localCName + '\r\n';
+  if (transceiver.rtpSender && transceiver.sendEncodingParameters[0].rtx) {
+    sdp += 'a=ssrc:' + transceiver.sendEncodingParameters[0].rtx.ssrc +
+        ' cname:' + SDPUtils.localCName + '\r\n';
+  }
   return sdp;
 };
 
@@ -497,34 +517,7 @@ module.exports = SDPUtils;
 
 },{}],2:[function(require,module,exports){
 // version: 0.5.1
-// date: Fri Jan 20 2017 15:48:10 GMT+0000 (WET)
-// licence: 
-/**
-* Copyright 2016 PT Inovação e Sistemas SA
-* Copyright 2016 INESC-ID
-* Copyright 2016 QUOBIS NETWORKS SL
-* Copyright 2016 FRAUNHOFER-GESELLSCHAFT ZUR FOERDERUNG DER ANGEWANDTEN FORSCHUNG E.V
-* Copyright 2016 ORANGE SA
-* Copyright 2016 Deutsche Telekom AG
-* Copyright 2016 Apizee
-* Copyright 2016 TECHNISCHE UNIVERSITAT BERLIN
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-**/
-
-
-// version: 0.5.1
-// date: Fri Jan 20 2017 11:04:49 GMT+0000 (WET)
+// date: Tue Feb 07 2017 16:00:39 GMT+0000 (WET)
 // licence: 
 /**
 * Copyright 2016 PT Inovação e Sistemas SA
@@ -2963,16 +2956,42 @@ function divideURL(url) {
 
   if (!url) throw Error('URL is needed to split');
 
-  // let re = /([a-zA-Z-]*)?:\/\/(?:\.)?([-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b)*(\/[\/\d\w\.-]*)*(?:[\?])*(.+)*/gi;
-  var re = /([a-zA-Z-]*):\/\/(?:\.)?([-a-zA-Z0-9@:%._\+~#=]{2,256})([-a-zA-Z0-9@:%._\+~#=\/]*)/gi;
-  var subst = '$1,$2,$3';
-  var parts = url.replace(re, subst).split(',');
-
-  // If the url has no protocol, the default protocol set is https
-  if (parts[0] === url) {
-    parts[0] = 'https';
-    parts[1] = url;
+  function recurse(value) {
+    var regex = /([a-zA-Z-]*)(:\/\/(?:\.)?|:)([-a-zA-Z0-9@:%._\+~#=]{2,256})([-a-zA-Z0-9@:%._\+~#=\/]*)/gi;
+    var subst = '$1,$3,$4';
+    var parts = value.replace(regex, subst).split(',');
+    return parts;
   }
+
+  var parts = recurse(url);
+
+  // If the url has no scheme
+  if (parts[0] === url && !parts[0].includes('@')) {
+
+    var _result = {
+      type: "",
+      domain: url,
+      identity: ""
+    };
+
+    console.error('[DivideURL] DivideURL don\'t support url without scheme. Please review your url address', url);
+
+    return _result;
+  }
+
+  // check if the url has the scheme and includes an @
+  if (parts[0] === url && parts[0].includes('@')) {
+    var scheme = parts[0] === url ? 'smtp' : parts[0];
+    parts = recurse(scheme + '://' + parts[0]);
+  }
+
+  // if the domain includes an @, divide it to domain and identity respectively
+  if (parts[1].includes('@')) {
+    parts[2] = parts[0] + '://' + parts[1];
+    parts[1] = parts[1].substr(parts[1].indexOf('@') + 1);
+  } /*else if (parts[2].includes('/')) {
+    parts[2] = parts[2].substr(parts[2].lastIndexOf('/')+1);
+    }*/
 
   var result = {
     type: parts[0],
@@ -3157,10 +3176,12 @@ var DataObjectObserver = function (_DataObject) {
    * @ignore
    * Should not be used directly by Hyperties. It's called by the Syncher.subscribe method
    */
-  function DataObjectObserver(syncher, url, schema, initialStatus, initialData, childrens, initialVersion) {
+
+  //TODO: For Further Study
+  function DataObjectObserver(syncher, url, schema, initialStatus, initialData, childrens, initialVersion, mutual) {
     (0, _classCallCheck3.default)(this, DataObjectObserver);
 
-    var _this2 = (0, _possibleConstructorReturn3.default)(this, (DataObjectObserver.__proto__ || (0, _getPrototypeOf2.default)(DataObjectObserver)).call(this, syncher, url, schema, initialStatus, initialData.data, childrens));
+    var _this2 = (0, _possibleConstructorReturn3.default)(this, (DataObjectObserver.__proto__ || (0, _getPrototypeOf2.default)(DataObjectObserver)).call(this, syncher, url, schema, initialStatus, initialData.data, childrens, mutual));
 
     var _this = _this2;
 
@@ -3532,8 +3553,11 @@ var DataObjectReporter = function (_DataObject) {
   }, {
     key: '_onSubscribe',
     value: function _onSubscribe(msg) {
+      var _this3 = this;
+
       var _this = this;
       var hypertyUrl = msg.body.from;
+      console.log('[DataObjectReporter._onSubscribe]', msg);
 
       var event = {
         type: msg.body.type,
@@ -3553,11 +3577,19 @@ var DataObjectReporter = function (_DataObject) {
             childrenValues[childId] = (0, _utils.deepClone)(childData);
           });
 
-          //send ok response message
-          _this._bus.postMessage({
+          var sendMsg = {
             id: msg.id, type: 'response', from: msg.to, to: msg.from,
             body: { code: 200, schema: _this._schema, version: _this._version, value: { data: (0, _utils.deepClone)(_this.data), childrens: childrenValues } }
-          });
+          };
+
+          //TODO: For Further Study
+          if (msg.body.hasOwnProperty('mutualAuthentication') && !msg.body.mutualAuthentication) {
+            sendMsg.body.mutualAuthentication = _this3._mutualAuthentication;
+            _this3._mutualAuthentication = msg.body.mutualAuthentication;
+          }
+
+          //send ok response message
+          _this._bus.postMessage(sendMsg);
 
           return sub;
         },
@@ -3725,6 +3757,7 @@ var DataObject = function () {
    * Should not be used directly by Hyperties. It's called by the Syncher create or subscribe method's
    */
   function DataObject(syncher, url, schema, initialStatus, initialData, childrens) {
+    var mutual = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : true;
     (0, _classCallCheck3.default)(this, DataObject);
 
     var _this = this;
@@ -3735,6 +3768,9 @@ var DataObject = function () {
     _this._status = initialStatus;
     _this._syncObj = new _ProxyObject2.default(initialData);
     _this._childrens = childrens;
+
+    //TODO: For Further Study
+    _this._mutualAuthentication = mutual;
 
     _this._version = 0;
     _this._childId = 0;
@@ -3852,6 +3888,9 @@ var DataObject = function () {
         body: { resource: msgChildId, value: initialData }
       };
 
+      //TODO: For Further Study
+      if (!_this._mutualAuthentication) requestMsg.body.mutualAuthentication = _this._mutualAuthentication;
+
       //returns promise, in the future, the API may change to asynchronous call
       return new _promise2.default(function (resolve) {
         var msgId = _this._bus.postMessage(requestMsg);
@@ -3949,6 +3988,9 @@ var DataObject = function () {
           changeMsg.to = childInfo.path;
           changeMsg.body.resource = childInfo.childId;
         }
+
+        //TODO: For Further Study
+        if (!_this._mutualAuthentication) changeMsg.body.mutualAuthentication = _this._mutualAuthentication;
 
         _this._bus.postMessage(changeMsg);
       }
@@ -4304,11 +4346,14 @@ __webpack_require__(153);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var objectType = { ARRAY: '[object Array]', OBJECT: '[object Object]' };
+
 /**
  * @access private
  * Main class that maintains a JSON object, and observes changes in this object, recursively.
  * Internal objects and arrays are also observed.
  */
+
 var SyncObject = function () {
   function SyncObject(initialData) {
     (0, _classCallCheck3.default)(this, SyncObject);
@@ -4370,20 +4415,6 @@ var SyncObject = function () {
       var _this2 = this;
 
       var handler = function handler(changeset) {
-
-        changeset.forEach(function (change) {
-          if (change.newValue && change.newValue instanceof Object) {
-            if (change.newValue instanceof Object) {
-              var o = Object.deepObserve(change.newValue, handler);
-              object[change.keypath] = o;
-            }
-
-            if (change.newValue instanceof Array) {
-              var _o = Array.observe(change.newValue, handler);
-              object[change.keypath] = _o;
-            }
-          }
-        });
 
         changeset.every(function (change) {
           _this2._onChanges(change);
@@ -4595,7 +4626,7 @@ var Syncher = function () {
     bus.addListener(owner, function (msg) {
       //ignore msg sent by himself
       if (msg.from !== owner) {
-        console.log('Syncher-RCV: ', msg);
+        console.info('[Syncher] Syncher-RCV: ', msg);
         switch (msg.type) {
           case 'forward':
             _this._onForward(msg);break;
@@ -4660,6 +4691,9 @@ var Syncher = function () {
     * Request a subscription to an existent reporter object.
     * @param {SchemaURL} schema - Hyperty Catalogue URL address that can be used to retrieve the JSON-Schema describing the Data Object schema
     * @param {ObjectURL} objURL - Address of the existent reporter object to be observed
+    * @param {Boolean} [store=false] - Save the subscription on the Syncher Manager for further resume (Default is false)
+    * @param {Boolean} [p2p=false] - Info about if should use p2p connection (Default is false)
+    * @param {Boolean} [mutual=true] - Info about if messages of this object should be encrypted (Default is true)
     * @return {Promise<DataObjectObserver>} Return Promise to a new observer. It's associated with the reporter.
     */
 
@@ -4668,6 +4702,7 @@ var Syncher = function () {
     value: function subscribe(schema, objURL) {
       var store = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var p2p = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+      var mutual = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
 
       var _this = this;
       var criteria = {};
@@ -4676,6 +4711,9 @@ var Syncher = function () {
       criteria.store = store;
       criteria.schema = schema;
       criteria.resource = objURL;
+
+      //TODO: For Further Study
+      criteria.mutual = mutual;
 
       console.log('[syncher - subscribe] - subscribe criteria: ', criteria);
 
@@ -4822,14 +4860,18 @@ var Syncher = function () {
         // Resume Subscriptions for a certain user and data schema independently of the Hyperty URL.
         // https://github.com/reTHINK-project/specs/blob/master/messages/data-sync-messages.md#resume-subscriptions-for-a-certain-user-and-data-schema-independently-of-the-hyperty-url
         if (criteria) {
-          if (criteria.p2p) subscribeMsg.body.p2p = criteria.p2p;
-          if (criteria.store) subscribeMsg.body.store = criteria.store;
-          if (criteria.schema) subscribeMsg.body.schema = criteria.schema;
-          if (criteria.identity) subscribeMsg.body.identity = criteria.identity;
-          if (criteria.resource) subscribeMsg.body.resource = criteria.resource;
+          if (criteria.hasOwnProperty('p2p')) subscribeMsg.body.p2p = criteria.p2p;
+          if (criteria.hasOwnProperty('store')) subscribeMsg.body.store = criteria.store;
+          if (criteria.hasOwnProperty('schema')) subscribeMsg.body.schema = criteria.schema;
+          if (criteria.hasOwnProperty('identity')) subscribeMsg.body.identity = criteria.identity;
+          if (criteria.hasOwnProperty('resource')) subscribeMsg.body.resource = criteria.resource;
         }
 
         subscribeMsg.body.resume = criteria.resume;
+
+        //TODO: For Further Study
+        var mutualAuthentication = criteria.mutual;
+        if (!mutualAuthentication) subscribeMsg.body.mutualAuthentication = mutualAuthentication;
 
         console.log('[syncher] - subscribe message: ', criteria, subscribeMsg);
 
@@ -4853,7 +4895,8 @@ var Syncher = function () {
           } else if (reply.body.code === 200) {
             console.log('[syncher] - new Data Object Observer: ', reply, _this._provisionals);
 
-            var newObj = new _DataObjectObserver2.default(_this, objURL, schema, 'on', reply.body.value, newProvisional.children, reply.body.version);
+            //TODO: For Further Study
+            var newObj = new _DataObjectObserver2.default(_this, objURL, schema, 'on', reply.body.value, newProvisional.children, reply.body.version, mutualAuthentication);
             _this._observers[objURL] = newObj;
 
             resolve(newObj);
@@ -4909,7 +4952,7 @@ var Syncher = function () {
       };
 
       if (_this._onNotificationHandler) {
-        console.log('NOTIFICATION-EVENT: ', event);
+        console.info('[Syncher] NOTIFICATION-EVENT: ', event);
         _this._onNotificationHandler(event);
       }
     }
@@ -5420,6 +5463,7 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 	    	if(!(object instanceof Array) && !Array.isArray(object)) {
 	    		throw new TypeError("First argument to Array.observer is not an Array");
 	    	}
+            	acceptlist = acceptlist || ["add", "update", "delete", "splice"];
 	    	var arrayproxy = new Proxy(object,{get: function(target,property) {
 	    		if(property==="unobserve") {
 		    		return function(callback) {
@@ -5483,15 +5527,26 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 	    }
 	}
 	Object.deepObserve = function(object,callback,parts) {
+
 		parts = (parts ? parts : []);
-		var keys = Object.keys(object);
-		keys.forEach(function(key) {
-			if(object[key] instanceof Object) {
-				var newparts = parts.slice(0);
-				newparts.push(key);
-				object[key] = Object.deepObserve(object[key],callback,newparts);
-			}
-		});
+
+		var toTypeName = function(obj) {
+			return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+		}
+
+		function reobserve(value, parts) {
+			var keys = Object.keys(value);
+			keys.forEach(function(key) {
+				if((toTypeName(value[key]) === 'object' || toTypeName(value[key]) === 'array') && !value[key].hasOwnProperty('__observers__')) {
+					var newparts = parts.slice(0);
+					newparts.push(key);
+					value[key] = Object.deepObserve(value[key],callback,newparts);
+				}
+			});
+		}
+
+		reobserve(object, parts);
+
 		var observed = Object.observe(object,function(changeset) {
 			var changes = [];
 			function recurse(name,rootObject,oldObject,newObject,path) {
@@ -5502,6 +5557,7 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 							var oldvalue = (oldObject && oldObject[key]!==undefined ? oldObject[key] : undefined),
 								change = (oldvalue===undefined ? "add" : "update"),
 								keypath = path + "." + key;
+
 							changes.push({name:name,object:rootObject,type:change,oldValue:oldvalue,newValue:newObject[key],keypath:keypath});
 							recurse(name,rootObject,oldvalue,newObject[key],keypath);
 						}
@@ -5511,6 +5567,7 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 					oldkeys.forEach(function(key) {
 						var change = (newObject===null ? "update" : "delete"),
 							keypath = path + "." + key;
+							
 						changes.push({name:name,object:rootObject,type:change,oldValue:oldObject[key],newValue:newObject,keypath:keypath});
 						recurse(name,rootObject,oldObject[key],undefined,keypath);
 					});
@@ -5518,6 +5575,11 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 			}
 			changeset.forEach(function(change) {
 				var keypath = (parts.length>0 ? parts.join(".") + "." : "") + change.name;
+
+				if (change.type === "update" || change.type === "add") { 
+					reobserve(change.object, parts);
+				}
+
 				changes.push({name:change.name,object:change.object,type:change.type,oldValue:change.oldValue,newValue:change.object[change.name],keypath:keypath});
 				recurse(change.name,change.object,change.oldValue,change.object[change.name],keypath);
 			});
@@ -5526,6 +5588,7 @@ __webpack_require__(45)('getOwnPropertyDescriptor', function(){
 		return observed;
 	};
 })();
+
 
 /***/ }),
 /* 154 */,
@@ -6168,17 +6231,20 @@ var edgeShim = {
         };
       }
       // this adds an additional event listener to MediaStrackTrack that signals
-      // when a tracks enabled property was changed.
-      var origMSTEnabled = Object.getOwnPropertyDescriptor(
-          MediaStreamTrack.prototype, 'enabled');
-      Object.defineProperty(MediaStreamTrack.prototype, 'enabled', {
-        set: function(value) {
-          origMSTEnabled.set.call(this, value);
-          var ev = new Event('enabled');
-          ev.enabled = value;
-          this.dispatchEvent(ev);
-        }
-      });
+      // when a tracks enabled property was changed. Workaround for a bug in
+      // addStream, see below. No longer required in 15025+
+      if (browserDetails.version < 15025) {
+        var origMSTEnabled = Object.getOwnPropertyDescriptor(
+            MediaStreamTrack.prototype, 'enabled');
+        Object.defineProperty(MediaStreamTrack.prototype, 'enabled', {
+          set: function(value) {
+            origMSTEnabled.set.call(this, value);
+            var ev = new Event('enabled');
+            ev.enabled = value;
+            this.dispatchEvent(ev);
+          }
+        });
+      }
     }
 
     window.RTCPeerConnection = function(config) {
@@ -6196,6 +6262,7 @@ var edgeShim = {
       this.onremovestream = null;
       this.onsignalingstatechange = null;
       this.oniceconnectionstatechange = null;
+      this.onicegatheringstatechange = null;
       this.onnegotiationneeded = null;
       this.ondatachannel = null;
 
@@ -6276,6 +6343,14 @@ var edgeShim = {
       this._localIceCandidatesBuffer = [];
     };
 
+    window.RTCPeerConnection.prototype._emitGatheringStateChange = function() {
+      var event = new Event('icegatheringstatechange');
+      this.dispatchEvent(event);
+      if (this.onicegatheringstatechange !== null) {
+        this.onicegatheringstatechange(event);
+      }
+    };
+
     window.RTCPeerConnection.prototype._emitBufferedCandidates = function() {
       var self = this;
       var sections = SDPUtils.splitSections(self.localDescription.sdp);
@@ -6303,8 +6378,9 @@ var edgeShim = {
             return transceiver.iceGatherer &&
                 transceiver.iceGatherer.state === 'completed';
           });
-          if (complete) {
+          if (complete && self.iceGatheringStateChange !== 'complete') {
             self.iceGatheringState = 'complete';
+            self._emitGatheringStateChange();
           }
         }
       });
@@ -6316,16 +6392,21 @@ var edgeShim = {
     };
 
     window.RTCPeerConnection.prototype.addStream = function(stream) {
-      // Clone is necessary for local demos mostly, attaching directly
-      // to two different senders does not work (build 10547).
-      var clonedStream = stream.clone();
-      stream.getTracks().forEach(function(track, idx) {
-        var clonedTrack = clonedStream.getTracks()[idx];
-        track.addEventListener('enabled', function(event) {
-          clonedTrack.enabled = event.enabled;
+      if (browserDetails.version >= 15025) {
+        this.localStreams.push(stream);
+      } else {
+        // Clone is necessary for local demos mostly, attaching directly
+        // to two different senders does not work (build 10547).
+        // Fixed in 15025 (or earlier)
+        var clonedStream = stream.clone();
+        stream.getTracks().forEach(function(track, idx) {
+          var clonedTrack = clonedStream.getTracks()[idx];
+          track.addEventListener('enabled', function(event) {
+            clonedTrack.enabled = event.enabled;
+          });
         });
-      });
-      this.localStreams.push(clonedStream);
+        this.localStreams.push(clonedStream);
+      }
       this._maybeFireNegotiationNeeded();
     };
 
@@ -6475,6 +6556,7 @@ var edgeShim = {
                     self.onicecandidate(new Event('icecandidate'));
                   }
                   self.iceGatheringState = 'complete';
+                  self._emitGatheringStateChange();
                 }
                 break;
               case 'complete':
@@ -6523,8 +6605,7 @@ var edgeShim = {
       if (recv && transceiver.rtpReceiver) {
         // remove RTX field in Edge 14942
         if (transceiver.kind === 'video'
-            && transceiver.recvEncodingParameters
-            && browserDetails.version < 15019) {
+            && transceiver.recvEncodingParameters) {
           transceiver.recvEncodingParameters.forEach(function(p) {
             delete p.rtx;
           });
@@ -6731,26 +6812,6 @@ var edgeShim = {
                 .filter(function(cand) {
                   return cand.component === '1';
                 });
-            localCapabilities = RTCRtpReceiver.getCapabilities(kind);
-
-            // filter RTX until additional stuff needed for RTX is implemented
-            // in adapter.js
-            localCapabilities.codecs = localCapabilities.codecs.filter(
-                function(codec) {
-                  return codec.name !== 'rtx';
-                });
-            var commonCodecs = self._getCommonCapabilities(
-                localCapabilities,
-                remoteCapabilities).codecs;
-            commonCodecs = commonCodecs.map(function(codec) {
-              return codec.name;
-            });
-            if (commonCodecs.length === 0 ||
-                (commonCodecs.indexOf('H264') === -1 &&
-                commonCodecs.indexOf('VP8') === -1)) {
-              rejected = true;
-            }
-
             if (description.type === 'offer' && !rejected) {
               var transports = self.usingBundle && sdpMLineIndex > 0 ? {
                 iceGatherer: self.transceivers[0].iceGatherer,
@@ -6762,6 +6823,14 @@ var edgeShim = {
                 transports.iceTransport.setRemoteCandidates(cands);
               }
 
+              localCapabilities = RTCRtpReceiver.getCapabilities(kind);
+
+              // filter RTX until additional stuff needed for RTX is implemented
+              // in adapter.js
+              localCapabilities.codecs = localCapabilities.codecs.filter(
+                  function(codec) {
+                    return codec.name !== 'rtx';
+                  });
 
               sendEncodingParameters = [{
                 ssrc: (2 * sdpMLineIndex + 2) * 1001
@@ -7461,9 +7530,21 @@ var firefoxShim = {
           if (browserDetails.version < 53 && !onSucc) {
             // Shim only promise getStats with spec-hyphens in type names
             // Leave callback version alone; misc old uses of forEach before Map
-            stats.forEach(function(stat) {
-              stat.type = modernStatsTypes[stat.type] || stat.type;
-            });
+            try {
+              stats.forEach(function(stat) {
+                stat.type = modernStatsTypes[stat.type] || stat.type;
+              });
+            } catch (e) {
+              if (e.name !== 'TypeError') {
+                throw e;
+              }
+              // Avoid TypeError: "type" is read-only, in old versions. 34-43ish
+              stats.forEach(function(stat, i) {
+                stats.set(i, Object.assign({}, stat, {
+                  type: modernStatsTypes[stat.type] || stat.type
+                }));
+              });
+            }
           }
           return stats;
         })
@@ -8405,10 +8486,14 @@ var P2PHandlerStub = function () {
   }, {
     key: '_deliver',
     value: function _deliver(msg) {
-      if (!msg.body) msg.body = {};
 
-      msg.body.via = this._runtimeProtoStubURL;
-      this._bus.postMessage(msg);
+      console.log("+[P2PHandlerStub] posting message to msg bus: ", msg);
+      var message = JSON.parse(msg.data);
+
+      if (!message.body) msg.body = {};
+
+      message.body.via = this._runtimeProtoStubURL;
+      this._bus.postMessage(message);
     }
   }]);
 
