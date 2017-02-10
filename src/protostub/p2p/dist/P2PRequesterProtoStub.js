@@ -7907,6 +7907,7 @@ var ConnectionController = function () {
     this._peerUrl;
     this._dataChannel;
     this._onStatusUpdate;
+    this._remoteRuntimeURL;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -7958,6 +7959,7 @@ var ConnectionController = function () {
       var _this2 = this;
 
       this._peerUrl = invitationEvent.from;
+      this._remoteRuntimeURL = invitationEvent.value.runtimeURL;
 
       return new Promise(function (resolve, reject) {
 
@@ -8146,7 +8148,7 @@ var ConnectionController = function () {
     key: '_onDataChannelOpen',
     value: function _onDataChannelOpen() {
       console.log('[P2P-ConnectionController] DataChannel opened');
-      if (this._onStatusUpdate) this._onStatusUpdate("live");
+      if (this._onStatusUpdate) this._onStatusUpdate("live", undefined, this._remoteRuntimeURL);
     }
   }, {
     key: '_onDataChannelError',
@@ -8366,6 +8368,7 @@ var P2PRequesterStub = function () {
       if (reason) {
         msg.body.desc = reason;
       }
+      console.log("+[P2PrequesterStub] sending status update: ", msg);
       this._bus.postMessage(msg);
     }
 
