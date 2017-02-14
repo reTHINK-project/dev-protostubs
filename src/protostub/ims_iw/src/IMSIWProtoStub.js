@@ -22,6 +22,7 @@
  **/
 
 import { Syncher } from 'service-framework/dist/Syncher'
+import Discovery from 'service-framework/dist/Discovery';
 import ConnectionController from './ConnectionController'
 
 class Connection {
@@ -54,46 +55,77 @@ class IMSIWProtoStub {
 		if (!configuration) throw new Error('The configuration is a required parameter')
 
 		this._runtimeProtoStubURL = runtimeProtoStubURL
-		this._connection = new ConnectionController(configuration)
+		this._discovery = new Discovery(runtimeProtoStubURL, miniBus)
+		this._connection = new ConnectionController(configuration,
+				(to, offer) =>{
+					this._returnSDP(offer, this._runtimeProtoStubURL, this.schema, this.source, 'offer')
+				},
+				()=> {
+					this.dataObjectObserver.delete()
+					this.dataObjectReporter.delete()
+				})
 		this._bus = miniBus
 		this._syncher = new Syncher(this._runtimeProtoStubURL, miniBus, configuration)
 
         miniBus.addListener('*', (msg) => {
             console.log('NEW MSG ->', msg)
-            if(msg.body.identity.access_token && this._filter(msg) && msg.body.schema) {
-                this._subscribe(msg)
-            }
+				switch (msg.type) {
+				  case 'create':
+					if(this._filter(msg) && msg.body.schema) {
+						this._subscribe(msg)
+					}
+					break
+				  case 'init':
+					this._connection.connect(msg.body.identity.access_token)
+					this.source = msg.body.source
+					this.schema = msg.body.schema
+					break;
+				  case 'delete':
+					this._connection.disconnect()
+					break
+				}
         })
 	}
 
     _subscribe(msg) {
-        let schema = msg.body.schema
         let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
 
-        this._syncher.subscribe(schema, dataObjectUrl)
-            .then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, schema, msg))
+        this._syncher.subscribe(this.schema, dataObjectUrl)
+			.then(dataObjectObserver => {
+				this.dataObjectObserver = dataObjectObserver
+				dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+				return dataObjectObserver
+			}).then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
     }
 
     _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {
-        console.log('call', dataObjectObserver)
-        this._connection.connect(msg.body.identity.access_token)
-            .then(() => {
-                let context = this._connection.invite(msg.to, dataObjectObserver)
-                context.on('accepted', (e) => this._returnSDP(e, dataObjectUrl, schema, msg))
-                context.on('fail', (e) => console.log('fail', e))
-                context.on('rejected', (e) => console.log('rejected', e))
-            })
+        console.log('_onCall', dataObjectObserver)
+		if(dataObjectObserver.data.connectionDescription) {
+			if(dataObjectObserver.data.connectionDescription.type === 'offer') {
+				console.log('_onCallUpdate offer')
+				this._connection.connect(msg.body.identity.access_token)
+					.then(() => {
+						this._connection.invite(msg.to, dataObjectObserver)
+							.then((e) => this._returnSDP(e.body, dataObjectUrl, schema, msg.body.source, 'answer'))
+							.catch((e) => console.log('fail', e))
+					})
+			} else if(dataObjectObserver.data.connectionDescription.type === 'answer') {
+				console.log('_onCallUpdate offer')
+				this._connection.accept(dataObjectObserver)
+			}
+		}
     }
 
-    _returnSDP(e, dataObjectUrl, schema, msg) {
+    _returnSDP(offer, dataObjectUrl, schema, source, type) {
         let dataObject = new Connection(dataObjectUrl)
 
-        this._syncher.create(schema, [msg.body.source], dataObject).then((objReporter) => {
+        this._syncher.create(schema, [source], dataObject).then((objReporter) => {
+			this.dataObjectReporter = objReporter
             objReporter.onSubscription(function(event) {
                 console.info('-------- Receiver received subscription request --------- \n')
                 event.accept()
             });
-            objReporter.data.connectionDescription = { type: 'answer', sdp: e.body }
+            objReporter.data.connectionDescription = { type: type, sdp: offer }
         })
     }
 
