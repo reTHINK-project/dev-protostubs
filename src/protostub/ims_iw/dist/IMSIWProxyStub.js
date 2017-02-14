@@ -38,7 +38,6 @@ var IMSIWProxyStub = function () {
 
     this.messageBus.addListener('*', function (msg) {
       //TODO add the respective listener
-      console.log('IDPM', msg);
       if (msg.to === 'domain-idp://' + domain) {
         _this.requestToIdp(msg);
       }
