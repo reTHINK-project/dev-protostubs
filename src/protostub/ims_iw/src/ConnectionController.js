@@ -91,6 +91,9 @@ class ConnectionController {
 								console.log('onCall', context)
 								this.onCall(context.request.to.friendlyName, context.body)
 								this.context = context
+								context.on('bye', this.onDisconnect)
+								context.on('failed', console.log)
+								context.on('rejected', console.log)
 							})
                             resolve()
                         })
@@ -104,7 +107,9 @@ class ConnectionController {
 	}
 
 	disconnect() {
-		this.context.bye()
+		console.log('disconnecting from ims')
+		if (!this.context.endTime)
+			this.context.bye()
 	}
 
 	invite(to, dataObjectObserver) {

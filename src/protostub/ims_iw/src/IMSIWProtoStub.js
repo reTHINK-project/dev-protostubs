@@ -79,7 +79,7 @@ class IMSIWProtoStub {
 					this._connection.connect(msg.body.identity.access_token)
 					this.source = msg.body.source
 					this.schema = msg.body.schema
-					break;
+					break
 				  case 'delete':
 					this._connection.disconnect()
 					break
@@ -107,7 +107,7 @@ class IMSIWProtoStub {
 					.then(() => {
 						this._connection.invite(msg.to, dataObjectObserver)
 							.then((e) => this._returnSDP(e.body, dataObjectUrl, schema, msg.body.source, 'answer'))
-							.catch((e) => console.log('fail', e))
+							.catch((e) => { console.log('fail', e); this.dataObjectObserver.delete() })
 					})
 			} else if(dataObjectObserver.data.connectionDescription.type === 'answer') {
 				console.log('_onCallUpdate offer')
