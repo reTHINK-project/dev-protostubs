@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "A protostub to interact with an IMS lab environment.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "mkdir -p dist",
+    "build_handler": "browserify src/IMSIWProtoStub.js --standalone activate -o dist/IMSIWProtoStub.js",
+    "build_requester": "browserify src/IMSIWProxyStub.js --standalone activate -o dist/IMSIWProxyStub.js",
+    "build": "npm run prepare && npm run build_handler && npm run build_requester",
+    "start": "npm run build",
+    "init-setup": "npm install browserify babelify && npm install"
   },
   "browserify": {
      "transform": [
