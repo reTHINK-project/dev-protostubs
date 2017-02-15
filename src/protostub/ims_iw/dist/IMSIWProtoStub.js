@@ -19884,7 +19884,7 @@ module.exports = require('./SIP')(require('./environment'));
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+	value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
@@ -19915,10 +19915,6 @@ var _sip = require('sip.js');
 
 var _sip2 = _interopRequireDefault(_sip);
 
-var _sdpTransform = require('sdp-transform');
-
-var _sdpTransform2 = _interopRequireDefault(_sdpTransform);
-
 var _InviteClientContext = require('./InviteClientContext');
 
 var _InviteClientContext2 = _interopRequireDefault(_InviteClientContext);
@@ -19927,130 +19923,106 @@ var _InviteServerContext = require('./InviteServerContext');
 
 var _InviteServerContext2 = _interopRequireDefault(_InviteServerContext);
 
+var _SIPUtils = require('./SIPUtils');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var addCandidatesToSDP = function addCandidatesToSDP(txtSdp, candidates) {
-    var sdp = _sdpTransform2.default.parse(txtSdp);
-    sdp.media[0].candidates = [];
-    if (sdp.media.length > 1) sdp.media[1].candidates = [];
-    candidates.forEach(function (candidate) {
-        var parts = candidate.candidate.substring(10).split(' ');
-        var c = {
-            foundation: parts[0],
-            component: parts[1],
-            transport: parts[2].toLowerCase(),
-            priority: parts[3],
-            ip: parts[4],
-            port: parts[5],
-            type: parts[7],
-            generation: '0'
-        };
-        for (var i = 8; i < parts.length; i += 2) {
-            if (parts[i] === 'raddr') {
-                c.raddr = parts[i + 1];
-            } else if (parts[i] === 'rport') {
-                c.rport = parts[i + 1];
-            } else if (parts[i] === 'generation') {
-                c.generation = parts[i + 1];
-            } else if (parts[i] === 'tcptype') {
-                c.tcptype = parts[i + 1];
-            } else if (parts[i] === 'network-id') {
-                c['network-id'] = parts[i + 1];
-            } else if (parts[i] === 'network-cost') {
-                c['network-cost'] = parts[i + 1];
-            }
-        }
-        sdp.media.filter(function (m) {
-            return m.type === candidate.sdpMid;
-        })[0].candidates.push(c);
-    });
-
-    return _sdpTransform2.default.write(sdp);
-};
-
 var ConnectionController = function () {
-    function ConnectionController(configuration, onCall, onDisconnect) {
-        _classCallCheck(this, ConnectionController);
+	function ConnectionController(configuration, onCall, onDisconnect) {
+		_classCallCheck(this, ConnectionController);
 
-        if (!configuration) throw new Error('The configuration is a needed parameter');
+		if (!configuration) throw new Error('The configuration is a needed parameter');
 
-        _sip2.default.InviteServerContext = _InviteServerContext2.default;
-        this.configuration = configuration;
-        this.onDisconnect = onDisconnect;
-        this.onCall = onCall;
-    }
+		_sip2.default.InviteServerContext = _InviteServerContext2.default;
+		this.configuration = configuration;
+		this.onDisconnect = onDisconnect;
+		this.onCall = onCall;
+	}
 
-    _createClass(ConnectionController, [{
-        key: 'connect',
-        value: function connect(accessToken) {
-            var _this = this;
+	_createClass(ConnectionController, [{
+		key: 'connect',
+		value: function connect(accessToken) {
+			var _this = this;
 
-            return new Promise(function (resolve, reject) {
-                if (_this.userAgent) return resolve();
+			return new Promise(function (resolve, reject) {
+				if (_this.userAgent) return resolve();
 
-                fetch(_this.configuration.credential_server, { method: 'GET', headers: { 'Authorization': 'Bearer: ' + accessToken } }).then(function (res) {
-                    res.json().then(function (user) {
-                        _this.userAgent = new _sip2.default.UA({
-                            uri: user.username,
-                            wsServers: user.uris,
-                            password: user.password
-                        });
-                        _this.userAgent.on('invite', function (context) {
-                            console.log('onCall', context);
-                            _this.onCall(context.request.to.friendlyName, context.body);
-                            _this.context = context;
-                            context.on('bye', _this.onDisconnect);
-                            context.on('failed', console.log);
-                            context.on('rejected', console.log);
-                        });
-                        resolve();
-                    });
-                });
-            });
-        }
-    }, {
-        key: 'accept',
-        value: function accept(dataObjectObserver) {
-            this.context.accept({ sdp: addCandidatesToSDP(dataObjectObserver.data.connectionDescription.sdp, dataObjectObserver.data.iceCandidates) });
-        }
-    }, {
-        key: 'disconnect',
-        value: function disconnect() {
-            console.log('diconnect from ims');
-            if (!this.context.endTime) this.context.bye();
-        }
-    }, {
-        key: 'invite',
-        value: function invite(to, dataObjectObserver) {
-            var _this2 = this;
+				fetch(_this.configuration.credential_server, { method: 'GET', headers: { 'Authorization': 'Bearer: ' + accessToken } }).then(function (res) {
+					res.json().then(function (user) {
+						_this.userAgent = new _sip2.default.UA({
+							uri: user.username,
+							wsServers: user.uris,
+							password: user.password
+						});
+						_this.userAgent.on('invite', function (context) {
+							if (_this.context) return;
 
-            var options = {
-                sdp: addCandidatesToSDP(dataObjectObserver.data.connectionDescription.sdp, dataObjectObserver.data.iceCandidates)
-            };
+							context.on('bye', function () {
+								delete _this.context;
+								_this.onDisconnect();
+							});
+							context.on('failed', console.log);
+							context.on('rejected', console.log);
+							_this.context = context;
+							_this.onCall(context.request.to.friendlyName, context.body);
+						});
+						resolve();
+					});
+				}).catch(reject);
+			});
+		}
+	}, {
+		key: 'accept',
+		value: function accept(dataObjectObserver) {
+			this.context.accept({
+				sdp: (0, _SIPUtils.addCandidatesToSDP)(dataObjectObserver.data.connectionDescription.sdp, dataObjectObserver.data.iceCandidates)
+			});
+		}
+	}, {
+		key: 'invite',
+		value: function invite(to, dataObjectObserver) {
+			var _this2 = this;
 
-            return new Promise(function (resolve, reject) {
-                var context = new _InviteClientContext2.default(_this2.userAgent, to.replace('//', ''), options);
-                _this2.userAgent.afterConnected(context.invite.bind(context));
-                context.on('bye', _this2.onDisconnect);
-                context.on('accepted', resolve);
-                context.on('failed', reject);
-                context.on('rejected', reject);
+			var options = {
+				sdp: (0, _SIPUtils.addCandidatesToSDP)(dataObjectObserver.data.connectionDescription.sdp, dataObjectObserver.data.iceCandidates)
+			};
 
-                //TODO: concurrent call problem
-                _this2.context = context;
-            });
-        }
-    }]);
+			return new Promise(function (resolve, reject) {
+				if (_this2.context) reject(new Error('Previous context', _this2.context));
 
-    return ConnectionController;
+				var context = new _InviteClientContext2.default(_this2.userAgent, to.replace('//', ''), options);
+				_this2.userAgent.afterConnected(context.invite.bind(context));
+				context.on('bye', function () {
+					delete _this2.context;
+					_this2.onDisconnect();
+				});
+				context.on('accepted', resolve);
+				context.on('failed', reject);
+				context.on('rejected', reject);
+
+				_this2.context = context;
+			});
+		}
+	}, {
+		key: 'disconnect',
+		value: function disconnect() {
+			console.log('disconnecting from ims');
+			if (this.context && !this.context.endTime) {
+				this.context.bye();
+				delete this.context;
+			}
+		}
+	}]);
+
+	return ConnectionController;
 }();
 
 exports.default = ConnectionController;
 module.exports = exports['default'];
 
-},{"./InviteClientContext":45,"./InviteServerContext":46,"sdp-transform":3,"sip.js":42}],44:[function(require,module,exports){
+},{"./InviteClientContext":45,"./InviteServerContext":46,"./SIPUtils":47,"sip.js":42}],44:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -21146,5 +21118,58 @@ InviteServerContext.prototype = {
 exports.default = InviteServerContext;
 module.exports = exports['default'];
 
-},{"sip.js":42}]},{},[44])(44)
+},{"sip.js":42}],47:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.addCandidatesToSDP = addCandidatesToSDP;
+
+var _sdpTransform = require('sdp-transform');
+
+var _sdpTransform2 = _interopRequireDefault(_sdpTransform);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function addCandidatesToSDP(txtSdp, candidates) {
+	var sdp = _sdpTransform2.default.parse(txtSdp);
+	sdp.media[0].candidates = [];
+	if (sdp.media.length > 1) sdp.media[1].candidates = [];
+	candidates.forEach(function (candidate) {
+		var parts = candidate.candidate.substring(10).split(' ');
+		var c = {
+			foundation: parts[0],
+			component: parts[1],
+			transport: parts[2].toLowerCase(),
+			priority: parts[3],
+			ip: parts[4],
+			port: parts[5],
+			type: parts[7],
+			generation: '0'
+		};
+		for (var i = 8; i < parts.length; i += 2) {
+			if (parts[i] === 'raddr') {
+				c.raddr = parts[i + 1];
+			} else if (parts[i] === 'rport') {
+				c.rport = parts[i + 1];
+			} else if (parts[i] === 'generation') {
+				c.generation = parts[i + 1];
+			} else if (parts[i] === 'tcptype') {
+				c.tcptype = parts[i + 1];
+			} else if (parts[i] === 'network-id') {
+				c['network-id'] = parts[i + 1];
+			} else if (parts[i] === 'network-cost') {
+				c['network-cost'] = parts[i + 1];
+			}
+		}
+		sdp.media.filter(function (m) {
+			return m.type === candidate.sdpMid;
+		})[0].candidates.push(c);
+	});
+
+	return _sdpTransform2.default.write(sdp);
+}
+
+},{"sdp-transform":3}]},{},[44])(44)
 });
