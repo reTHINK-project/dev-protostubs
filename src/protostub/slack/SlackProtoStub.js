@@ -147,7 +147,7 @@ class SlackProtoStub {
       _this._session.message(message=> {
         console.log('[SlackProtostub] new message on session', message);
         if (message.channel) {
-          if (message.channel === _this._channelID && message.user !== _this._id || (!message.hasOwnProperty('bot_id') && message.user === _this._id)) {
+          if (message.channel === _this._channelID && message.user !== _this._id || (!message.hasOwnProperty('bot_id') && message.user === _this._id && message.channel === _this._channelID)) {
 
             _this._observer.addChild('chatmessages', { message: message.text});
           }
