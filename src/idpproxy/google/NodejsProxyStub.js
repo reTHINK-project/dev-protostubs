@@ -85,15 +85,12 @@ class NodejsProxyStub {
    _this.messageBus = bus;
    _this.config = config;
 
-   console.log('TIAGO: contructor');
-
    _this.messageBus.addListener('*', function(msg) {
 
      //TODO add the respective listener
-     if (msg.to === 'domain-idp://NodejsProxyStub') {
+     if (msg.to === 'domain-idp://google.com') {
 
-       console.log('TIAGO: msg is here');
-       _this.requestToIdp(msg);
+        _this.requestToIdp(msg);
      }
    });
  }
