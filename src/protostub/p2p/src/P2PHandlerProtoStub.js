@@ -152,6 +152,7 @@ class P2PHandlerStub {
     if (reason) {
       msg.body.desc = reason;
     }
+    console.log("+[P2PHandlerStub] sending status update: ", msg);
     this._bus.postMessage(msg);
   }
 
@@ -172,10 +173,14 @@ class P2PHandlerStub {
    * @param  {Message} msg Original message from the MessageNode
    */
   _deliver(msg) {
-    if (!msg.body) msg.body = {};
 
-    msg.body.via = this._runtimeProtoStubURL;
-    this._bus.postMessage(msg);
+    console.log("+[P2PHandlerStub] posting message to msg bus: ", msg);
+    let message = JSON.parse(msg.data);
+
+    if (!message.body) msg.body = {};
+
+    message.body.via = this._runtimeProtoStubURL;
+    this._bus.postMessage(message);
   }
 
 }

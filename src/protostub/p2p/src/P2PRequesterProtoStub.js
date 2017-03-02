@@ -141,6 +141,7 @@ class P2PRequesterStub {
       msg.body.desc = reason;
     }
     this._bus.postMessage(msg);
+    console.log("+[P2PrequesterStub] sending status update: ", msg);
   }
 
   /**
@@ -159,10 +160,14 @@ class P2PRequesterStub {
    * @param  {Message} msg Original message from the MessageNode
    */
   _deliver(msg) {
-    if (!msg.body) msg.body = {};
+    console.log("+[P2PrequesterStub] posting message to msg bus: ", msg);
 
-    msg.body.via = this._runtimeProtoStubURL;
-    this._bus.postMessage(msg);
+    let message = JSON.parse(msg.data);
+
+    if (!message.body) msg.body = {};
+
+    message.body.via = this._runtimeProtoStubURL;
+    this._bus.postMessage(message);
   }
 
 }

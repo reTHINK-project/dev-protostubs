@@ -23,6 +23,7 @@
 import SIP from 'sip.js'
 import transform from 'sdp-transform'
 import InviteClientContext from './InviteClientContext'
+import InviteServerContext from './InviteServerContext'
 
 let addCandidatesToSDP = (txtSdp, candidates) => {
     let sdp = transform.parse(txtSdp)
@@ -63,17 +64,20 @@ let addCandidatesToSDP = (txtSdp, candidates) => {
 }
 
 class ConnectionController {
-	constructor(configuration) {
+	constructor(configuration, onCall, onDisconnect) {
 		if (!configuration) throw new Error('The configuration is a needed parameter')
 
+		SIP.InviteServerContext = InviteServerContext
 		this.configuration = configuration
+		this.onDisconnect = onDisconnect
+		this.onCall = onCall
 	}
 
 	connect(accessToken) {
         return new Promise((resolve, reject) => {
             if(this.userAgent)
                 return resolve()
-            
+
             fetch(this.configuration.credential_server, { method: 'GET', headers: { 'Authorization': `Bearer: ${accessToken}`}})
                 .then(res => {
                     res.json()
@@ -83,10 +87,29 @@ class ConnectionController {
                                 wsServers: user.uris,
                                 password: user.password
                             })
+							this.userAgent.on('invite', context => {
+								console.log('onCall', context)
+								this.onCall(context.request.to.friendlyName, context.body)
+								this.context = context
+								context.on('bye', this.onDisconnect)
+								context.on('failed', console.log)
+								context.on('rejected', console.log)
+							})
                             resolve()
                         })
                 })
         })
+	}
+
+	accept(dataObjectObserver) {
+		this.context.accept({sdp: addCandidatesToSDP(dataObjectObserver.data.connectionDescription.sdp,
+                         dataObjectObserver.data.iceCandidates)})
+	}
+
+	disconnect() {
+		console.log('disconnecting from ims')
+		if (!this.context.endTime)
+			this.context.bye()
 	}
 
 	invite(to, dataObjectObserver) {
@@ -95,9 +118,17 @@ class ConnectionController {
                          dataObjectObserver.data.iceCandidates)
 		}
 
-		let context = new InviteClientContext(this.userAgent, to.replace('//', ''), options)
-		this.userAgent.afterConnected(context.invite.bind(context))
-		return context
+		return new Promise((resolve, reject) => {
+			let context = new InviteClientContext(this.userAgent, to.replace('//', ''), options)
+			this.userAgent.afterConnected(context.invite.bind(context))
+			context.on('bye', this.onDisconnect)
+			context.on('accepted', resolve)
+			context.on('failed', reject)
+			context.on('rejected', reject)
+
+			//TODO: concurrent call problem
+			this.context = context
+		})
 	}
 }
 
