@@ -1,5 +1,6 @@
 import slack from 'slack';
 import {Syncher} from 'service-framework/dist/Syncher';
+import {MessageBodyIdentity} from 'service-framework/dist/IdentityFactory';
 
 class SlackProtoStub {
 
@@ -149,7 +150,9 @@ class SlackProtoStub {
         if (message.channel) {
           if (message.channel === _this._channelID && message.user !== _this._id || (!message.hasOwnProperty('bot_id') && message.user === _this._id && message.channel === _this._channelID)) {
 
-            _this._observer.addChild('chatmessages', { message: message.text});
+            _this._getUserInfo(message.user).then( (identity) => {
+              _this._observer.addChild('chatmessages', { message: message.text},identity);
+            });
           }
         }
       });
@@ -157,6 +160,30 @@ class SlackProtoStub {
       console.log('[SlackProtostub] session already exist');
     }
     callback();
+  }
+
+/*****************************************************************************************************
+* It retrieves information from a slack user and creates a reTHINK Identity object with it
+* @param {string} user - slack user id
+* @return {Promise<Object>} Returns a promise with an Identity object resolved
+*******************************************************************************************************/
+
+  _getUserInfo(user) {
+    let _this = this;
+
+    return new Promise(function(resolve) {
+      _this._slack.users.info( {token: _this._token, user: user}, (err, data) => {
+        if (err) {
+          console.err('[SlackProtostub] error', err);
+        } else {
+
+          console.log('[SlackProtostub getUserInfo] ', data);
+          resolve (new MessageBodyIdentity(data.user.name,'slack://'+data.user.name+'@slack.com',data.user.profile.image_192,data.user.profile.email,'','slack.com'));
+
+        }
+      });
+    });
+
   }
 
   _subscribe(schema, urlDataObj) {
