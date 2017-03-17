@@ -1,6 +1,6 @@
 import slack from 'slack';
 import { Syncher } from 'service-framework/dist/Syncher';
-import { MessageBodyIdentity } from 'service-framework/dist/IdentityFactory';
+import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 
 class SlackProtoStub {
 
