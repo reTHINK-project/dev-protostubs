@@ -127,7 +127,7 @@ class SlackProtoStub {
         resolve(userInfo);
 
       }, function(error) {
-        console.err('[SlackProtostub] ', error);
+        console.error('[SlackProtostub] ', error);
         reject(error);
       });
 
@@ -215,7 +215,7 @@ class SlackProtoStub {
     return new Promise(function(resolve) {
       _this._slack.users.info({token: _this._token, user: user}, (err, data) => {
         if (err) {
-          console.err('[SlackProtostub] error', err);
+          console.error('[SlackProtostub] error', err);
         } else {
 
           console.log('[SlackProtostub getUserInfo] ', data);
@@ -267,7 +267,7 @@ class SlackProtoStub {
         resolve(true);
 
       }).catch((error) => {
-        console.err('[SlackProtostub] Subscribe', error);
+        console.error('[SlackProtostub] Subscribe', error);
         resolve(false);
       });
     });
@@ -284,7 +284,7 @@ class SlackProtoStub {
 
     _this._slack.channels.invite(toInvite, (err, data) => {
       if (err) {
-        console.err('[SlackProtostub] error', err);
+        console.error('[SlackProtostub] error', err);
       } else {
         _this._channelID = idChannel;
         console.log('[SlackProtostub] user invited with sucess', data);
@@ -306,7 +306,7 @@ class SlackProtoStub {
 
         _this._slack.chat.postMessage(message, function(err, data) {
           if (err) {
-            console.err('[SlackProtostub] error', err);
+            console.error('[SlackProtostub] error', err);
           } else {
             console.log('[SlackProtostub] PostMessage with Sucess', data);
           }
@@ -322,7 +322,7 @@ class SlackProtoStub {
       let toCreate = { token: _this._token, name: channelName };
       _this._slack.channels.create(toCreate, (err, data) => {
         if (err) {
-          console.err('[SlackProtostub] ', err);
+          console.error('[SlackProtostub] ', err);
         } else {
           if (data.ok) {
             console.log('[SlackProtostub] Channel Created with Sucess ', data);
