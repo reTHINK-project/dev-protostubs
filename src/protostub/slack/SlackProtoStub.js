@@ -87,8 +87,28 @@ class SlackProtoStub {
           }
         });
       }
-
     });
+
+    this._syncher.resumeObservers({}).then((dataObjectObserver) => {
+      console.log('[SlackProtostub] resuming observers:', dataObjectObserver);
+
+      let subscription = {urlDataObj: dataObjectObserver.data.url, schema: dataObjectObserver.data.schema, subscribed: true};
+
+      _this._observer = dataObjectObserver;
+      _this._subscribedList.push(subscription);
+      dataObjectObserver.onAddChild((child) => {
+        console.info('[SlackProtostub] Observer - Add Child: ', child);
+        _this._deliver(child);
+      });
+
+      dataObjectObserver.onChange('*', (event) => {
+        console.log('[SlackProtostub] Observer - onChange: ', event);
+      });
+
+    }).catch((reason) => {
+      console.info('Resume Observer | ', reason);
+    });
+
 
   }
 
@@ -251,7 +271,7 @@ class SlackProtoStub {
 
       console.log('[SlackProtostub] new subscription for schema:', objectDescURL, ' and dataObject:', dataObjectUrl);
 
-      return _this._syncher.subscribe(objectDescURL, dataObjectUrl, false, false, false, identity).then((observer) => {
+      return _this._syncher.subscribe(objectDescURL, dataObjectUrl, true, false, false, identity).then((observer) => {
         _this._observer = observer;
         _this._subscribedList.push(subscription);
         console.log('[SlackProtostub] subscribed', dataObjectUrl);
