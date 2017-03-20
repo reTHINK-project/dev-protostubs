@@ -91,18 +91,16 @@ var IMSIWProxyStub = function () {
 					console.log('first url ', requestUrl, 'done');
 					reject({ name: 'IdPLoginError', loginUrl: requestUrl });
 				} else {
-					(function () {
-						var accessToken = _this3._urlParser(hint, 'access_token');
-						fetch('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + accessToken).then(function (res_user) {
-							return res_user.json();
-						}).then(function (body) {
-							var infoToken = { picture: body.picture, email: body.email, family_name: body.family_name, given_name: body.given_name };
-							var assertion = btoa(JSON.stringify({ tokenID: accessToken, email: body.email, id: body.id }));
-							var toResolve = { assertion: assertion, idp: { domain: domain, protocol: 'OAuth 2.0' }, infoToken: infoToken, interworking: { access_token: accessToken, domain: domain } };
-							console.log('RESOLVING THIS OBJECT', toResolve);
-							resolve(toResolve);
-						}).catch(reject);
-					})();
+					var accessToken = _this3._urlParser(hint, 'access_token');
+					fetch('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + accessToken).then(function (res_user) {
+						return res_user.json();
+					}).then(function (body) {
+						var infoToken = { picture: body.picture, email: body.email, family_name: body.family_name, given_name: body.given_name };
+						var assertion = btoa(JSON.stringify({ tokenID: accessToken, email: body.email, id: body.id }));
+						var toResolve = { assertion: assertion, idp: { domain: domain, protocol: 'OAuth 2.0' }, infoToken: infoToken, interworking: { access_token: accessToken, domain: domain } };
+						console.log('RESOLVING THIS OBJECT', toResolve);
+						resolve(toResolve);
+					}).catch(reject);
 				}
 			});
 		}
