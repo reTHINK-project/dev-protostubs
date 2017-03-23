@@ -31,7 +31,7 @@ class SlackProtoStub {
     this._runtimeSessionURL = config.runtimeURL;
     this._reOpen = false;
     this._slack = slack;
-    console.log('[SlackProtostub] instatiate syncher with runtimeUrl', runtimeProtoStubURL);
+    console.log('[SlackProtostub] instantiate syncher with runtimeUrl', runtimeProtoStubURL);
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
 
     this._syncher.onNotification((event) => {
@@ -49,6 +49,7 @@ class SlackProtoStub {
           if (_this._filter(msg)) {
 
             console.log('[SlackProtostub] After Filter', msg);
+
             let schemaUrl = msg.body.schema;
             if (schemaUrl && msg.body.value.name) {
 
@@ -68,9 +69,18 @@ class SlackProtoStub {
                     userInfo.name,
                     '', 'slack.com');
 
-                  _this._subscribe(schemaUrl, msg.from, identity).then((result) => {
-                    console.log('[SlackProtostub] subscribe result', result);
+                    let subscriptionUrl = msg.from;
+
+                    // for session resume
+                    if (msg.body.resource) {
+                      subscriptionUrl = msg.body.resource + '/subscription';
+                    }
+
+                    console.log('[SlackProtostub] subscribing object', subscriptionUrl);
+
+                  _this._subscribe(schemaUrl, subscriptionUrl, identity).then((result) => {
                     if (result) {
+                      console.log('[SlackProtostub] subscribe result', result);
 
                       _this._token = token;
 
@@ -89,7 +99,7 @@ class SlackProtoStub {
       }
     });
 
-    this._syncher.resumeObservers({}).then((dataObjectObserver) => {
+    /*this._syncher.resumeObservers({}).then((dataObjectObserver) => {
       console.log('[SlackProtostub] resuming observers:', dataObjectObserver);
 
       let subscription = {urlDataObj: dataObjectObserver.data.url, schema: dataObjectObserver.data.schema, subscribed: true};
@@ -107,7 +117,7 @@ class SlackProtoStub {
 
     }).catch((reason) => {
       console.info('Resume Observer | ', reason);
-    });
+    });*/
 
 
   }
@@ -271,7 +281,7 @@ class SlackProtoStub {
 
       console.log('[SlackProtostub] new subscription for schema:', objectDescURL, ' and dataObject:', dataObjectUrl);
 
-      return _this._syncher.subscribe(objectDescURL, dataObjectUrl, true, false, false, identity).then((observer) => {
+      return _this._syncher.subscribe(objectDescURL, dataObjectUrl, false, false, false, identity).then((observer) => {
         _this._observer = observer;
         _this._subscribedList.push(subscription);
         console.log('[SlackProtostub] subscribed', dataObjectUrl);
