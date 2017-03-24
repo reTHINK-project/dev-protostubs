@@ -94,7 +94,31 @@ class IMSIWProtoStub {
 					break
 				}
         })
+  this._sendStatus('created');
 	}
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[IMSIWProtostub status changed] to ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this._runtimeProtoStubURL,
+      to: _this._runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this._bus.postMessage(msg);
+  }
 
     _subscribe(msg) {
         let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
