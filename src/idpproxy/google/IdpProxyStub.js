@@ -244,12 +244,15 @@ class IdpProxyProtoStub {
    _this.messageBus = bus;
    _this.config = config;
 
+   console.log('[Google IdpProxy] starting', runtimeProtoStubURL);
+
    _this.messageBus.addListener('*', function(msg) {
      if (msg.to === 'domain-idp://google.com') {
 
        _this.requestToIdp(msg);
      }
    });
+   _this._sendStatus('created');
  }
 
   /**
@@ -294,6 +297,29 @@ class IdpProxyProtoStub {
                    body: {code: 200, value: value}};
 
     _this.messageBus.postMessage(message);
+  }
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[GoogleIdpProxy.sendStatus] ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this.runtimeProtoStubURL,
+      to: _this.runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this.messageBus.postMessage(msg);
   }
 }
 
