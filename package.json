@@ -1,0 +1,23 @@
+{
+  "name": "dev-protostubs",
+  "version": "1.0.0",
+  "description": "Hosts the source code and documentation to get reTHINK Core Framework interwork with Slack",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reTHINK-project/dev-protostubs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reTHINK-project/dev-protostubs/issues"
+  },
+  "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
+  "dependencies": {
+    "atob": "^2.0.3",
+    "btoa": "^1.1.2"
+  }
+}

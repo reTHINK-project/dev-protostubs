@@ -2,6 +2,8 @@ let identities = {};
 let nIdentity = 0;
 //import fetch from 'node-fetch';
 let fetch = require("node-fetch");
+let btoa = require('btoa');
+let atob = require('atob');
 
 let googleInfo = {
   clientSecret:          'Xx4rKucb5ZYTaXlcZX9HLfZW',
@@ -32,20 +34,7 @@ function urlParser(url, name) {
 }
 
 function sendHTTPRequest(method, url) {
-  console.log('TIAGO sendHTTPRequest URL', url);
-  return new Promise(function(resolve,reject) {
-    if (method !== 'GET') {
-      fetch(url, {method: method}).then((result) => {
-        console.log('TIAGO sendHTTPRequest', result);
-        resolve(result.json());
-      });
-    } else {
-      fetch(url).then((result) => {
-        console.log('TIAGO sendHTTPRequest', result);
-        resolve(result.json());
-      });
-    }
-  });
+  return makeLocalRequest(method, url, undefined);
 }
 
 /**
@@ -86,16 +75,14 @@ function makeLocalRequest(method, url, options) {
   return new Promise(function(resolve, reject) {
     let urlMap = mapProtocol(url);
 
-    console.log('Mapped url is ', urlMap,'method is:', method);
+    //console.log('Mapped url is ', urlMap,'method is:', method);
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
     if(method === 'GET') {
       // handle GET method
       fetch(urlMap).then((res) => {
         console.log('statusCode is: ',  res.status);
-        return res.text();
-      }).then((body)=> {
-        resolve(body.toString('utf8'));
+        return resolve(res.json());
       }).catch((err) => {
         console.error('Error occured on GET method of url:', urlMap, ' reason :', err);
       });
@@ -103,18 +90,12 @@ function makeLocalRequest(method, url, options) {
     } else if(method === 'POST') {
       let postOptions = {
         method: 'POST',
-/*          headers: { 
-          'Content-Type': 'application/json',
-          'cache-control': 'no-cache',
-        },*/
         body: options
       };
 
       fetch(urlMap, postOptions).then((res) => {
         console.log('statusCode is: ',  res.status);
-        return res.text();
-      }).then((body) => {
-        resolve(body.toString('utf8'));
+        return resolve(res.json());
       }).catch((error) => {
         console.error('Error occured on POST method of url:', urlMap, 'with options:', options, 'reason :', err);
       });
@@ -134,9 +115,7 @@ let exchangeCode = (function(code) {
   //let URL = = i.tokenEndpoint + 'client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&refresh_token=' + code + '&grant_type=refresh_token';
 
   return new Promise(function(resolve, reject) {
-    console.log('TIAGO exchangeCode 1');
     sendHTTPRequest('POST', URL).then(function(info) {
-      console.log('TIAGO exchangeCode 2');
       resolve(info);
     }, function(error) {
       reject(error);
@@ -197,40 +176,26 @@ let idp = {
         // this is temporary
         reject({name: 'IdPLoginError', loginUrl: 'requestUrl'});
       } else {
-
-        console.log('TIAGO idp proxy works');
-
-        let url = 'https://google.com/';
-        let method = 'GET';
-        let options = undefined;
-
-        console.log('TIAGO node-fetch test');
-
-        makeLocalRequest(method, url, options).then((res) => {
-          console.log('TIAGO res', res);
-          resolve(res);
-        }).catch((reason) => {
-          reject(reason);
-        });
-
-        console.log('TIAGO end node-fetch test');
-
-        /*
+        let i = googleInfo;
+        
         // the request have already been made, so idpPRoxy will exchange the tokens along to the idp, to obtain the information necessary
         let accessToken = urlParser(hint, 'access_token');
         let idToken = urlParser(hint, 'id_token');
         let code = urlParser(hint, 'code');
         
-        console.log('TIAGO accessToken', accessToken);
-        console.log('TIAGO idToken', idToken);
-        console.log('TIAGO code', code);
+        //console.log('TIAGO accessToken', accessToken);
+        //console.log('TIAGO idToken', idToken);
+        //console.log('TIAGO code', code);
 
         exchangeCode(code).then(function(value) {
+
+          console.log('TIAGO exchange code');
 
           //obtain information about the user
           let infoTokenURL = i.userinfo + value.access_token;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
 
+            console.log('TIAGO info token url');
             let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
 
             let idTokenURL = i.tokenInfo + value.id_token;
@@ -238,8 +203,7 @@ let idp = {
             //obtain information about the user idToken
             sendHTTPRequest('GET', idTokenURL).then(function(idToken) {
 
-
-
+              console.log('TIAGO id token url');
               identityBundle.tokenIDJSON = idToken;
               identityBundle.expires = idToken.exp;
               identityBundle.email = idToken.email;
@@ -267,7 +231,6 @@ let idp = {
 
           reject(err);
         });
-        */
 
         //let assertion = "eyJ0b2tlbklEIjoiZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkltWmtZMkZoTmpNeU5EQmxaREk0WldGbE16Z3haREUyTkROa05HTmpPVE0xTm1Sak16azNaV0lpZlEuZXlKcGMzTWlPaUpvZEhSd2N6b3ZMMkZqWTI5MWJuUnpMbWR2YjJkc1pTNWpiMjBpTENKcFlYUWlPakUwT0RjMk1UQTNOemdzSW1WNGNDSTZNVFE0TnpZeE5ETTNPQ3dpWVhSZmFHRnphQ0k2SWtzMlQxRTRjMUp0TmpCdU4zUkdXbkZ3YTJkQ1RtY2lMQ0poZFdRaU9pSTRNRGd6TWprMU5qWXdNVEl0ZEhGeU9IRnZhREV4TVRrME1tZGtNbXRuTURBM2REQnpPR1l5TnpkeWIya3VZWEJ3Y3k1bmIyOW5iR1YxYzJWeVkyOXVkR1Z1ZEM1amIyMGlMQ0p6ZFdJaU9pSXhNVEU1TXpReU16TTJNekkxTWpBd056YzNORE1pTENKbGJXRnBiRjkyWlhKcFptbGxaQ0k2ZEhKMVpTd2lZWHB3SWpvaU9EQTRNekk1TlRZMk1ERXlMWFJ4Y2poeGIyZ3hNVEU1TkRKblpESnJaekF3TjNRd2N6aG1NamMzY205cExtRndjSE11WjI5dloyeGxkWE5sY21OdmJuUmxiblF1WTI5dElpd2libTl1WTJVaU9pSk9SR2R6VFZSTmQweEVSWE5OZWxGelRrUm5jMDFVVFhOT2FYYzFURVJSZVV4RVJYcE9RM2N6VFdsM2VFMTZVWE5OYWxFelRFUkZla3hFUlhOTlUzZDRURVJWYzAxRGQzcE1SRVY2VFVOM2VFeEVSVEZNUkVGelRrUm5jMDFVVFhkTVJFVnpUVlJCYzAxcGQzaE5la0Z6VFZOM2VFeEVRWE5OYWxWNVRFUkpNRXhFUlhwUFEzZDRUVlJGYzAxVVVUVk1SR00xVEVSTk1FeEVTWGxPUTNkNFRsUlJjMDFVVVhkTVJFbHpUV3BKZUV4RVJUVk1SRVUwVFVOM2VFOVVVWE5PZVhkNVRYcEZjMDFVVFRSTVJGRTFURVJGZVU5VGR6Qk5lWGQ0VDFOM2VVMXFSWE5OVkVrelRFUkpNVTFwZDNsUFUzY3lUbE4zTWs1NWQzaFBWRkZ6VFZSQmVFeEVUWGhNUkVWNlRVTjNlVTE2VVhOTlZHdDNURVJKYzAxcVRYbE1SRVV6VDBOM2VFNVVTWE5OYWtFeFRFUnJNRXhFU1hsT1EzZDVUWGwzZVUxNmEzTk5WR2N4VEVSRmVVeEVSWGRPZVhkNFRXbDNlVTFVUVhOT1JFbHpUWHBuYzAxVVl6Uk1SRWw2VFdsM2VVMVVWWE5OVkdkelRXcFZNRXhFU1RCUFUzZDVUWHBOYzAxcVRUSk1SRWt3VFZOM2VFMUVaM05OZWsxelRWUlpla3hFU1RCTlEzY3pUa04zZUU1RVVYTk5WRkZ6VGxSUmMwMVVhelJNUkVVeFRFUlJNRXhFUlRWUFEzYzBUVk4zTkU5VGQzaE9WRmx6VGxSamMwMVVVVEZNUkVrd1RsTjNlRTFFV1hOTlZGVTFURVJGZDA5VGQzaE9VM2Q0VGxSRmMwMVVSVEZNUkdNeVRFUkZkMDFUZDNoTlZHZHpUVlJaTVV4RVJYZFBRM2N5VFhsM2VFOVVXWE5OYWtrelRFUkZNazE1ZDNoUFZFRnpUVlJyZVV4RVJUUk5lWGQ0VFdwUmMwMVVTVEZNUkVVelQwTjNNVTVwZDNwTmFYYzFUbE4zTWs5RGR6Vk5lWGN5VDBOM01VMURkekJPZVhkNVRWUmpjMDE2U1hOTmFtdHpUbFJWYzAxVVFUQk1SRVUxVDBOM05VNURkM2hQVkdkelRWUmpjMDFxVVRCTVJFVjNUbmwzZVUxRVFYTk5WRTB6VEVSTk1FeEVSVFJOUTNkNFQwUnJjMDE1ZDNoUFZHdHpUVU4zZVUxNlFYTk5WRkUwVEVSSmQwMXBkM2hOZW10elRWUk5lRXhFUlRGUFUzZDRUWHBaYzAxVVdUQk1SRkUxVEVSRmVFNVRkM2hOZWtGelQwUkpjMDFxUVRSTVJFVTBUbE4zZVUxNlVYTk5ha1Y0VEVSRmVFNVRkM2xOYWxselRsUkJjMDFVUlhsTVJHZDVURVJKZDA1NWQzbE5WRWx6VG5wQmMwOVVhM05PYWtselRsUnJjMDU2YTNOT1JHdHpUVlJWTUV4RVJURk5lWGQ0VGtSUmMwMXFRWHBNUkVVMFRubDNlVTVFU1hOTlZGVXdURVJKTTB4RWF6Vk1SRVV5VGxOM2VFOVVRWE5OVkUxNlRFUkZNMDVEZDNsTmFrRnpUVlJKTVV4RVdYbE1SRVV4VDBOM2VVNVVSWE5OYWxFMVRFUlJNVXhFUlRGTlUzYzBUV2wzZVUxRWEzTk5WR3MxVEVSWk5VeEVaekpNUkVVMFRtbDNkMHhFUlhkTVJFVjRUbWwzZUUxVVNYTk5WR3Q0VEVSUk1reEVSWGhOUTNkNVRsTjNNRTlUZHpGTmVYY3hUV2wzZVUxRVNYTk5WRWt3VEVSSmVVNURkM2hQVkUxelRWUlpjMDFxVlhoTVJFVTBUbE4zZVUxNlZYTk5hazB5VEVSRk1VOURkM2xOVkd0elRtcFJjMDVVVFhOTlZHZDRURVJGTkU1VGQzaFBSRlZ6VFdwRmVVeEVhekJNUkVWNVRrTjNlRTE2VVhOTmFrMHhURVJGZVUxRGR6Vk9lWGQ0VFVScmMwMVVUWGRNUkVVeFQxTjNlVTVFUlhOTlZGVXhURVJWZVV4RVNYaFBRM2Q1VGtSSmMwMXFSWHBNUkUxelRWUkpkMHhFUlRGT1UzZDVUV3BGYzAxcVNUTk1SRlV6VEVSSk1reEVZek5NUkUxNlRFUm5la3hFU1hkTlUzYzFUWGwzZVUxcVZYTk9WRWx6VDBSVmMwMVVaM2RNUkVWNlRYbDNlRTE2WjNOT2VrbHpUV3BSZVV4RVNYbE5hWGQ1VGtSamMwOVVWWE5OVkdNelRFUkplVTU1ZDNoUFJGRnpUV3BOTlV4RVJYZE9hWGQ0VGtSVmMwMVVXVE5NUkVWNlRYbDNNVTE1ZDNsTVJFMXpUVk4zZDB4RVJUMGlMQ0psYldGcGJDSTZJbTl3Wlc1cFpIUmxjM1F4TUVCbmJXRnBiQzVqYjIwaWZRLlVOclFDeV91ckpFZXI3NS1JcVpucGhUNDhFeGtHMk9qUUxsTFRtY1RGTHlNZTd4X2tuWG5OSWFQTlJiTXFSaVY0ZE1xNjE2bXlXdEpvYlVwSVNiSnFaTC1mM09jb3I1LTc3cjVXRS1WV2U5RDlfNzRWbXRQamV2ZHI3dkpENlZRLTUyWlh4Wm1MeDdTc2dRWkt4UmJxSG44bzdEZ3ZhQ0tvWDlPS3IwWVB0OGRWa1E1VnpjRW50NkRkV1h1UUZrUVJUWUFLSXFvcnBBSm5veXZVR0lJNkFWTmZucmZVVk5oa0pHVzZHZGNKb1BCdkNDbXoxR0d0VWlITERSUDhPcDhnVlNkVkxZSnZxTG9KQjhvX0hxUTJWNlNjd1piQmVDMmpLVWdfWXZfd1d0OVJReXpwQW9lR3UtUlZ0R1B2ckdFYUVBdklFWHk3c1ZMaWNHMHluVXVXdyIsInRva2VuSURKU09OIjp7ImlzcyI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbSIsImlhdCI6IjE0ODc2MTA3NzgiLCJleHAiOiIxNDg3NjE0Mzc4IiwiYXRfaGFzaCI6Iks2T1E4c1JtNjBuN3RGWnFwa2dCTmciLCJhdWQiOiI4MDgzMjk1NjYwMTItdHFyOHFvaDExMTk0MmdkMmtnMDA3dDBzOGYyNzdyb2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTE5MzQyMzM2MzI1MjAwNzc3NDMiLCJlbWFpbF92ZXJpZmllZCI6InRydWUiLCJhenAiOiI4MDgzMjk1NjYwMTItdHFyOHFvaDExMTk0MmdkMmtnMDA3dDBzOGYyNzdyb2kuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJub25jZSI6Ik5EZ3NNVE13TERFc016UXNORGdzTVRNc05pdzVMRFF5TERFek5DdzNNaXd4TXpRc01qUTNMREV6TERFc01Td3hMRFVzTUN3ekxERXpNQ3d4TERFMUxEQXNORGdzTVRNd0xERXNNVEFzTWl3eE16QXNNU3d4TERBc01qVXlMREkwTERFek9Dd3hNVEVzTVRRNUxEYzVMRE0wTERJeU5Dd3hOVFFzTVRRd0xESXNNakl4TERFNUxERTRNQ3d4T1RRc055d3lNekVzTVRNNExEUTVMREV5T1N3ME15d3hPU3d5TWpFc01USTNMREkxTWl3eU9TdzJOU3cyTnl3eE9UUXNNVEF4TERNeExERXpNQ3d5TXpRc01Ua3dMRElzTWpNeUxERTNPQ3d4TlRJc01qQTFMRGswTERJeU5Dd3lNeXd5TXprc01UZzFMREV5TERFd055d3hNaXd5TVRBc05ESXNNemdzTVRjNExESXpNaXd5TVRVc01UZ3NNalUwTERJME9Td3lNek1zTWpNMkxESTBNU3d4TURnc016TXNNVFl6TERJME1DdzNOQ3d4TkRRc01UUXNOVFFzTVRrNExERTFMRFEwTERFNU9DdzRNU3c0T1N3eE5UWXNOVGNzTVRRMUxESTBOU3d4TURZc01UVTVMREV3T1N3eE5Td3hOVEVzTVRFMUxEYzJMREV3TVN3eE1UZ3NNVFkxTERFd09DdzJNeXd4T1RZc01qSTNMREUyTXl3eE9UQXNNVGt5TERFNE15d3hNalFzTVRJMUxERTNPQ3cxTml3ek1pdzVOU3cyT0N3NU15dzJPQ3cxTUN3ME55d3lNVGNzTXpJc01qa3NOVFVzTVRBMExERTVPQ3c1TkN3eE9UZ3NNVGNzTWpRMExERXdOeXd5TURBc01UTTNMRE0wTERFNE1Dd3hPRGtzTXl3eE9Ua3NNQ3d5TXpBc01UUTRMREl3TWl3eE16a3NNVE14TERFMU9Td3hNellzTVRZMExEUTVMREV4TlN3eE16QXNPRElzTWpBNExERTROU3d5TXpRc01qRXhMREV4TlN3eU1qWXNOVEFzTVRFeUxEZ3lMREl3Tnl3eU1USXNOekFzT1Rrc05qSXNOVGtzTnprc05Ea3NNVFUwTERFMU15d3hORFFzTWpBekxERTROeXd5TkRJc01UVTBMREkzTERrNUxERTJOU3d4T1RBc01UTXpMREUzTkN3eU1qQXNNVEkxTERZeUxERTFPQ3d5TlRFc01qUTVMRFExTERFMU1TdzRNaXd5TURrc01UazVMRFk1TERnMkxERTROaXd3TERFd0xERXhOaXd4TVRJc01Ua3hMRFEyTERFeE1Dd3lOU3cwT1N3MU15dzFNaXd5TURJc01USTBMREl5TkN3eE9UTXNNVFlzTWpVeExERTROU3d5TXpVc01qTTJMREUxT0N3eU1Ua3NOalFzTlRNc01UZ3hMREU0TlN3eE9EVXNNakV5TERrMExERXlOQ3d4TXpRc01qTTFMREV5TUN3NU55d3hNRGtzTVRNd0xERTFPU3d5TkRFc01UVTFMRFV5TERJeE9Dd3lORElzTWpFekxETXNNVEl3TERFMU5Td3lNakVzTWpJM0xEVTNMREkyTERjM0xETXpMRGd6TERJd01TdzVNeXd5TWpVc05USXNPRFVzTVRnd0xERXpNeXd4TXpnc056SXNNalF5TERJeU1pd3lORGNzT1RVc01UYzNMREl5Tnl3eE9EUXNNak01TERFd05pd3hORFVzTVRZM0xERXpNeXcxTXl3eUxETXNNU3d3TERFPSIsImVtYWlsIjoib3BlbmlkdGVzdDEwQGdtYWlsLmNvbSIsImFsZyI6IlJTMjU2Iiwia2lkIjoiZmRjYWE2MzI0MGVkMjhlYWUzODFkMTY0M2Q0Y2M5MzU2ZGMzOTdlYiJ9fQ==";
         //let idpBundle = {domain:'google.com',protocol:'OIDC'};
