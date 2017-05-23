@@ -64,12 +64,13 @@ class IMSIWProxyStub {
 				reject({name: 'IdPLoginError', loginUrl: requestUrl})
 			} else {
 				let accessToken = this._urlParser(hint, 'access_token')
+				let expires = Math.floor(Date.now() / 1000) + this._urlParser(hint, 'expires_in')
 				fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`)
 					.then(res_user => res_user.json())
 					.then(body => {
 						let infoToken = {picture: body.picture, email: body.email, family_name: body.family_name, given_name: body.given_name}
 						let assertion = btoa(JSON.stringify({tokenID: accessToken, email: body.email, id: body.id}))
-						let toResolve = {assertion: assertion, idp: {domain: domain, protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: accessToken, domain: domain }}
+						let toResolve = {info: { expires: expires }, assertion: assertion, idp: {domain: domain, protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: accessToken, domain: domain }}
 						console.log('RESOLVING THIS OBJECT', toResolve)
 						resolve(toResolve)
 					}).catch(reject)
