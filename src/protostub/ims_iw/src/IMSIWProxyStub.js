@@ -24,6 +24,31 @@ class IMSIWProxyStub {
 				this.requestToIdp(msg)
 			}
 		})
+
+		this._sendStatus('created')
+	}
+
+	_sendStatus(value, reason) {
+		let _this = this
+
+		console.log('[Slack Idp Proxy status changed] to ', value)
+
+		_this._state = value
+
+		let msg = {
+			type: 'update',
+			from: _this.runtimeProtoStubURL,
+			to: _this.runtimeProtoStubURL + '/status',
+			body: {
+				value: value
+			}
+		}
+
+		if (reason) {
+			msg.body.desc = reason
+		}
+
+		_this.messageBus.postMessage(msg)
 	}
 
 	/**
