@@ -1,4 +1,3 @@
-
 let microsoftInfo = {
   clientID:              '7e2f3589-4b38-4b1c-a321-c9251de00ef2',
   redirectURI:           location.origin,
@@ -54,6 +53,16 @@ let idp = {
 
       resolve({identity: idToken.email, contents: idToken.nonce});
 
+    });
+  },
+
+  /**
+  * Function to send a refresh token request 
+  */
+ 
+  refreshAssertion: (identity) => {
+    return new Promise(function(resolve, reject) {
+      resolve({error: "No refresh"});
     });
   },
 
@@ -126,6 +135,7 @@ class MicrosoftProxyStub {
        _this.requestToIdp(msg);
      }
    });
+   _this._sendStatus('created');
  }
 
   /**
@@ -152,6 +162,13 @@ class MicrosoftProxyStub {
           function(error) { _this.replyMessage(msg, error);}
         );
         break;
+      case 'refreshAssertion':
+        idp.refreshAssertion(params.identity).then(
+          function(value) { _this.replyMessage(msg, value);},
+
+          function(error) { _this.replyMessage(msg, error);}
+        );
+        break;
       default:
         break;
     }
@@ -171,6 +188,30 @@ class MicrosoftProxyStub {
 
     _this.messageBus.postMessage(message);
   }
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[GoogleIdpProxy.sendStatus] ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this.runtimeProtoStubURL,
+      to: _this.runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this.messageBus.postMessage(msg);
+  }
+
 }
 
 // export default IdpProxyProtoStub;
