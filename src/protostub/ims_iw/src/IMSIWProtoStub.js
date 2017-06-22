@@ -128,7 +128,7 @@ class IMSIWProtoStub {
 				this.dataObjectObserver = dataObjectObserver
 				dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
 				return dataObjectObserver
-			}).then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+			})//.then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
     }
 
     _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {
@@ -141,7 +141,7 @@ class IMSIWProtoStub {
 						console.log('sad', msg)
 						this._connection.invite(msg.to, dataObjectObserver)
 							.then((e) => this._returnSDP(e.body, dataObjectUrl, schema, msg.body.source, 'answer'))
-							.catch((e) => { console.log('fail', e); this.dataObjectObserver.delete() })
+							.catch((e) => { console.error('fail', e); this.dataObjectObserver.delete() })
 					})
 			} else if(dataObjectObserver.data.connectionDescription.type === 'answer') {
 				console.log('_onCallUpdate offer')
@@ -151,9 +151,10 @@ class IMSIWProtoStub {
     }
 
     _returnSDP(offer, dataObjectUrl, schema, source, type) {
+        console.log('offer received', offer)
         let dataObject = new Connection(dataObjectUrl)
 
-        this._syncher.create(schema, [source], dataObject, false, false, this._identity).then((objReporter) => {
+        this._syncher.create(schema, [source], dataObject, false, false, '', this._identity).then((objReporter) => {
 			this.dataObjectReporter = objReporter
             objReporter.onSubscription(function(event) {
                 console.info('-------- Receiver received subscription request --------- \n')
