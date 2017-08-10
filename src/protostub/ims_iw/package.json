@@ -11,10 +11,10 @@
     "init-setup": "npm install browserify babelify && npm install"
   },
   "browserify": {
-     "transform": [
-       "babelify"
-     ]
-   },
+    "transform": [
+      "babelify"
+    ]
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/reTHINK-project/dev-protostubs.git"
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "sdp-transform": "1.7.0",
-    "service-framework": "github:rethink-project/dev-service-framework#dev-p2p-interworking-merge",
-    "sip.js": "0.7.5"
+    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "sip.js": "^0.7.5"
   }
 }

@@ -30,9 +30,9 @@ let InviteServerContext = function(ua, request) {
   SIP.Utils.augment(this, SIP.Session, [ua.configuration.mediaHandlerFactory]);
 
   //Initialize Media Session
-  this.mediaHandler = this.mediaHandlerFactory(this, {
-    RTCConstraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
-  });
+  //this.mediaHandler = this.mediaHandlerFactory(this, {
+  //  RTCConstraints: {"optional": [{'DtlsSrtpKeyAgreement': 'true'}]}
+  //});
 
   // Check body and content type
   if ((!contentDisp && !hasDescription(request)) || (contentDisp && contentDisp.type === 'render')) {

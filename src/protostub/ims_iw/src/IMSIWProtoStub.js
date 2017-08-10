@@ -22,8 +22,9 @@
  **/
 
 import { Syncher } from 'service-framework/dist/Syncher'
-import Discovery from 'service-framework/dist/Discovery';
+import Discovery from 'service-framework/dist/Discovery'
 import ConnectionController from './ConnectionController'
+import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
 class Connection {
     constructor(dataObjectUrl) {
@@ -53,9 +54,11 @@ class IMSIWProtoStub {
 		if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter')
 		if (!miniBus) throw new Error('The bus is a required parameter')
 		if (!configuration) throw new Error('The configuration is a required parameter')
+		if (!configuration.domain) throw new Error('The domain is a required parameter')
 
 		this._runtimeProtoStubURL = runtimeProtoStubURL
 		this._discovery = new Discovery(runtimeProtoStubURL, miniBus)
+		this.schema = `hyperty-catalogue://catalogue.${configuration.domain}/.well-known/dataschema/Connection`
 		this._connection = new ConnectionController(configuration,
 				(to, offer) =>{
 					this._returnSDP(offer, this._runtimeProtoStubURL, this.schema, this.source, 'offer')
@@ -76,16 +79,46 @@ class IMSIWProtoStub {
 					}
 					break
 				  case 'init':
+					this._identity = new MessageBodyIdentity('anton',
+							'sip://rethink-project.eu/anton@rethink-project.eu',
+							'',
+							'anton',
+							'',
+							'rethink-project.eu')
+					console.log('myidentity', this._identity)
 					this._connection.connect(msg.body.identity.access_token)
 					this.source = msg.body.source
-					this.schema = msg.body.schema
 					break
 				  case 'delete':
 					this._connection.disconnect()
 					break
 				}
         })
+  this._sendStatus('created');
 	}
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[IMSIWProtostub status changed] to ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this._runtimeProtoStubURL,
+      to: _this._runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this._bus.postMessage(msg);
+  }
 
     _subscribe(msg) {
         let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
@@ -95,7 +128,7 @@ class IMSIWProtoStub {
 				this.dataObjectObserver = dataObjectObserver
 				dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
 				return dataObjectObserver
-			}).then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+			})//.then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
     }
 
     _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {
@@ -105,9 +138,10 @@ class IMSIWProtoStub {
 				console.log('_onCallUpdate offer')
 				this._connection.connect(msg.body.identity.access_token)
 					.then(() => {
+						console.log('sad', msg)
 						this._connection.invite(msg.to, dataObjectObserver)
 							.then((e) => this._returnSDP(e.body, dataObjectUrl, schema, msg.body.source, 'answer'))
-							.catch((e) => { console.log('fail', e); this.dataObjectObserver.delete() })
+							.catch((e) => { console.error('fail', e); this.dataObjectObserver.delete() })
 					})
 			} else if(dataObjectObserver.data.connectionDescription.type === 'answer') {
 				console.log('_onCallUpdate offer')
@@ -117,9 +151,10 @@ class IMSIWProtoStub {
     }
 
     _returnSDP(offer, dataObjectUrl, schema, source, type) {
+        console.log('offer received', offer)
         let dataObject = new Connection(dataObjectUrl)
 
-        this._syncher.create(schema, [source], dataObject).then((objReporter) => {
+        this._syncher.create(schema, [source], dataObject, false, false, '', this._identity).then((objReporter) => {
 			this.dataObjectReporter = objReporter
             objReporter.onSubscription(function(event) {
                 console.info('-------- Receiver received subscription request --------- \n')

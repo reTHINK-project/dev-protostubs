@@ -1,6 +1,45 @@
 @startuml
 
+pctor User
 participant Hyperty
+participant Core
+participant IdpProxy
+participant Protostub
+control kamailio
+database CredentialStorage
+database "Google (Identity Provider)"
+
+Hyperty -> Core: call a sip address
+
+Core -> IdpProxy: Load
+group authentication
+activate Core
+group get identity
+IdpProxy -> "Google (Identity Provider)": getIdentity
+User <- "Google (Identity Provider)": askIdentity
+User -> "Google (Identity Provider)": authenticate
+IdpProxy <- "Google (Identity Provider)": returnAuthToken
+IdpProxy -> "CredentialStorage": getCredentials
+IdpProxy <- "CredentialStorage": returns credential
+Core <-- IdpProxy: identity
+end
+deactivate Core
+
+Core -> Protostub: Load with identity
+activate Core
+Protostub -> kamailio : Register
+"Google (Identity Provider)" <- kamailio: validate assert
+end
+Protostub <--> kamailio: establish secure channel
+deactivate Core
+
+Core -> Protostub: deliver hyperty''s messages
+Protostub --> Core: send sip user sdp
+Core -> Hyperty: deliver Protostub''s messages
+
+Hyperty <--> Protostub: establish the peerconnection
+
+@endumlarticipant Hyperty
 participant Core
 participant IdpProxy
 participant Protostub

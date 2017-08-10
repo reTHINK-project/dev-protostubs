@@ -145,7 +145,7 @@ let idp = {
 
             let assertion = btoa(JSON.stringify({tokenID: value.access_token, email: profile.email, id: info.user.id}));
 
-            let toResolve = {assertion: assertion, idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: value.access_token, domain: 'slack.com' }};
+            let toResolve = {assertion: assertion, idp: {domain: 'slack.com', protocol: 'OAuth 2.0'}, infoToken: infoToken, interworking: {access_token: value.access_token, domain: 'slack.com' }, info : {expires: 3153600000}};
             console.log('RESOLVING THIS OBJECT', toResolve);
             resolve(toResolve);
           }, function(error) {
@@ -184,6 +184,7 @@ class SlackProxyStub {
         _this.requestToIdp(msg);
       }
     });
+    _this._sendStatus('created');
   }
 
   /**
@@ -227,6 +228,29 @@ class SlackProxyStub {
     let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to, body: {code: 200, value: value}};
 
     _this.messageBus.postMessage(message);
+  }
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[Slack Idp Proxy status changed] to ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this.runtimeProtoStubURL,
+      to: _this.runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this.messageBus.postMessage(msg);
   }
 }
 
