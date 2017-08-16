@@ -1,0 +1,11 @@
+{
+  "language": "javascript",
+  "description": "IDPProxy slack description",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "slack.com"
+}

@@ -4,7 +4,8 @@
   "signature": "",
   "configuration": {},
   "constraints": {
-    "browser": true
+    "browser": true,
+    "node": false
   },
   "interworking": true,
   "objectName": "slack.slack.com"
