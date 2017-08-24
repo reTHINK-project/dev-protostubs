@@ -1,0 +1,13 @@
+{
+  "language": "javascript",
+  "description": "Protostub to exchange messages with vertx",
+  "signature": "",
+  "configuration": {
+    "url": "wss://msg-node.hysmart.rethink.ptinovacao.pt/localhost/ws"
+  },
+  "constraints": {
+    "node": true
+  },
+  "interworking": true,
+  "objectName": "default"
+}
