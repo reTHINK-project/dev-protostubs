@@ -46,7 +46,7 @@
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#dev-p2p-interworking-merge",
+    "service-framework": "github:rethink-project/dev-service-framework#develop",
     "webrtc-adapter": "^3.1.0"
   }
 }
