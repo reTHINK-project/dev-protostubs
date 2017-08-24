@@ -122,7 +122,7 @@ class P2PRequesterStub {
   _sendChannelMsg(msg) {
     if ( this._filter(msg) ) {
       if ( this._connectionController ) {
-        this._connectionController.sendMessage(JSON.stringify(msg));
+        this._connectionController.sendMessage(msg);
       }
     }
   }
@@ -162,7 +162,7 @@ class P2PRequesterStub {
   _deliver(msg) {
     console.log("+[P2PrequesterStub] posting message to msg bus: ", msg);
 
-    let message = JSON.parse(msg.data);
+    //let message = JSON.parse(msg.data);
 
     if (!message.body) msg.body = {};
 

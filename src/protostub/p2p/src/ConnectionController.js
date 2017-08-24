@@ -22,6 +22,8 @@
  **/
 
 import 'webrtc-adapter';
+import P2PDataReceiver from './P2PDataReceiver';
+import P2PDataSender from './P2PDataSender';
 
 /**
   The ConnectionController has a generic design so that it can be used in both stubs.
@@ -48,6 +50,8 @@ class ConnectionController {
     this._dataChannel;
     this._onStatusUpdate;
     this._remoteRuntimeURL;
+    this._receivers = {};// currently active P2PDataReceivers
+    _this._maxSize = 16384;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -88,7 +92,7 @@ class ConnectionController {
   **/
   observe(invitationEvent) {
     this._peerUrl = invitationEvent.from;
-    this._remoteRuntimeURL = invitationEvent.value.runtimeURL;
+    this._remoteRuntimeURL = invitationEvent.value.runtime;
 
     return new Promise((resolve, reject) => {
 
@@ -176,9 +180,18 @@ class ConnectionController {
     }
 
     sendMessage(m) {
+      let _this = this;
       // todo: only send if data channel is connected
-      console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
-      this._dataChannel.send(m);
+      console.log("[P2P-ConnectionController] --> starting sending data to: ", m.to);
+
+      let sender = new P2PDataSender(m, _this._dataChannel);
+      sender.send();
+      sender.onProgress( (progress) => {
+        console.debug('[P2P-ConnectionController] sending progress: ', progress*100);
+      });
+      sender.onSent( () => {
+        console.debug('[P2P-ConnectionController] data was sent to ', m.to);
+      });
     }
 
     cleanup() {
@@ -191,6 +204,8 @@ class ConnectionController {
     }
 
     _addDataChannelListeners() {
+      let _this = this;
+
       this._dataChannel.onopen = () => {
         this._onDataChannelOpen();
       };
@@ -198,9 +213,49 @@ class ConnectionController {
         this._onDataChannelError(e);
       };
       this._dataChannel.onmessage = (m) => {
-        console.log("[P2P-ConnectionController] <-- incoming msg: ", m);
-        if (this._onDataChannelMessage)
-          this._onDataChannelMessage(m);
+
+        let packet = JSON.parse(msg.data);
+        console.log("[P2P-ConnectionController] <-- incoming msg from: ", packet.data.from);
+
+        if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receive(packet); // received packet in from an ongoing receiver session
+        else {
+          if (packet.missing === 0) {
+            let message = {
+              from: packet.from,
+              to: packet.to,
+              id: packet.id,
+              type: packet.type,
+              body: JSON.parse(packet.body)
+            }
+
+            this._onDataChannelMessage(message); // received packet is for a complete reTHINK message
+          }
+          else {
+            let newReceiver = new P2PDataReceiver(packet);
+
+            newReceiver.onReceived( (message, latency) => {
+              console.debug('[P2P-ConnectionController] complete message received from '+ message.from+ ' latency: ', latency);
+              _this._onDataChannelMessage(message);
+              delete _this._receivers[packet.uuid]);
+            });
+
+            newReceiver.onProgress( (progress) => {
+              console.debug('[P2P-ConnectionController] data reception progress: ', progress);
+              if newReceiver.type === 'response' {
+                let provisionalReply = {
+                  from: newReceiver.from,
+                  to: newReceiver.to,
+                  id: newReceiver.id,
+                  type: newReceiver.type,
+                  body: { code:183, desc:'Message reception is progressing ' + progress}
+                }
+                _this._syncher._bus.postMessage(provisionalReply);
+              }
+            });
+
+            _this._receivers[packet.uuid]) = newReceiver;
+        }
+
       };
       this._dataChannel.onclose = () => {
         this._onDataChannelClose();
