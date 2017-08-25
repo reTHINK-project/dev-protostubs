@@ -21,11 +21,9 @@ class P2PDataSender {
   }
 
   send() {
-      let uuid = Math.random() * new Date().getTime()).toString(36).replace(/\./g, '-');
+      let uuid = (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '-');
 
       let sendingTime = new Date().getTime();
-
-      sendData(_this._body);
 
       let packet = {
           uuid: uuid,
@@ -35,6 +33,11 @@ class P2PDataSender {
           type: _this._msgObject.type,
           sendingTime: sendingTime
       };
+
+      console.log('[P2PDataSender] start sending to: ', packet.to)
+
+      sendData(_this._body);
+
 
         function sendData(initialData, data) {
           let _this = this;

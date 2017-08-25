@@ -182,15 +182,15 @@ class ConnectionController {
     sendMessage(m) {
       let _this = this;
       // todo: only send if data channel is connected
-      console.log("[P2P-ConnectionController] --> starting sending data to: ", m.to);
+      console.log("[P2P-ConnectionController] --> starting sending data to ", m.to);
 
       let sender = new P2PDataSender(m, _this._dataChannel);
       sender.send();
       sender.onProgress( (progress) => {
-        console.debug('[P2P-ConnectionController] sending progress: ', progress*100);
+        console.debug('[P2P-ConnectionController] sending progress ', progress);
       });
       sender.onSent( () => {
-        console.debug('[P2P-ConnectionController] data was sent to ', m.to);
+        console.debug('[P2P-ConnectionController] data was sent to:', m.to);
       });
     }
 
@@ -234,14 +234,14 @@ class ConnectionController {
             let newReceiver = new P2PDataReceiver(packet);
 
             newReceiver.onReceived( (message, latency) => {
-              console.debug('[P2P-ConnectionController] complete message received from '+ message.from+ ' latency: ', latency);
+              console.debug('[P2P-ConnectionController] complete message received from: ' + message.from + ' latency: ' + latency);
               _this._onDataChannelMessage(message);
-              delete _this._receivers[packet.uuid]);
+              delete _this._receivers[packet.uuid];
             });
 
             newReceiver.onProgress( (progress) => {
               console.debug('[P2P-ConnectionController] data reception progress: ', progress);
-              if newReceiver.type === 'response' {
+              if (newReceiver.type === 'response') {
                 let provisionalReply = {
                   from: newReceiver.from,
                   to: newReceiver.to,
@@ -253,7 +253,8 @@ class ConnectionController {
               }
             });
 
-            _this._receivers[packet.uuid]) = newReceiver;
+            _this._receivers[packet.uuid] = newReceiver;
+          }
         }
 
       };
@@ -267,7 +268,7 @@ class ConnectionController {
       this._dataObjectObserver = dataObjectObserver;
 
       let peerData = this._dataObjectObserver.data;
-      console.info("[P2P-ConnectionController]: _setupObserver Peer Data:", peerData);
+      console.info("[P2P-ConnectionController]: _setupObserver Peer Data: ", peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {
         this._processPeerInformation(peerData.connectionDescription);

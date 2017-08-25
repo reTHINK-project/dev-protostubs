@@ -22,7 +22,7 @@ class P2PDataReceiver {
 
   receive(packet) {
 
-    console.debug('[P2PDataReceiver] receive: ', packet)
+    console.debug('[P2PDataReceiver.receive] : ', packet)
 
     _this._body.push(packet.data);
     if (packet.missing === 0) {
@@ -43,13 +43,9 @@ class P2PDataReceiver {
         _this._onReceived(message, latency);
 
     } else {
-      if (_this._onProgress) _this._onProgress(100*parseInt(packet.missing/_this._totalPackates);
+      if (_this._onProgress) _this._onProgress(100*parseInt(packet.missing/_this._totalPackates));
     }
-}
 
-return {
-    receive: receive
-};
   }
 
   onReceived(callback) {
@@ -61,4 +57,4 @@ return {
   }
 
 }
-export default P2PDataSender;
+export default P2PDataReceiver;
