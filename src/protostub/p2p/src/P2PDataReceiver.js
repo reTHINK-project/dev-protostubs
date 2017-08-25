@@ -23,11 +23,9 @@ class P2PDataReceiver {
   receive(packet) {
     let _this = this;
 
-    console.debug('[P2PDataReceiver.receive] : ', packet)
 
     _this._body.push(packet.data);
     if (packet.missing === 0) {
-      console.debug('[P2PDataReceiver.receive] completed message body : ', _this._body);
 
         let fullBody =  JSON.parse(_this._body.join(''));
 

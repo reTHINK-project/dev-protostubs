@@ -57,8 +57,6 @@ class P2PDataSender {
                 packet.last = true;
             }
 
-            console.log('[P2PDataSender] sending ', packet);
-
             _this._channel.send(JSON.stringify(packet));
 
             if (_this._onProgress) _this._onProgress(100 * parseInt(packet.missing / _this._totalSize));
