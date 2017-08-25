@@ -21,6 +21,8 @@ class P2PDataSender {
   }
 
   send() {
+    let _this = this;
+
       let uuid = (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '-');
 
       let sendingTime = new Date().getTime();
@@ -36,16 +38,17 @@ class P2PDataSender {
 
       console.log('[P2PDataSender] start sending to: ', packet.to)
 
-      sendData(_this._body);
+      _this._sendData(packet, _this._body);
+    }
 
 
-        function sendData(initialData, data) {
+      _sendData(packet, initialData, data) {
           let _this = this;
 
             if (initialData) {
                 data = initialData;
-                packet.missing = parseInt(data.length / _this._packetSize); // number of packets to be sent missing
             }
+            packet.missing = parseInt(data.length / _this._packetSize); // number of packets to be sent missing
 
             if (data.length > _this._packetSize) {
                 packet.data = data.slice(0, _this._packetSize);
@@ -53,6 +56,8 @@ class P2PDataSender {
                 packet.data = data;
                 packet.last = true;
             }
+
+            console.log('[P2PDataSender] sending ', packet);
 
             _this._channel.send(JSON.stringify(packet));
 
@@ -62,17 +67,20 @@ class P2PDataSender {
 
             if (dataToTransfer.length) {
                 setTimeout(function() {
-                    sendData(null, dataToTransfer);
+                    _this._sendData(packet, null, dataToTransfer);
                 }, 100); //TODO: adapt according to browser used see: https://github.com/muaz-khan/WebRTC-Experiment/blob/master/DataChannel/DataChannel.js#L329
             } else if (_this._onSent) _this._onSent();
         }
-  }
 
   onSent(callback) {
+    let _this = this;
+
     _this._onSent = callback;
   }
 
   onProgress(callback) {
+    let _this = this;
+
     _this.onProgress = callback;
   }
 

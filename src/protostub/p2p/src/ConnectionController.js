@@ -51,7 +51,7 @@ class ConnectionController {
     this._onStatusUpdate;
     this._remoteRuntimeURL;
     this._receivers = {};// currently active P2PDataReceivers
-    _this._maxSize = 16384;
+    this._maxSize = 16384;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -184,14 +184,17 @@ class ConnectionController {
       // todo: only send if data channel is connected
       console.log("[P2P-ConnectionController] --> starting sending data to ", m.to);
 
-      let sender = new P2PDataSender(m, _this._dataChannel);
-      sender.send();
-      sender.onProgress( (progress) => {
-        console.debug('[P2P-ConnectionController] sending progress ', progress);
-      });
-      sender.onSent( () => {
-        console.debug('[P2P-ConnectionController] data was sent to:', m.to);
-      });
+      if (_this._dataChannel.readyState != 'open') throw Error('[P2PStub.ConnectionController.sendMessage] data channel is not opened. droping message: ', m);
+
+        let sender = new P2PDataSender(m, _this._dataChannel);
+        sender.send();
+        sender.onProgress( (progress) => {
+          console.debug('[P2P-ConnectionController] sending progress ', progress);
+        });
+        sender.onSent( () => {
+          console.debug('[P2P-ConnectionController] data was sent to:', m.to);
+        });
+
     }
 
     cleanup() {
@@ -214,8 +217,11 @@ class ConnectionController {
       };
       this._dataChannel.onmessage = (m) => {
 
-        let packet = JSON.parse(msg.data);
-        console.log("[P2P-ConnectionController] <-- incoming msg from: ", packet.data.from);
+        let packet = JSON.parse(m.data);
+
+        if (!packet.from) throw Error('[P2P-ConnectionController] onmessage is invalid', packet);
+
+        console.log("[P2P-ConnectionController] <-- incoming msg : ", packet);
 
         if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receive(packet); // received packet in from an ongoing receiver session
         else {
@@ -225,7 +231,7 @@ class ConnectionController {
               to: packet.to,
               id: packet.id,
               type: packet.type,
-              body: JSON.parse(packet.body)
+              body: JSON.parse(packet.data)
             }
 
             this._onDataChannelMessage(message); // received packet is for a complete reTHINK message

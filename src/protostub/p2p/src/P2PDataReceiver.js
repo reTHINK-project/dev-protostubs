@@ -13,20 +13,23 @@ class P2PDataReceiver {
     let _this = this;
 
     _this._from = init.from;
-    _this.to = init.to;
+    _this._to = init.to;
     _this._id = init.id;
     _this._type = init.type;
-    _this._body = [init.body];
+    _this._body = [init.data];
     _this._totalPackates = init.missing+1;
   }
 
   receive(packet) {
+    let _this = this;
 
     console.debug('[P2PDataReceiver.receive] : ', packet)
 
     _this._body.push(packet.data);
     if (packet.missing === 0) {
-        _this._body =  JSON.parse(_this._body.join(''));
+      console.debug('[P2PDataReceiver.receive] completed message body : ', _this._body);
+
+        let fullBody =  JSON.parse(_this._body.join(''));
 
         // latency detection
         let receivingTime = new Date().getTime();
@@ -37,7 +40,7 @@ class P2PDataReceiver {
           to: _this._to,
           id: _this._id,
           type: _this._type,
-          body: _this._body
+          body: fullBody
         }
 
         _this._onReceived(message, latency);
@@ -49,10 +52,12 @@ class P2PDataReceiver {
   }
 
   onReceived(callback) {
+    let _this = this;
     _this._onReceived = callback;
   }
 
   onProgress(callback) {
+    let _this = this;
     _this.onProgress = callback;
   }
 
