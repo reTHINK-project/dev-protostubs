@@ -1,0 +1,11 @@
+{
+  "language": "javascript",
+  "description": "P2P Handler Protostub ",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": false,
+  "objectName": "P2PHandlerProtoStub"
+}
