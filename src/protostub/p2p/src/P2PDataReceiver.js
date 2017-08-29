@@ -25,7 +25,7 @@ class P2PDataReceiver {
 
 
     _this._body.push(packet.data);
-    if (packet.missing === 0) {
+    if (packet.last) {
 
         let fullBody =  JSON.parse(_this._body.join(''));
 
@@ -44,7 +44,9 @@ class P2PDataReceiver {
         _this._onReceived(message, latency);
 
     } else {
-      if (_this._onProgress) _this._onProgress(100*parseInt(packet.missing/_this._totalPackates));
+      console.debug('[P2PDataReceiver] progressing: ', packet.progress);
+      //TODO: limit the rate of provisional responses to avoid overload the runtime.
+      //if (_this._onProgress) _this._onProgress(parseInt(100*packet.progress.value/packet.progress.max));
     }
 
   }
@@ -56,7 +58,7 @@ class P2PDataReceiver {
 
   onProgress(callback) {
     let _this = this;
-    _this.onProgress = callback;
+    _this._onProgress = callback;
   }
 
 }
