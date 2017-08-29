@@ -8,6 +8,6 @@
   "constraints": {
     "node": true
   },
-  "interworking": true,
+  "interworking": false,
   "objectName": "default"
 }
