@@ -164,10 +164,10 @@ class P2PRequesterStub {
 
     //let message = JSON.parse(msg.data);
 
-    if (!message.body) msg.body = {};
+    if (!msg.body) msg.body = {};
 
-    message.body.via = this._runtimeProtoStubURL;
-    this._bus.postMessage(message);
+    msg.body.via = this._runtimeProtoStubURL;
+    this._bus.postMessage(msg);
   }
 
 }

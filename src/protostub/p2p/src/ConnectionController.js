@@ -29,6 +29,7 @@ import P2PDataSender from './P2PDataSender';
   The ConnectionController has a generic design so that it can be used in both stubs.
   It manages a single DataChannel, it is not requesting access to media input, i.e.
   does not have audio/video streams.
+  TODO: use the configuration constructor input parameter to also pass DataChannel settings including _maxSize and bufferedAmountLowThreshold
 **/
 class ConnectionController {
   constructor(myUrl, syncher, configuration, caller) {
@@ -51,7 +52,8 @@ class ConnectionController {
     this._onStatusUpdate;
     this._remoteRuntimeURL;
     this._receivers = {};// currently active P2PDataReceivers
-    _this._maxSize = 16384;
+    this._maxSize = 16384;
+    this._threshold = 0;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -120,7 +122,8 @@ class ConnectionController {
       //  if we are the caller (i.e. no reporter object present yet, initalize the creation of the DataChannel)
       if ( this._caller ) {
         console.log("[P2P-ConnectionController]: we are in caller role --> createDataChannel ...");
-        this._dataChannel = this._peerConnection.createDataChannel("P2PChannel", {reliable: false});
+        this._dataChannel = this._peerConnection.createDataChannel("P2PChannel");
+        this._dataChannel.bufferedAmountLowThreshold = this._threshold;
         console.log("P2P: datachannel object", this._dataChannel);
         this._addDataChannelListeners();
       }
@@ -184,14 +187,17 @@ class ConnectionController {
       // todo: only send if data channel is connected
       console.log("[P2P-ConnectionController] --> starting sending data to ", m.to);
 
-      let sender = new P2PDataSender(m, _this._dataChannel);
-      sender.send();
-      sender.onProgress( (progress) => {
-        console.debug('[P2P-ConnectionController] sending progress ', progress);
-      });
-      sender.onSent( () => {
-        console.debug('[P2P-ConnectionController] data was sent to:', m.to);
-      });
+      if (_this._dataChannel.readyState != 'open') throw Error('[P2PStub.ConnectionController.sendMessage] data channel is not opened. droping message: ', m);
+
+        let sender = new P2PDataSender(m, _this._dataChannel);
+        sender.sendData();
+        sender.onProgress( (progress) => {
+          console.debug('[P2P-ConnectionController] sending progress ', progress);
+        });
+        sender.onSent( () => {
+          console.debug('[P2P-ConnectionController] data was sent to:', m.to);
+        });
+
     }
 
     cleanup() {
@@ -214,18 +220,25 @@ class ConnectionController {
       };
       this._dataChannel.onmessage = (m) => {
 
-        let packet = JSON.parse(msg.data);
-        console.log("[P2P-ConnectionController] <-- incoming msg from: ", packet.data.from);
+        let _this = this;
+
+        let packet = JSON.parse(m.data);
+
+        _this.packet = packet;
+
+        if (!packet.from) throw Error('[P2P-ConnectionController] onmessage is invalid', packet);
+
+        console.debug("[P2P-ConnectionController] <-- incoming msg from : ", packet.from);
 
         if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receive(packet); // received packet in from an ongoing receiver session
         else {
-          if (packet.missing === 0) {
+          if (packet.last) {
             let message = {
               from: packet.from,
               to: packet.to,
               id: packet.id,
               type: packet.type,
-              body: JSON.parse(packet.body)
+              body: JSON.parse(packet.data)
             }
 
             this._onDataChannelMessage(message); // received packet is for a complete reTHINK message
@@ -240,15 +253,15 @@ class ConnectionController {
             });
 
             newReceiver.onProgress( (progress) => {
-              console.debug('[P2P-ConnectionController] data reception progress: ', progress);
-              if (newReceiver.type === 'response') {
+              if (packet.type === 'response') {
                 let provisionalReply = {
-                  from: newReceiver.from,
-                  to: newReceiver.to,
-                  id: newReceiver.id,
-                  type: newReceiver.type,
+                  from: packet.from,
+                  to: packet.to,
+                  id: packet.id,
+                  type: packet.type,
                   body: { code:183, desc:'Message reception is progressing ' + progress}
-                }
+                };
+                console.debug('[P2P-ConnectionController] onprogress sending provisional response: ', provisionalReply);
                 _this._syncher._bus.postMessage(provisionalReply);
               }
             });

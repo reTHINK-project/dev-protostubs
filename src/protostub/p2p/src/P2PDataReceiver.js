@@ -13,20 +13,21 @@ class P2PDataReceiver {
     let _this = this;
 
     _this._from = init.from;
-    _this.to = init.to;
+    _this._to = init.to;
     _this._id = init.id;
     _this._type = init.type;
-    _this._body = [init.body];
+    _this._body = [init.data];
     _this._totalPackates = init.missing+1;
   }
 
   receive(packet) {
+    let _this = this;
 
-    console.debug('[P2PDataReceiver.receive] : ', packet)
 
     _this._body.push(packet.data);
-    if (packet.missing === 0) {
-        _this._body =  JSON.parse(_this._body.join(''));
+    if (packet.last) {
+
+        let fullBody =  JSON.parse(_this._body.join(''));
 
         // latency detection
         let receivingTime = new Date().getTime();
@@ -37,23 +38,27 @@ class P2PDataReceiver {
           to: _this._to,
           id: _this._id,
           type: _this._type,
-          body: _this._body
+          body: fullBody
         }
 
         _this._onReceived(message, latency);
 
     } else {
-      if (_this._onProgress) _this._onProgress(100*parseInt(packet.missing/_this._totalPackates));
+      console.debug('[P2PDataReceiver] progressing: ', packet.progress);
+      //TODO: limit the rate of provisional responses to avoid overload the runtime.
+      //if (_this._onProgress) _this._onProgress(parseInt(100*packet.progress.value/packet.progress.max));
     }
 
   }
 
   onReceived(callback) {
+    let _this = this;
     _this._onReceived = callback;
   }
 
   onProgress(callback) {
-    _this.onProgress = callback;
+    let _this = this;
+    _this._onProgress = callback;
   }
 
 }
