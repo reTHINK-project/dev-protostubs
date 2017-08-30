@@ -75,6 +75,7 @@ class IMSIWProtoStub {
 				switch (msg.type) {
 				  case 'create':
 					if(this._filter(msg) && msg.body.schema) {
+            console.log('subscribe: ', msg.body.schema)
 						this._subscribe(msg)
 					}
 					break
@@ -126,9 +127,10 @@ class IMSIWProtoStub {
         this._syncher.subscribe(this.schema, dataObjectUrl)
 			.then(dataObjectObserver => {
 				this.dataObjectObserver = dataObjectObserver
-				dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+        console.log('dataObjectObserver:' , dataObjectObserver);
+				// dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
 				return dataObjectObserver
-			})//.then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+			}).then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
     }
 
     _onCall(dataObjectObserver, dataObjectUrl, schema, msg) {

@@ -1,0 +1,19 @@
+{
+  "language": "javascript",
+  "description": "Description of IMSIWProtoStub",
+  "objectName": "sip.rethink-project.eu",
+  "configuration": {
+    "credential_server": "https://ims.rethink-project.eu/credential",
+    "domain": "localhost"
+  },
+  "messageSchemas": "",
+  "dataObjects": [
+    "hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Connection"
+  ],
+  "signature": "",
+  "accessControlPolicy": "somePolicy",
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true
+}
