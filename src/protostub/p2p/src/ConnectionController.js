@@ -123,6 +123,7 @@ class ConnectionController {
       if ( this._caller ) {
         console.log("[P2P-ConnectionController]: we are in caller role --> createDataChannel ...");
         this._dataChannel = this._peerConnection.createDataChannel("P2PChannel");
+        this._dataChannel.binaryType = 'arraybuffer';
         this._dataChannel.bufferedAmountLowThreshold = this._threshold;
         console.log("P2P: datachannel object", this._dataChannel);
         this._addDataChannelListeners();
@@ -189,8 +190,12 @@ class ConnectionController {
 
       if (_this._dataChannel.readyState != 'open') throw Error('[P2PStub.ConnectionController.sendMessage] data channel is not opened. droping message: ', m);
 
-        let sender = new P2PDataSender(m, _this._dataChannel);
+      //TODO: use queue to manage concurrency with a limit length and a single sender instance
+
+      let sender = new P2PDataSender(m, _this._dataChannel);
+
         sender.sendData();
+
         sender.onProgress( (progress) => {
           console.debug('[P2P-ConnectionController] sending progress ', progress);
         });
@@ -222,59 +227,72 @@ class ConnectionController {
 
         let _this = this;
 
-        let packet = JSON.parse(m.data);
+        let data = m.data;
 
-        _this.packet = packet;
+        //TODO: use a single P2PDataReceiver instance
+        // checks if m.data is text and if yes if it is an initial packet.
+        // if an initial packet with dataSize = 0, just process it
+        // if an initial packet with dataSize != 0 set it at  P2PDataReceiver to handle it
+        // if not an initial packet ask the P2PDataReceiver to handle it
 
-        if (!packet.from) throw Error('[P2P-ConnectionController] onmessage is invalid', packet);
+        if ( typeof data != 'object') _this._onTextMessage(data);//this is not a binary packet
+        else _this._onBinaryMessage(data);
 
-        console.debug("[P2P-ConnectionController] <-- incoming msg from : ", packet.from);
-
-        if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receive(packet); // received packet in from an ongoing receiver session
-        else {
-          if (packet.last) {
-            let message = {
-              from: packet.from,
-              to: packet.to,
-              id: packet.id,
-              type: packet.type,
-              body: JSON.parse(packet.data)
-            }
-
-            this._onDataChannelMessage(message); // received packet is for a complete reTHINK message
-          }
-          else {
-            let newReceiver = new P2PDataReceiver(packet);
-
-            newReceiver.onReceived( (message, latency) => {
-              console.debug('[P2P-ConnectionController] complete message received from: ' + message.from + ' latency: ' + latency);
-              _this._onDataChannelMessage(message);
-              delete _this._receivers[packet.uuid];
-            });
-
-            newReceiver.onProgress( (progress) => {
-              if (packet.type === 'response') {
-                let provisionalReply = {
-                  from: packet.from,
-                  to: packet.to,
-                  id: packet.id,
-                  type: packet.type,
-                  body: { code:183, desc:'Message reception is progressing ' + progress}
-                };
-                console.debug('[P2P-ConnectionController] onprogress sending provisional response: ', provisionalReply);
-                _this._syncher._bus.postMessage(provisionalReply);
-              }
-            });
-
-            _this._receivers[packet.uuid] = newReceiver;
-          }
-        }
 
       };
       this._dataChannel.onclose = () => {
         this._onDataChannelClose();
       };
 
+    }
+
+    _onTextMessage(data) {
+      let _this = this;
+      let packet = JSON.parse(data);
+      if (!packet.uuid) throw Error('[P2P-ConnectionController.onmessage] message is invalid', packet);
+
+      if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session
+      else { //this is an initial packet
+        if (!packet.data || !packet.data.textMessage || !packet.data.textMessage.from) throw Error('[P2P-ConnectionController.onmessage] initial packet is invalid', packet);
+        console.debug("[P2P-ConnectionController] <-- incoming msg from : ", packet.data.textMessage.from);
+        if (packet.data.dataSize === 0) {//  received packet is for a complete reTHINK message
+          let message = packet.data.textMessage;
+          this._onDataChannelMessage(message);
+
+        } else  {// initial packet from a message with Hyperty Resource content that will be sent in next messages. A new P2PDataReceiver session is needed
+          let newReceiver = new P2PDataReceiver(packet.data);
+
+          newReceiver.onReceived( (message, latency) => {
+            console.debug('[P2P-ConnectionController] complete message received from: ' + message.from + ' latency: ' + latency);
+            _this._onDataChannelMessage(message);
+            delete _this._receivers[packet.uuid];
+          });
+
+          newReceiver.onProgress( (progress) => {
+          /*  if (packet.type === 'response') {
+              let provisionalReply = {
+                from: packet.from,
+                to: packet.to,
+                id: packet.id,
+                type: packet.type,
+                body: { code:183, desc:'Message reception is progressing ' + progress}
+              };
+              console.debug('[P2P-ConnectionController] onprogress sending provisional response: ', provisionalReply);
+              _this._syncher._bus.postMessage(provisionalReply);
+            }*/
+          });
+
+          _this._receivers[packet.uuid] = newReceiver;
+        }
+      }
+    }
+
+    _onBinaryMessage(data) {
+      let _this = this;
+      let uuid = String.fromCharCode.apply(null, new Uint16Array( data.slice(0,24) ));// extract uuid from ArrayBuffer and convert to string
+
+      if (!_this._receivers[uuid]) throw Error('[P2P-ConnectionController.onBinaryMessage] invalid binary packet', data);
+      _this._receivers[uuid].receiveBinary(data.slice(24));
     }
 
     _setupObserver(dataObjectObserver) {
