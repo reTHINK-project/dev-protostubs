@@ -364,13 +364,13 @@ class ConnectionController {
     _onDataChannelError(e) {
       console.log('[P2P-ConnectionController] DataChannel error: ', e);
       if ( this._onStatusUpdate )
-        this._onStatusUpdate("disconnected", "" + e);
+        this._onStatusUpdate("disconnected", "" + e, this._remoteRuntimeURL);
     }
 
     _onDataChannelClose() {
       console.log('[P2P-ConnectionController] DataChannel closed: ');
       if ( this._onStatusUpdate )
-        this._onStatusUpdate("disconnected", "closed");
+        this._onStatusUpdate("disconnected", "closed", this._remoteRuntimeURL);
     }
 
 
