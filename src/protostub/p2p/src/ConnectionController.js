@@ -118,6 +118,8 @@ class ConnectionController {
     if ( ! this._peerUrl )
       this._peerUrl = peerUrl;
     return new Promise((resolve, reject) => {
+      // ensure peer connection is created in case this is a reconnect
+      if (!this._peerConnection) this._peerConnection = this._createPeerConnection();
 
       //  if we are the caller (i.e. no reporter object present yet, initalize the creation of the DataChannel)
       if ( this._caller ) {

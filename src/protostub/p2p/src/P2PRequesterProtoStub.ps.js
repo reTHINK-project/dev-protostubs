@@ -54,13 +54,17 @@ class P2PRequesterStub {
     this._configuration = configuration;
     this._bus = miniBus;
     this._bus.addListener('*', (msg) => {
-        this._sendChannelMsg(msg);
+
+      if (msg.to === this._runtimeProtoStubURL ) {
+        if (msg.type = 'execute') this._onExecute(msg.body.method, msg.body.params);
+      } else this._sendChannelMsg(msg);
     });
 
     this._syncher = new Syncher(runtimeProtoStubURL, miniBus, configuration);
     this._connectionController = new ConnectionController(this._runtimeProtoStubURL, this._syncher, this._configuration, true);
     this._connectionController.onStatusUpdate( (status, reason) => {
       this._sendStatus(status, reason);
+      if (status === 'disconnected') this.disconnect(); // to ensure the ConnectionController is in the right status
     });
 
     this._syncher.onNotification((event) => {
@@ -96,6 +100,15 @@ class P2PRequesterStub {
       this.connect( this._configuration.p2pHandler );
   }
 
+  _onExecute(method, params) {
+    let _this = this;
+
+    console.log('[P2PRequesterStub._onExecute] request to execute: ', method, ' with parms ', params);
+
+    if (method === 'connect') _this.connect(params[0]);
+
+  }
+
   connect(handlerURL) {
     this._connectionController.report( handlerURL, this._runtimeURL ).then( () => {
       // send "in-progress" event, if the syncher.create was done
@@ -114,7 +127,7 @@ class P2PRequesterStub {
   disconnect() {
     if ( this._connectionController ) {
       this._connectionController.cleanup();
-      this._connectionController = null;
+//      this._connectionController = null;
     }
   }
 
