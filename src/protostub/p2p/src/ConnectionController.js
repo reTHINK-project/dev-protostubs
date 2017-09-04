@@ -256,7 +256,7 @@ class ConnectionController {
       if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session
       else { //this is an initial packet
         if (!packet.data || !packet.data.textMessage || !packet.data.textMessage.from) throw Error('[P2P-ConnectionController.onmessage] initial packet is invalid', packet);
-        console.debug("[P2P-ConnectionController] <-- incoming msg from : ", packet.data.textMessage.from);
+        console.debug("[P2P-ConnectionController] <-- incoming msg : ", packet);
         if (packet.data.dataSize === 0) {//  received packet is for a complete reTHINK message
           let message = packet.data.textMessage;
           this._onDataChannelMessage(message);

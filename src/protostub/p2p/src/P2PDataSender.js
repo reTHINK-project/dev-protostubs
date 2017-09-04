@@ -58,9 +58,10 @@ class P2PDataSender {
 
   _sendBinary(uuid, packet) {
     let _this = this;
-    //TODO: how to set uuid? use a buffer at ConnectionController?
+
     let uuidAB = _this._str2ab(uuid);
-    let newPacket = _this._appendBuffer(uuidAB, packet)
+    let newPacket = _this._appendBuffer(uuidAB, packet);
+
     _this._channel.send(newPacket);
   }
 
@@ -162,7 +163,7 @@ class P2PDataSender {
 
           }
         };
-        setTimeout(sendAllData, 0);
+        setTimeout(sendAllData, 5);
       }
 
 
