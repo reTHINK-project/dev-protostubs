@@ -4,11 +4,11 @@
   "objectName": "sip.rethink-project.eu",
   "configuration": {
     "credential_server": "https://ims.rethink-project.eu/credential",
-    "domain": "localhost"
+    "domain": "hysmart.rethink.ptinovacao.pt"
   },
   "messageSchemas": "",
   "dataObjects": [
-    "hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Connection"
+    "hyperty-catalogue://catalogue.hysmart.rethink.ptinovacao.pt/.well-known/dataschema/Connection"
   ],
   "signature": "",
   "accessControlPolicy": "somePolicy",
