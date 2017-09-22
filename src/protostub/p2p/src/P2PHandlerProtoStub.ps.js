@@ -75,6 +75,11 @@ class P2PHandlerStub {
             this._connectionControllers[event.value.runtime] = connectionController;
             connectionController.onStatusUpdate( (status, reason, remoteRuntimeURL) => {
               this._sendStatus(status, reason, remoteRuntimeURL);
+              // to ensure the ConnectionController is in the right status
+              if (status === 'disconnected') {
+                connectionController.cleanup();
+                delete this._connectionControllers[event.value.runtime];
+              }
             });
             connectionController.onMessage( (m) => {
               this._deliver(m);
