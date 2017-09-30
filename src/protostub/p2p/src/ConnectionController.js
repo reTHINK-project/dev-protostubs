@@ -250,7 +250,9 @@ class ConnectionController {
 
     _onTextMessage(data) {
       let _this = this;
-      let packet = JSON.parse(data);
+
+      let packet =  JSON.parse(data);
+
       if (!packet.uuid) throw Error('[P2P-ConnectionController.onmessage] message is invalid', packet);
 
       if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session

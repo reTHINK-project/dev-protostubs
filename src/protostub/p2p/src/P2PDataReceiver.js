@@ -26,10 +26,10 @@ class P2PDataReceiver {
 
     _this._data.push(packet.data);
 
-    _this._progress = _this._progress + packet.data.size;
+    _this._progress = _this._progress + packet.data.length;
 
     if (_this._progress === _this._dataSize){
-      let content =  JSON.parse(_this._data.join(''));
+      let content =  _this._data.join('');
       _this._processLastMessage(content);
     } else {
 //      console.debug('[P2PDataReceiver] progressing: ', _this._progress);

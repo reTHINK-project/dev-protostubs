@@ -40,7 +40,7 @@ class P2PDataSender {
       _this._initialPacket.dataSize = _this._msg.body.value.content.byteLength;
     } else {
       _this._send = _this._sendText;
-      if (_this.isData) _this._initialPacket.dataSize = JSON.stringify(_this._msg.body.value.content).length;
+      if (_this.isData) _this._initialPacket.dataSize = _this._msg.body.value.content.length;
     }
     _this._initialPacket.textMessage =  JSON.parse(JSON.stringify(_this._msg));
 
