@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^3.0.2",
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "service-framework": "github:rethink-project/dev-service-framework#p2p-sync",
     "utf-8-validate": "^3.0.3",
     "ws": "^3.1.0"
   }
