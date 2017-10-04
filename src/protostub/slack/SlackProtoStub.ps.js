@@ -311,7 +311,7 @@ class SlackProtoStub {
           console.info('[SlackProtostub] Observer - Message History Control ', _this._messageHistoryControl);
 
           //check if for each child message has been delivered, and control that for when we have more than one slack user subscribed
-          let currentID = child.childId.split('#')[1];
+          let currentID = child.child.childId.split('#')[1];
           // check if this child already sent messages
           let channelObjUrl = child.url.substring(0, child.url.lastIndexOf('/children'));
           let channelID;
