@@ -140,8 +140,11 @@ class ConnectionController {
           connectionDescription: {},
           iceCandidates: []
         }
+
+        let input = Object.assign({resources: ['data']});
+
         // ensure this the objReporter object is created before we create the offer
-        this._syncher.create(this._objectDescURL,  [this._peerUrl], dataObject).then((objReporter) => {
+        this._syncher.create(this._objectDescURL,  [this._peerUrl], dataObject, false, false, 'p2p connection', {}, input).then((objReporter) => {
             console.info('[P2P-ConnectionController] Created WebRTC Object Reporter', objReporter);
 
             this._dataObjectReporter = objReporter;
