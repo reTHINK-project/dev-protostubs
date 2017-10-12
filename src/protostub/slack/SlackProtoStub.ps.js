@@ -71,6 +71,8 @@ class SlackProtoStub {
 
                     let subscriptionUrl = msg.from;
 
+                    _this._ack(msg);
+
                     // for session resume
                     if (msg.body.resource) {
                       subscriptionUrl = msg.body.resource + '/subscription';
@@ -100,6 +102,20 @@ class SlackProtoStub {
     });
 
     _this._sendStatus('created');
+
+  }
+
+  // To acknowledge the invitation received
+
+  _ack(msg) {
+
+    let _this = this;
+
+    //send ack response message
+     _this._bus.postMessage({
+       id: msg.id, type: 'response', from: msg.to, to: msg.from,
+       body: { code: 200 }
+     });
 
   }
 
