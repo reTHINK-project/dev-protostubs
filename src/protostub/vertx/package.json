@@ -12,6 +12,6 @@
     "bufferutil": "^3.0.2",
     "service-framework": "github:rethink-project/dev-service-framework#develop",
     "utf-8-validate": "^3.0.3",
-    "ws": "^3.1.0"
+    "ws": "^3.2.0"
   }
 }

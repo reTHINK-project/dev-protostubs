@@ -30,7 +30,7 @@
       "iceTransportPolicy": "all"
   },
   "constraints": {
-    "browser": true
+    "windowSandbox": true
   },
   "interworking": false,
   "objectName": "P2PRequesterProtoStub"
