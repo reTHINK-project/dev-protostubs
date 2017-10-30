@@ -1,9 +1,12 @@
 {
   "name": "dev-protostubs",
-  "version": "1.0.0",
   "description": "Hosts the source code and documentation to get reTHINK Core Framework interwork with Slack",
   "main": "webpack.config.js",
+  "version": "0.0.1",
+  "main": "webpack.config.js",
   "scripts": {
+    "update:all": "node bin/update",
+    "install:all": "node bin/preinstall",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +22,8 @@
   "dependencies": {
     "atob": "^2.0.3",
     "btoa": "^1.1.2"
+  },
+  "devDependencies": {
+    "webpack": "^3.6.0"
   }
 }

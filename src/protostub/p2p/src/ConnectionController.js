@@ -22,11 +22,14 @@
  **/
 
 import 'webrtc-adapter';
+import P2PDataReceiver from './P2PDataReceiver';
+import P2PDataSender from './P2PDataSender';
 
 /**
   The ConnectionController has a generic design so that it can be used in both stubs.
   It manages a single DataChannel, it is not requesting access to media input, i.e.
   does not have audio/video streams.
+  TODO: use the configuration constructor input parameter to also pass DataChannel settings including _maxSize and bufferedAmountLowThreshold
 **/
 class ConnectionController {
   constructor(myUrl, syncher, configuration, caller) {
@@ -48,6 +51,9 @@ class ConnectionController {
     this._dataChannel;
     this._onStatusUpdate;
     this._remoteRuntimeURL;
+    this._receivers = {};// currently active P2PDataReceivers
+    this._maxSize = 16384;
+    this._threshold = 0;
 
     this._peerConnection = this._createPeerConnection();
   }
@@ -88,7 +94,7 @@ class ConnectionController {
   **/
   observe(invitationEvent) {
     this._peerUrl = invitationEvent.from;
-    this._remoteRuntimeURL = invitationEvent.value.runtimeURL;
+    this._remoteRuntimeURL = invitationEvent.value.runtime;
 
     return new Promise((resolve, reject) => {
 
@@ -112,11 +118,15 @@ class ConnectionController {
     if ( ! this._peerUrl )
       this._peerUrl = peerUrl;
     return new Promise((resolve, reject) => {
+      // ensure peer connection is created in case this is a reconnect
+      if (!this._peerConnection) this._peerConnection = this._createPeerConnection();
 
       //  if we are the caller (i.e. no reporter object present yet, initalize the creation of the DataChannel)
       if ( this._caller ) {
         console.log("[P2P-ConnectionController]: we are in caller role --> createDataChannel ...");
-        this._dataChannel = this._peerConnection.createDataChannel("P2PChannel", {reliable: false});
+        this._dataChannel = this._peerConnection.createDataChannel("P2PChannel");
+        this._dataChannel.binaryType = 'arraybuffer';
+        this._dataChannel.bufferedAmountLowThreshold = this._threshold;
         console.log("P2P: datachannel object", this._dataChannel);
         this._addDataChannelListeners();
       }
@@ -130,8 +140,11 @@ class ConnectionController {
           connectionDescription: {},
           iceCandidates: []
         }
+
+        let input = Object.assign({resources: ['data']});
+
         // ensure this the objReporter object is created before we create the offer
-        this._syncher.create(this._objectDescURL,  [this._peerUrl], dataObject).then((objReporter) => {
+        this._syncher.create(this._objectDescURL,  [this._peerUrl], dataObject, false, false, 'p2p connection', {}, input).then((objReporter) => {
             console.info('[P2P-ConnectionController] Created WebRTC Object Reporter', objReporter);
 
             this._dataObjectReporter = objReporter;
@@ -176,9 +189,25 @@ class ConnectionController {
     }
 
     sendMessage(m) {
+      let _this = this;
       // todo: only send if data channel is connected
-      console.log("[P2P-ConnectionController] --> outgoing msg: ", m);
-      this._dataChannel.send(m);
+      console.log("[P2P-ConnectionController] --> starting sending data to ", m.to);
+
+      if (_this._dataChannel.readyState != 'open') throw Error('[P2PStub.ConnectionController.sendMessage] data channel is not opened. droping message: ', m);
+
+      //TODO: use queue to manage concurrency with a limit length and a single sender instance
+
+      let sender = new P2PDataSender(m, _this._dataChannel);
+
+        sender.sendData();
+
+        sender.onProgress( (progress) => {
+          console.debug('[P2P-ConnectionController] sending progress ', progress);
+        });
+        sender.onSent( () => {
+          console.debug('[P2P-ConnectionController] data was sent to:', m.to);
+        });
+
     }
 
     cleanup() {
@@ -191,6 +220,8 @@ class ConnectionController {
     }
 
     _addDataChannelListeners() {
+      let _this = this;
+
       this._dataChannel.onopen = () => {
         this._onDataChannelOpen();
       };
@@ -198,9 +229,21 @@ class ConnectionController {
         this._onDataChannelError(e);
       };
       this._dataChannel.onmessage = (m) => {
-        console.log("[P2P-ConnectionController] <-- incoming msg: ", m);
-        if (this._onDataChannelMessage)
-          this._onDataChannelMessage(m);
+
+        let _this = this;
+
+        let data = m.data;
+
+        //TODO: use a single P2PDataReceiver instance
+        // checks if m.data is text and if yes if it is an initial packet.
+        // if an initial packet with dataSize = 0, just process it
+        // if an initial packet with dataSize != 0 set it at  P2PDataReceiver to handle it
+        // if not an initial packet ask the P2PDataReceiver to handle it
+
+        if ( typeof data != 'object') _this._onTextMessage(data);//this is not a binary packet
+        else _this._onBinaryMessage(data);
+
+
       };
       this._dataChannel.onclose = () => {
         this._onDataChannelClose();
@@ -208,11 +251,62 @@ class ConnectionController {
 
     }
 
+    _onTextMessage(data) {
+      let _this = this;
+
+      let packet =  JSON.parse(data);
+
+      if (!packet.uuid) throw Error('[P2P-ConnectionController.onmessage] message is invalid', packet);
+
+      if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session
+      else { //this is an initial packet
+        if (!packet.data || !packet.data.textMessage || !packet.data.textMessage.from) throw Error('[P2P-ConnectionController.onmessage] initial packet is invalid', packet);
+        console.debug("[P2P-ConnectionController] <-- incoming msg : ", packet);
+        if (packet.data.dataSize === 0) {//  received packet is for a complete reTHINK message
+          let message = packet.data.textMessage;
+          this._onDataChannelMessage(message);
+
+        } else  {// initial packet from a message with Hyperty Resource content that will be sent in next messages. A new P2PDataReceiver session is needed
+          let newReceiver = new P2PDataReceiver(packet.data);
+
+          newReceiver.onReceived( (message, latency) => {
+            console.debug('[P2P-ConnectionController] complete message received from: ' + message.from + ' latency: ' + latency);
+            _this._onDataChannelMessage(message);
+            delete _this._receivers[packet.uuid];
+          });
+
+          newReceiver.onProgress( (progress) => {
+          /*  if (packet.type === 'response') {
+              let provisionalReply = {
+                from: packet.from,
+                to: packet.to,
+                id: packet.id,
+                type: packet.type,
+                body: { code:183, desc:'Message reception is progressing ' + progress}
+              };
+              console.debug('[P2P-ConnectionController] onprogress sending provisional response: ', provisionalReply);
+              _this._syncher._bus.postMessage(provisionalReply);
+            }*/
+          });
+
+          _this._receivers[packet.uuid] = newReceiver;
+        }
+      }
+    }
+
+    _onBinaryMessage(data) {
+      let _this = this;
+      let uuid = String.fromCharCode.apply(null, new Uint16Array( data.slice(0,24) ));// extract uuid from ArrayBuffer and convert to string
+
+      if (!_this._receivers[uuid]) throw Error('[P2P-ConnectionController.onBinaryMessage] invalid binary packet', data);
+      _this._receivers[uuid].receiveBinary(data.slice(24));
+    }
+
     _setupObserver(dataObjectObserver) {
       this._dataObjectObserver = dataObjectObserver;
 
       let peerData = this._dataObjectObserver.data;
-      console.info("[P2P-ConnectionController]: _setupObserver Peer Data:", peerData);
+      console.info("[P2P-ConnectionController]: _setupObserver Peer Data: ", peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {
         this._processPeerInformation(peerData.connectionDescription);
@@ -275,13 +369,13 @@ class ConnectionController {
     _onDataChannelError(e) {
       console.log('[P2P-ConnectionController] DataChannel error: ', e);
       if ( this._onStatusUpdate )
-        this._onStatusUpdate("disconnected", "" + e);
+        this._onStatusUpdate("disconnected", "" + e, this._remoteRuntimeURL);
     }
 
     _onDataChannelClose() {
       console.log('[P2P-ConnectionController] DataChannel closed: ');
       if ( this._onStatusUpdate )
-        this._onStatusUpdate("disconnected", "closed");
+        this._onStatusUpdate("disconnected", "closed", this._remoteRuntimeURL);
     }
 
 

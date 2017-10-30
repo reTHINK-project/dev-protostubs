@@ -29,6 +29,7 @@ class ConnectionController {
 	constructor(configuration, onCall, onDisconnect) {
 		if (!configuration) throw new Error('The configuration is a needed parameter')
 
+        SIP.WebRTC.isSupported = ()=>true;
 		SIP.InviteServerContext = InviteServerContext
 		this.configuration = configuration
 		this.onDisconnect = onDisconnect
