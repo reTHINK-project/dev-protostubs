@@ -22,7 +22,7 @@
  **/
 
 import { Syncher } from 'service-framework/dist/Syncher'
-import Discovery from 'service-framework/dist/Discovery'
+import { Discovery } from 'service-framework/dist/Discovery'
 import ConnectionController from './ConnectionController'
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
