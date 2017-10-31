@@ -177,12 +177,12 @@ let idp = {
         reject({name: 'IdPLoginError', loginUrl: 'requestUrl'});
       } else {
         let i = googleInfo;
-        
+
         // the request have already been made, so idpPRoxy will exchange the tokens along to the idp, to obtain the information necessary
         let accessToken = urlParser(hint, 'access_token');
         let idToken = urlParser(hint, 'id_token');
         let code = urlParser(hint, 'code');
-        
+
         //console.log('TIAGO accessToken', accessToken);
         //console.log('TIAGO idToken', idToken);
         //console.log('TIAGO code', code);
@@ -317,7 +317,7 @@ class NodejsProxyStub {
 
     _this.messageBus.postMessage(message);
   }
-  
+
   _sendStatus(value, reason) {
     let _this = this;
 

@@ -1,6 +1,6 @@
 {
   "name": "dev-protostubs",
-  "description": "Hosts the source code and documentation to get reTHINK Core Framework interwork with Slack",
+  "description": "Repository where all the protostubs and idp-proxyies are",
   "main": "webpack.config.js",
   "version": "0.0.1",
   "main": "webpack.config.js",
