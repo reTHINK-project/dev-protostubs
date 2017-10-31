@@ -71,6 +71,8 @@ class SlackProtoStub {
 
                     let subscriptionUrl = msg.from;
 
+                    _this._ack(msg);
+
                     // for session resume
                     if (msg.body.resource) {
                       subscriptionUrl = msg.body.resource + '/subscription';
@@ -100,6 +102,20 @@ class SlackProtoStub {
     });
 
     _this._sendStatus('created');
+
+  }
+
+  // To acknowledge the invitation received
+
+  _ack(msg) {
+
+    let _this = this;
+
+    //send ack response message
+     _this._bus.postMessage({
+       id: msg.id, type: 'response', from: msg.to, to: msg.from,
+       body: { code: 200 }
+     });
 
   }
 
@@ -148,7 +164,7 @@ class SlackProtoStub {
 
   _channelStatusInfo(msg, userID, channelObjUrl) {
     let _this = this;
-    let channelName = msg.body.value.name.split(' ').join('-');
+    let channelName = msg.body.value.name.split(' ').join('-').replace(/\//gi, '-');
     let channelExists = _this._channelsList.filter(function(value) { return value.name === channelName; })[0];
 
     // if channel exist, invite user, else channel need to be created and then invite user
@@ -311,7 +327,7 @@ class SlackProtoStub {
           console.info('[SlackProtostub] Observer - Message History Control ', _this._messageHistoryControl);
 
           //check if for each child message has been delivered, and control that for when we have more than one slack user subscribed
-          let currentID = child.childId.split('#')[1];
+          let currentID = child.child.childId.split('#')[1];
           // check if this child already sent messages
           let channelObjUrl = child.url.substring(0, child.url.lastIndexOf('/children'));
           let channelID;

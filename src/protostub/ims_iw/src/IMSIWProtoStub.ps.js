@@ -22,7 +22,7 @@
  **/
 
 import { Syncher } from 'service-framework/dist/Syncher'
-import Discovery from 'service-framework/dist/Discovery'
+import { Discovery } from 'service-framework/dist/Discovery'
 import ConnectionController from './ConnectionController'
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
@@ -75,6 +75,7 @@ class IMSIWProtoStub {
 				switch (msg.type) {
 				  case 'create':
 					if(this._filter(msg) && msg.body.schema) {
+            console.log('subscribe: ', msg.body.schema)
 						this._subscribe(msg)
 					}
 					break
@@ -126,7 +127,8 @@ class IMSIWProtoStub {
         this._syncher.subscribe(this.schema, dataObjectUrl)
 			.then(dataObjectObserver => {
 				this.dataObjectObserver = dataObjectObserver
-				dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
+        console.log('dataObjectObserver:' , dataObjectObserver);
+				// dataObjectObserver.onChange('*', (event) => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
 				return dataObjectObserver
 			}).then(dataObjectObserver => this._onCall(dataObjectObserver, dataObjectUrl, this.schema, msg))
     }
@@ -141,7 +143,7 @@ class IMSIWProtoStub {
 						console.log('sad', msg)
 						this._connection.invite(msg.to, dataObjectObserver)
 							.then((e) => this._returnSDP(e.body, dataObjectUrl, schema, msg.body.source, 'answer'))
-							.catch((e) => { console.log('fail', e); this.dataObjectObserver.delete() })
+							.catch((e) => { console.error('fail', e); this.dataObjectObserver.delete() })
 					})
 			} else if(dataObjectObserver.data.connectionDescription.type === 'answer') {
 				console.log('_onCallUpdate offer')
@@ -151,15 +153,20 @@ class IMSIWProtoStub {
     }
 
     _returnSDP(offer, dataObjectUrl, schema, source, type) {
+        console.log('offer received', offer)
         let dataObject = new Connection(dataObjectUrl)
 
-        this._syncher.create(schema, [source], dataObject, false, false, this._identity).then((objReporter) => {
+        let input = Object.assign({resources: ['audio']}, {} );
+
+        this._syncher.create(schema, [source], dataObject, false, false, '', this._identity, input).then((objReporter) => {
 			this.dataObjectReporter = objReporter
             objReporter.onSubscription(function(event) {
                 console.info('-------- Receiver received subscription request --------- \n')
                 event.accept()
             });
             objReporter.data.connectionDescription = { type: type, sdp: offer }
+        }).catch(function(error) {
+          console.error(error);
         })
     }
 
