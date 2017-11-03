@@ -168,13 +168,19 @@ let idp = {
   */
   generateAssertion: (contents, origin, hint) => {
 
+    console.log('GOOGLE_PROXY_NODEJS:');
+
     return new Promise(function(resolve, reject) {
 
       //the hint field contains the information obtained after the user authentication
       // if the hint content is not present, then rejects the value with the URL to open the page to authenticate the user
       if (!hint) {
         // this is temporary
-        reject({name: 'IdPLoginError', loginUrl: 'requestUrl'});
+        console.log('REJECT_POPUP');
+
+        //let requestUrl = 'https://accounts.google.com/o/oauth2/auth?scope=openid%20email%20profile&client_id=808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com&redirect_uri=https://localhost&response_type=code token id_token&state=state&access_type=offline&nonce=NDgsMTMwLDEsMzQsNDgsMTMsNiw5LDQyLDEzNCw3MiwxMzQsMjQ3LDEzLDEsMSwxLDUsMCwzLDEzMCwxLDE1LDAsNDgsMTMwLDEsMTAsMiwxMzAsMSwxLDAsMjE1LDEwNyw3NiwyMzYsMTQzLDEyLDEzNywxODUsMjI3LDExMSwxMTEsMjI5LDI1MSwxODEsMTM2LDE0MywyMDQsNjgsMzEsMTAsMjE0LDIxNyw2MCwxMTgsMTMyLDg3LDk0LDExOCwyNDksNDksODUsMTk4LDIxMSwyMDEsMzYsODEsMjM3LDE5NCwxNTgsMTczLDIzMCw3OCwxOSw0NSwyLDMwLDIyMSwxNCw0MSwxNzUsNzEsMTQ3LDE1MCwyNDIsMjQyLDI5LDIyMiw4MCwxOTgsMTczLDIwLDE3NiwyMzAsMjE0LDUwLDI1NSw4NSwyNDYsMTAsNTMsOTUsMTE3LDEwMywxNTEsMjU0LDIzMCwzNCwxNjEsMjU0LDIxMiwxODAsMTczLDE0NSw0LDc0LDI1MCw1MCwxNDYsNDQsMTA5LDE3NCwyMiwxNzUsMTA1LDE0MCwxMTgsMjI3LDE0MCw2OCw0MiwxNTgsMTU2LDg4LDM1LDQ3LDk4LDE4NCw4MiwxOSwyNTMsMTUzLDE3OSwxOTgsMTAzLDEzNCwxOTgsMTk1LDIwMCw3NCw5LDMsMTUzLDc5LDIxNyw4MCwxMTgsNDcsMjM2LDEyMSwyMywxNTQsMTM0LDIzMiw3NiwyMzksNjIsMjQwLDE5NCwxMDEsMTI1LDEwLDIxNSw3MSwyMjEsMjIsMTIsODcsMjA4LDEyOSwxNCwyMDYsMTc0LDgwLDE3OCw5NCwyNDYsMjMsMTMyLDQ5LDE2LDIyMCw0MCwyNTEsMTkyLDEzNCwxNDEsMTE4LDExOSwxNjYsMjEyLDYwLDEzNiwyMTIsMjU1LDExNCwxOSw0NywxNjMsMjM3LDE2MSw1MywyNTEsMTA0LDE4NiwxODgsNDAsNzAsMTg0LDIyMCwzNCwxNDksMTA4LDE0LDE1NywzMCwxMTMsMjExLDE3MCw0NywxNzksMjMwLDE3MywyMTgsMjI2LDI3LDE0NSwxMiwxMTEsMTA4LDEzOCwyNSwxMjIsMjQ0LDE3NiwzNyw3MywxMzMsNDksMjQwLDUsMTQ2LDkxLDE4MiwxMjUsMTkwLDI1NSwyMzIsODAsMTg4LDEzMiwxMDksMjEzLDgyLDE2OCwyMjMsMzMsNzEsMTY1LDE2NiwzNCwyMjIsMjUwLDExMyw0MiwyNDUsMTI1LDQ2LDIsMzIsMjI4LDY2LDEwNCwyMDgsODUsMTAyLDEzLDIsMywxLDAsMQ==';
+
+        reject({name: 'IdPLoginError', loginUrl: requestUrl});
       } else {
         let i = googleInfo;
 

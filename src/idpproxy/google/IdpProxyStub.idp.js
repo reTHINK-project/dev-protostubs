@@ -166,7 +166,10 @@ let IdpProxy = {
           }
         } catch (error) {*/
 
+
         let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=' + i.type + '&state=' + i.state + '&access_type=' + i.accessType + '&nonce=' + contents;
+
+        console.log('GOOGLE_PROXY_NO_HINT: ', requestUrl);
 
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
@@ -177,6 +180,8 @@ let IdpProxy = {
         let accessToken = urlParser(hint, 'access_token');
         let idToken = urlParser(hint, 'id_token');
         let code = urlParser(hint, 'code');
+
+        console.log('GOOGLE_PROXY_HINT: ', hint);
 
         exchangeCode(code).then(function(value) {
 
