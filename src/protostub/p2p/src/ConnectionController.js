@@ -162,7 +162,8 @@ class ConnectionController {
               console.log("[P2P-ConnectionController] SDP created", sdp);
               this._peerConnection.setLocalDescription( new RTCSessionDescription(sdp), () => {
                 console.info('[P2P-ConnectionController] localDescription set successfully');
-                this._dataObjectReporter.data.connectionDescription = sdp;
+                this._dataObjectReporter.data.connectionDescription.sdp = sdp.sdp;
+                this._dataObjectReporter.data.connectionDescription.type = sdp.type;
                 resolve();
               })
               .catch((e) => {
