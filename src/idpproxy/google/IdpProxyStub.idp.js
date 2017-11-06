@@ -131,15 +131,9 @@ let IdpProxy = {
     return new Promise(function(resolve,reject) {
 
       let decodedContent = atob(assertion);
-      console.info('validateAssertion:decodedContent', decodedContent);
       let content = JSON.parse(decodedContent);
-      console.info('validateAssertion:content', content);
-
       let idTokenSplited = content.tokenID.split('.');
-      console.info('validateAssertion:idTokenSplited', idTokenSplited);
-
       let idToken = JSON.parse(atob(idTokenSplited[1]));
-      console.info('validateAssertion:idToken', idToken);
 
       resolve({identity: idToken.email, contents: idToken.nonce});
 
