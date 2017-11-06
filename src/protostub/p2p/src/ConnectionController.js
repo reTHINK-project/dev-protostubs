@@ -277,17 +277,15 @@ class ConnectionController {
           });
 
           newReceiver.onProgress( (progress) => {
-          /*  if (packet.type === 'response') {
               let provisionalReply = {
-                from: packet.from,
-                to: packet.to,
-                id: packet.id,
-                type: packet.type,
-                body: { code:183, desc:'Message reception is progressing ' + progress}
+                from: newReceiver.from,
+                to: newReceiver.to,
+                id: newReceiver.id,
+                type: newReceiver.type,
+                body: { code:183, desc:'Message reception is progressing', value: progress}
               };
               console.debug('[P2P-ConnectionController] onprogress sending provisional response: ', provisionalReply);
               _this._syncher._bus.postMessage(provisionalReply);
-            }*/
           });
 
           _this._receivers[packet.uuid] = newReceiver;
