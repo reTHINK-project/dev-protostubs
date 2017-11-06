@@ -322,7 +322,7 @@ class IdpProxyProtoStub {
   requestToIdp(msg) {
     let _this = this;
     let params = msg.body.params;
-    console.info('requestToIdp:', msg.body.method);
+    //console.info('requestToIdp:', msg.body.method);
 
     switch (msg.body.method) {
       case 'generateAssertion':
@@ -333,7 +333,6 @@ class IdpProxyProtoStub {
         );
         break;
       case 'validateAssertion':
-        console.info('validateAssertion');
         IdpProxy.validateAssertion(params.assertion, params.origin).then(
           function(value) { _this.replyMessage(msg, value);},
 
