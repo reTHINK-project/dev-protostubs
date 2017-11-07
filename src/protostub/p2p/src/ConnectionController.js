@@ -52,6 +52,7 @@ class ConnectionController {
     this._onStatusUpdate;
     this._remoteRuntimeURL;
     this._receivers = {};// currently active P2PDataReceivers
+    this._senders = {};// currently active P2PDataSenders
     this._maxSize = 16384;
     this._threshold = 0;
 
@@ -200,6 +201,10 @@ class ConnectionController {
 
       let sender = new P2PDataSender(m, _this._dataChannel);
 
+      let senderKey = m.from+m.to+m.id;
+
+      _this._senders[senderKey] = sender;
+
         sender.sendData();
 
         sender.onProgress( (progress) => {
@@ -207,6 +212,7 @@ class ConnectionController {
         });
         sender.onSent( () => {
           console.debug('[P2P-ConnectionController] data was sent to:', m.to);
+          delete _this._senders[senderKey];
         });
 
     }
@@ -258,7 +264,9 @@ class ConnectionController {
 
       if (!packet.uuid) throw Error('[P2P-ConnectionController.onmessage] message is invalid', packet);
 
-      if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session
+      if (packet.data.textMessage.hasOwnProperty('to') && packet.data.textMessage.to === _this._myUrl)
+        _this._onMyMessage(packet.data.textMessage);
+      else if (_this._receivers[packet.uuid]) _this._receivers[packet.uuid].receiveText(packet); // received text packet is from an ongoing receiver session
       else { //this is an initial packet
         if (!packet.data || !packet.data.textMessage || !packet.data.textMessage.from) throw Error('[P2P-ConnectionController.onmessage] initial packet is invalid', packet);
         console.debug("[P2P-ConnectionController] <-- incoming msg : ", packet);
@@ -292,6 +300,18 @@ class ConnectionController {
       }
     }
 
+    _onMyMessage(msg) {
+
+      if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('resource')) {
+        let resource = msg.body.resource;
+        if (this._senders[resource] && msg.type === 'delete') {
+          console.log('[ConnectionController._onMyMessage] cancelling: ', this._senders[resource]);
+          this._senders[resource].cancel;
+          delete this._senders[resource];
+        }
+      }
+    }
+
     _onBinaryMessage(data) {
       let _this = this;
 
@@ -312,9 +332,27 @@ class ConnectionController {
           console.error('[P2P-ConnectionController.onBinaryMessage] malformed packet: ', data);
           _this._syncher._bus.postMessage(errorMessage);
 
+          _this._cancelSent(errorMessage.from+errorMessage.to+errorMessage.id);
+
+          delete _this._receivers[id];
+
         } else throw Error('[P2P-ConnectionController.onBinaryMessage] invalid binary packet', data);
+      } else _this._receivers[uuid].receiveBinary(data.slice(24));
+    }
+
+    _cancelSent(key) {
+      let _this = this;
+
+      let msg = {
+        from: _this._myUrl,
+        to: _this._peerUrl,
+        type: 'delete',
+        body: { resource: key}
       }
-      _this._receivers[uuid].receiveBinary(data.slice(24));
+      console.info('[P2P-ConnectionController._cancelSent] : ', msg);
+
+      _this.sendMessage(msg);
+
     }
 
     _setupObserver(dataObjectObserver) {

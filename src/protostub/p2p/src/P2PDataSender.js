@@ -19,6 +19,11 @@ class P2PDataSender {
     _this._msgObject = msg;
     _this.isData = false;
     _this._init();
+    _this._cancel = false;
+  }
+
+  cancel() {
+    this._cancel = true;
   }
 
   _init() {
@@ -60,6 +65,7 @@ class P2PDataSender {
     let _this = this;
 
     let uuidAB = _this._str2ab(uuid);
+    //let uuidAB = _this._str2ab(123);
 
     let newPacket = _this._appendBuffer(uuidAB, packet);
 
@@ -139,7 +145,7 @@ class P2PDataSender {
           // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
           // seconds to execute).
 
-          while (sendProgress.value < sendProgress.max) {
+          while (sendProgress.value < sendProgress.max && !_this._cancel) {
             if (sendChannel.bufferedAmount > bufferFullThreshold) {
               if (usePolling) {
                 setTimeout(sendAllData, 250);
