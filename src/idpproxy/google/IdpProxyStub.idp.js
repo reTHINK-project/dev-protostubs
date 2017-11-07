@@ -134,9 +134,7 @@ let IdpProxy = {
 
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-
       let idTokenSplited = content.tokenID.split('.');
-
       let idToken = JSON.parse(atob(idTokenSplited[1]));
 
       resolve({identity: idToken.email, contents: idToken.nonce});
@@ -162,6 +160,7 @@ let IdpProxy = {
   },
 
   refreshAssertion: (identity) => {
+    //console.log('PROXY:refreshAssertion:oldIdentity', identity);
     let i = googleInfo;
 
     return new Promise(function(resolve, reject) {
@@ -180,11 +179,27 @@ let IdpProxy = {
               identityBundle.expires = idToken.exp;
               identityBundle.email = idToken.email;
 
-              let assertion = btoa(JSON.stringify({tokenID: value.id_token, tokenIDJSON: idToken}));
+              let oldIDToken = JSON.parse(atob(identity.assertion));
+              let oldIdTokenSplited = oldIDToken.tokenID.split('.');
+              let oldDecodedIDToken = JSON.parse(atob(oldIdTokenSplited[1]));
+              let idNonce = oldDecodedIDToken.nonce;
+
+              let receivedIDToken = value.id_token;
+              let idTokenSplited = receivedIDToken.split('.');
+              let decodedIDToken = JSON.parse(atob(idTokenSplited[1]));
+
+              decodedIDToken.nonce = idNonce;
+              let insertedNonce = btoa(JSON.stringify(decodedIDToken));
+              let newIDToken = idTokenSplited[0] + '.' +
+                                 insertedNonce + '.' +
+                                 idTokenSplited[2];
+
+              let assertion = btoa(JSON.stringify({tokenID: newIDToken, tokenIDJSON: idToken}));
               let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
               let returnValue = {assertion: assertion, idp: idpBundle, info: identityBundle, infoToken: infoToken};
+              //console.log('PROXY:refreshAssertion:newIdentity', returnValue);
               resolve(returnValue);
             });
           });
@@ -318,7 +333,7 @@ class IdpProxyProtoStub {
   requestToIdp(msg) {
     let _this = this;
     let params = msg.body.params;
-    console.info('requestToIdp:', msg.body.method);
+    //console.info('requestToIdp:', msg.body.method);
 
     switch (msg.body.method) {
       case 'generateAssertion':
