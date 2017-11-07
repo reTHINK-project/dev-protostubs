@@ -60,6 +60,7 @@ class P2PDataSender {
     let _this = this;
 
     let uuidAB = _this._str2ab(uuid);
+
     let newPacket = _this._appendBuffer(uuidAB, packet);
 
     _this._channel.send(newPacket);

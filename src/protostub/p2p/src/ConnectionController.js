@@ -241,9 +241,8 @@ class ConnectionController {
         // if an initial packet with dataSize != 0 set it at  P2PDataReceiver to handle it
         // if not an initial packet ask the P2PDataReceiver to handle it
 
-        if ( typeof data != 'object') _this._onTextMessage(data);//this is not a binary packet
-        else _this._onBinaryMessage(data);
-
+          if ( typeof data != 'object') _this._onTextMessage(data);//this is not a binary packet
+          else _this._onBinaryMessage(data);
 
       };
       this._dataChannel.onclose = () => {
@@ -295,9 +294,26 @@ class ConnectionController {
 
     _onBinaryMessage(data) {
       let _this = this;
-      let uuid = String.fromCharCode.apply(null, new Uint16Array( data.slice(0,24) ));// extract uuid from ArrayBuffer and convert to string
 
-      if (!_this._receivers[uuid]) throw Error('[P2P-ConnectionController.onBinaryMessage] invalid binary packet', data);
+      // extract uuid from ArrayBuffer and convert to string
+      let uuid = String.fromCharCode.apply(null, new Uint16Array( data.slice(0,24) ));
+
+      if (!_this._receivers[uuid]) {
+        let receiverKeys = Object.keys(_this._receivers);
+        if (receiverKeys.length === 1) {
+          let id = receiverKeys[0];
+          let errorMessage = {
+            from: _this._receivers[id].from,
+            to: _this._receivers[id].to,
+            id: _this._receivers[id].id,
+            type: _this._receivers[id].type,
+            body: { code: 500, desc: 'Reception error'}
+          };
+          console.error('[P2P-ConnectionController.onBinaryMessage] malformed packet: ', data);
+          _this._syncher._bus.postMessage(errorMessage);
+
+        } else throw Error('[P2P-ConnectionController.onBinaryMessage] invalid binary packet', data);
+      }
       _this._receivers[uuid].receiveBinary(data.slice(24));
     }
 
