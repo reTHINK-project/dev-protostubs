@@ -22,7 +22,7 @@
  **/
 
 import { Syncher } from 'service-framework/dist/Syncher'
-import Discovery from 'service-framework/dist/Discovery'
+import { Discovery } from 'service-framework/dist/Discovery'
 import ConnectionController from './ConnectionController'
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
@@ -156,13 +156,17 @@ class IMSIWProtoStub {
         console.log('offer received', offer)
         let dataObject = new Connection(dataObjectUrl)
 
-        this._syncher.create(schema, [source], dataObject, false, false, '', this._identity).then((objReporter) => {
+        let input = Object.assign({resources: ['audio']}, {} );
+
+        this._syncher.create(schema, [source], dataObject, false, false, '', this._identity, input).then((objReporter) => {
 			this.dataObjectReporter = objReporter
             objReporter.onSubscription(function(event) {
                 console.info('-------- Receiver received subscription request --------- \n')
                 event.accept()
             });
             objReporter.data.connectionDescription = { type: type, sdp: offer }
+        }).catch(function(error) {
+          console.error(error);
         })
     }
 

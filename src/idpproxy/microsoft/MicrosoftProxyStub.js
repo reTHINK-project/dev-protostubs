@@ -1,4 +1,3 @@
-
 let microsoftInfo = {
   clientID:              '7e2f3589-4b38-4b1c-a321-c9251de00ef2',
   redirectURI:           location.origin,
@@ -93,7 +92,6 @@ let idp = {
 
         let idpBundle = {domain: 'microsoft.com', protocol: 'OIDC'};
         let identityBundle = {assertion: hintSplited[1], idp: idpBundle, infoToken: idToken};
-
         resolve(identityBundle);
 
       }
@@ -126,6 +124,7 @@ class MicrosoftProxyStub {
        _this.requestToIdp(msg);
      }
    });
+   _this._sendStatus('created');
  }
 
   /**
@@ -171,6 +170,30 @@ class MicrosoftProxyStub {
 
     _this.messageBus.postMessage(message);
   }
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[GoogleIdpProxy.sendStatus] ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this.runtimeProtoStubURL,
+      to: _this.runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this.messageBus.postMessage(msg);
+  }
+
 }
 
 // export default IdpProxyProtoStub;
