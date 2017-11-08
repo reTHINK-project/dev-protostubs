@@ -205,6 +205,7 @@ class RethinkOidcProtoStub {
        _this.requestToIdp(msg);
      }
    });
+   _this._sendStatus('created');
  }
 
   /**
@@ -251,6 +252,30 @@ class RethinkOidcProtoStub {
 
     _this.messageBus.postMessage(message);
   }
+
+  _sendStatus(value, reason) {
+    let _this = this;
+
+    console.log('[GoogleIdpProxy.sendStatus] ', value);
+
+    _this._state = value;
+
+    let msg = {
+      type: 'update',
+      from: _this.runtimeProtoStubURL,
+      to: _this.runtimeProtoStubURL + '/status',
+      body: {
+        value: value
+      }
+    };
+
+    if (reason) {
+      msg.body.desc = reason;
+    }
+
+    _this.messageBus.postMessage(msg);
+  }
+
 }
 
 // export default IdpProxyProtoStub;
