@@ -1,6 +1,6 @@
 {
   "name": "ims_iwstub",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A protostub to interact with an IMS lab environment.",
   "scripts": {
     "prepare": "mkdir -p dist",
