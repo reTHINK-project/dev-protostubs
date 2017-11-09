@@ -127,7 +127,7 @@ let IdpProxy = {
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
   validateAssertion: (assertion, origin) => {
-    console.imfo('validateAssertionProxy')
+    //console.info('validateAssertionProxy')
 
     //TODO check the values with the hash received
     return new Promise(function(resolve,reject) {
