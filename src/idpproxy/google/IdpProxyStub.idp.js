@@ -274,7 +274,7 @@ let IdpProxy = {
               identities[nIdentity] = returnValue;
               ++nIdentity;
 
-              console.log('[IDPROXY.generateAssertion:returnValue]', returnValue);
+              console.log('[IDPROXY.generateAssertion:returnValue]', JSON.stringify(returnValue));
 
               resolve(returnValue);
             }, function(e) {
