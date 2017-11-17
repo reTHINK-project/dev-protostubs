@@ -127,36 +127,35 @@ let IdpProxy = {
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
   validateAssertion: (assertion, origin) => {
-    //console.info('validateAssertionProxy')
+    console.info('validateAssertionProxy')
+    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
-    return new Promise(function(resolve,reject) {
+  //  return new Promise(function(resolve,reject) {
 
-      let decodedContent = atob(assertion);
-      let content = JSON.parse(decodedContent);
+      let decodedContent2 = atob(assertion);
+      let content = JSON.parse(decodedContent2);
       let idTokenSplited = content.tokenID.split('.');
       let idToken = JSON.parse(atob(idTokenSplited[1]));
 
-      resolve({identity: idToken.email, contents: idToken.nonce});
+      //resolve({identity: idToken.email, contents: idToken.nonce});
 
-    });
-    /*return new Promise(function(resolve,reject) {
+    //});
+
+    return new Promise(function(resolve,reject) {
       let i = googleInfo;
-
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-      sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(function(result) {
-
+      sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
           resolve({identity: content.tokenIDJSON.email, contents: content.tokenIDJSON});
         } else {
           reject('invalid');
         }
-      }, function(err) {
-
+      }).catch(err => {
         reject(err);
       });
-    });*/
+    });
   },
 
   refreshAssertion: (identity) => {
