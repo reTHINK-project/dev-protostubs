@@ -1,10 +1,10 @@
 {
   "language": "javascript",
-  "description": "IDPProxy for node idp",
+  "description": "IDPProxy for browser idp",
   "signature": "",
   "configuration": {},
   "constraints": {
-    "node": true
+    "browser": true
   },
   "interworking": false,
   "objectName": "nodejs-idp"

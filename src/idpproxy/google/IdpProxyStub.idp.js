@@ -313,7 +313,7 @@ class IdpProxyProtoStub {
    _this.messageBus = bus;
    _this.config = config;
 
-   console.log('[Google IdpProxy] starting', runtimeProtoStubURL);
+   console.log('Google->Google constructor');
 
    _this.messageBus.addListener('*', function(msg) {
      if (msg.to === 'domain-idp://google.com') {
