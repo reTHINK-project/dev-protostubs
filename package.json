@@ -1,5 +1,6 @@
 {
   "name": "dev-protostubs",
+  "version": "0.1.2",
   "description": "Repository where all the protostubs and idp-proxyies are",
   "version": "0.0.1",
   "main": "webpack.config.js",

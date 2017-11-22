@@ -1,6 +1,6 @@
 {
   "name": "slack",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Slack Protostub",
   "main": "SlackProtoStub.ps.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "service-framework": "github:rethink-project/dev-service-framework#v0.7.3",
     "slack": "8.3.1"
   }
 }

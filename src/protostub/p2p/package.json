@@ -1,6 +1,6 @@
 {
   "name": "P2PStubs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Implementation of the P2P handler and requester stub",
   "main": "",
   "scripts": {
@@ -45,7 +45,7 @@
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "service-framework": "github:rethink-project/dev-service-framework#v0.7.3",
     "webrtc-adapter": "^3.4.3"
   }
 }

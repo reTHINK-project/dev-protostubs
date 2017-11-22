@@ -1,6 +1,6 @@
 {
   "name": "vertx",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "",
   "main": "VertxProtoStub.ps.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^3.0.3",
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "service-framework": "github:rethink-project/dev-service-framework#v0.7.3",
     "utf-8-validate": "^3.0.4",
     "ws": "^3.3.0"
   }
