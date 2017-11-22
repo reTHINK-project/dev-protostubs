@@ -22,135 +22,7 @@ let googleInfo = {
   state:                 'state'
 };
 
-//function to parse the query string in the given URL to obatin certain values
-function urlParser(url, name) {
-  name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
-  let regexS = '[\\#&?]' + name + '=([^&#]*)';
-  let regex = new RegExp(regexS);
-  let results = regex.exec(url);
-  if (results === null)
-  return '';
-  else
-  return results[1];
-}
 
-
-//let URL = i.tokenEndpoint + 'code=' + code + '&client_id=' +
-  //        i.clientID + '&client_secret=' + i.clientSecret + '&redirect_uri=' +
-  //        i.redirectURI + '&grant_type=authorization_code';
-
-/*function sendHTTPRequest(method, url) {
-  return new Promise(function(resolve,reject) {
-  //return makeLocalRequest(method, url, undefined);
-    console.log('sendHTTPRequest:url', url);
-    let splitedText = url.split('/');
-    let host = splitedText[2];
-    let replacedURL = url.replace(splitedText[0] + '//' + splitedText[2], '');
-    const options = {
-      hostname: host,
-      port: 443,
-      path: replacedURL,
-      method: method
-    };
-    console.log('sendHTTPRequest:options', options);
-
-    const req = https.request(options, (res) => {
-      console.log('sendHTTPRequest:statusCode:', res.statusCode);
-      console.log('sendHTTPRequest:headers:', res.headers);
-      let stream = '';
-      res.on('data', (d) => {
-        stream += d;
-      });
-      res.on('end', () => {
-        console.log('sendHTTPRequest:data:', stream);
-        resolve(stream);
-      });
-    });
-
-    req.on('error', (e) => {
-      console.error('https_return: ' + e);
-    });
-    req.end();
-
-  });
-}
-
-*/
-
-/**
-* @returns {variable<string>}
-**/
-function mapProtocol(url) {
-  let protocolmap = {
-    'localhost://': 'https://',
-    'undefined://': 'https://',
-    'hyperty-catalogue://': 'https://',
-    'https://': 'https://',
-    'http://': 'https://'
-  };
-
-  let foundProtocol = false;
-  let resultURL = undefined;
-  for (let protocol in protocolmap) {
-    if (url.slice(0, protocol.length) === protocol) {
-      resultURL = protocolmap[protocol] + url.slice(protocol.length, url.length);
-      foundProtocol = true;
-      break;
-    }
-  }
-
-  if (!foundProtocol) {
-    throw new Error('Invalid protocol of url: ' + url);
-  }
-  return resultURL;
-}
-
-
-/*
-let getAuth = (function(contents) {
-  let i = googleInfo;
-
-  return new Promise(function(resolve, reject) {
-    let URL = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=' + i.type + '&state=' + i.state + '&access_type=' + i.accessType + '&nonce=' + contents + '&prompt=none' ;
-
-    sendHTTPRequest('POST', URL).then(function(info) {
-      resolve(info);
-    }, function(error) {
-      console.log('ERROR:', error);
-      reject(error);
-    });
-  });
-})
-*/
-
-/**
-* Function to exchange the code received to the id Token, access token and a refresh token
-*
-*/
-/*
-let exchangeCode = (function(code) {
-  let i = googleInfo;
-
-  return new Promise(function(resolve, reject) {
-
-    let URL = i.tokenEndpoint + 'code=' + code + '&client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&redirect_uri=' + i.redirectURI + '&grant_type=authorization_code';
-
-    sendHTTPRequest('POST', URL).then(function(info) {
-      console.log('[IDPROXY.exchangeCode:info]', info);
-      resolve(info);
-    }, function(error) {
-      console.log('[IDPROXY.exchangeCode:err]', error.message);
-      //reject(error);
-    });
-
-  });
-});
-
-*/
-
-/**
-* Identity Provider Proxy
-*/
 
 let idp = {
 
@@ -161,36 +33,16 @@ let idp = {
   * @param  {assertion}    Identity Assertion to be validated
   * @param  {origin}       Origin parameter that identifies the origin of the RTCPeerConnection
   * @return {Promise}      Returns a promise with the identity assertion validation result
-  */ 
+  */
   validateAssertion: (assertion, origin) => {
-    console.log('validateAssertionProxyNODEJSFAKE');
     console.log('validateAssertionProxyNODEJSFAKE:assertion', assertion);
 
     //TODO check the values with the hash received
     return new Promise(function(resolve,reject) {
-
-      // atob may need to be required for nodejs
-      // var atob = require('atob');
-      console.log('validateAssertionProxyNODEJSFAKE:beforebtoa');
-
       let decodedContent = atob(assertion);
-      console.log('validateAssertionProxyNODEJSFAKE:btoa', decodedContent);
-
       let content = JSON.parse(decodedContent);
-      console.log('validateAssertionProxyNODEJSFAKE:parse', content);
-
-
       let idTokenSplited = content.tokenID.split('.');
-      console.log('validateAssertionProxyNODEJSFAKE:split', idTokenSplited);
-
-
       let idToken = JSON.parse(atob(idTokenSplited[1]));
-      console.log('validateAssertionProxyNODEJSFAKE:idToken', idToken);
-
-
-      console.log('validateAssertionProxyNODEJSFAKE:idToken.email', idToken.email);
-      console.log('validateAssertionProxyNODEJSFAKE:idToken.nonce', idToken.nonce);
-
 
       resolve({identity: idToken.email, contents: idToken.nonce});
 
@@ -215,77 +67,10 @@ let idp = {
 
       console.log('generateMessageResponse:');
       return resolve(generateMessageResponse);
-
-      //the hint field contains the information obtained after the user authentication
-      // if the hint content is not present, then rejects the value with the URL to open the page to authenticate the user
-      let i = googleInfo;
-
-      if (!hint) {
-
-/*
-        getAuth(contents).then((result) => {
-          console.log('RESULT:', result);
-          resolve(result);
-        })
-*/
-      } else {
-/*
-        // the request have already been made, so idpPRoxy will exchange the tokens along to the idp, to obtain the information necessary
-        let accessToken = urlParser(hint, 'access_token');
-        let idToken = urlParser(hint, 'id_token');
-        let code = urlParser(hint, 'code');
-
-        exchangeCode(code).then(function(value) {
-
-          console.log('TIAGO exchange code');
-
-          //obtain information about the user
-          let infoTokenURL = i.userinfo + value.access_token;
-          sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
-
-            console.log('TIAGO info token url');
-            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
-
-            let idTokenURL = i.tokenInfo + value.id_token;
-
-            //obtain information about the user idToken
-            sendHTTPRequest('GET', idTokenURL).then(function(idToken) {
-
-              console.log('TIAGO id token url');
-              identityBundle.tokenIDJSON = idToken;
-              identityBundle.expires = idToken.exp;
-              identityBundle.email = idToken.email;
-
-              let assertion = btoa(JSON.stringify({tokenID: value.id_token, tokenIDJSON: idToken}));
-              let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
-
-              //TODO delete later the field infoToken, and delete the need in the example
-              let returnValue = {assertion: assertion, idp: idpBundle, info: identityBundle, infoToken: infoToken};
-
-              identities[nIdentity] = returnValue;
-              ++nIdentity;
-
-              console.log('[IDPROXY.generateAssertion:returnValue]', returnValue);
-              resolve(returnValue);
-            }, function(e) {
-
-              reject(e);
-            });
-          }, function(error) {
-
-            reject(error);
-          });
-        }, function(err) {
-          console.log('[IDPROXY.generateAssertion:exchangeCode]', err);
-          //reject(err);
-        });
-        */
       }
 
     });
-
   }
-
 }
 
 /**
@@ -309,7 +94,6 @@ class NodejsProxyStub {
    _this.config = config;
 
    _this.messageBus.addListener('*', function(msg) {
-     console.log('FAKE NODEJS messageBus');
 
      //TODO add the respective listener
      if (msg.to === 'domain-idp://nodejs-idp') {
@@ -318,37 +102,8 @@ class NodejsProxyStub {
    });
 
    _this._sendStatus('created');
-   console.log('FAKE NODEJS constructor end');
  }
 
-  /**
-  * Function that see the intended method in the message received and call the respective function
-  *
-  * @param {message}  message received in the messageBus
-  */
-  requestToIdp(msg) {
-    let _this = this;
-    let params = msg.body.params;
-
-    switch (msg.body.method) {
-      case 'generateAssertion':
-        idp.generateAssertion(params.contents, params.origin, params.usernameHint).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      case 'validateAssertion':
-        idp.validateAssertion(params.assertion, params.origin).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      default:
-        break;
-    }
-  }
 
   /**
   * This function receives a message and a value. It replies the value to the sender of the message received
@@ -402,7 +157,6 @@ export default function activate(url, bus, config) {
     instance: new NodejsProxyStub(url, bus, config)
   };
 }
-
 
 
 let generateMessageResponse =
