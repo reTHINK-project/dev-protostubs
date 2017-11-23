@@ -103,6 +103,35 @@ class NodejsProxyStub {
    _this._sendStatus('created');
  }
 
+ /**
+ * Function that see the intended method in the message received and call the respective function
+ *
+ * @param {message}  message received in the messageBus
+ */
+ requestToIdp(msg) {
+   let _this = this;
+   let params = msg.body.params;
+
+   switch (msg.body.method) {
+     case 'generateAssertion':
+       idp.generateAssertion(params.contents, params.origin, params.usernameHint).then(
+         function(value) { _this.replyMessage(msg, value);},
+
+         function(error) { _this.replyMessage(msg, error);}
+       );
+       break;
+     case 'validateAssertion':
+       idp.validateAssertion(params.assertion, params.origin).then(
+         function(value) { _this.replyMessage(msg, value);},
+
+         function(error) { _this.replyMessage(msg, error);}
+       );
+       break;
+     default:
+       break;
+   }
+ }
+
 
   /**
   * This function receives a message and a value. It replies the value to the sender of the message received
