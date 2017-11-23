@@ -67,7 +67,6 @@ let idp = {
 
       console.log('generateMessageResponse:');
       return resolve(generateMessageResponse);
-      }
 
     });
   }

@@ -70,7 +70,6 @@ let idp = {
 
       console.log('generateMessageResponse:');
       return resolve(generateMessageResponse);
-      }
 
     });
 
@@ -138,6 +137,7 @@ class NodejsProxyStub {
     }
   }
 
+/**
   * This function receives a message and a value. It replies the value to the sender of the message received
   *
   * @param  {message}   message received
