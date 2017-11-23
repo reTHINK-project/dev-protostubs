@@ -1,0 +1,11 @@
+{
+  "language": "javascript",
+  "description": "IDPProxy for node idp",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "node": true
+  },
+  "interworking": false,
+  "objectName": "google.com"
+}
