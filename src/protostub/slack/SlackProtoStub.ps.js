@@ -12,7 +12,8 @@ class SlackProtoStub {
     console.log('[SlackProtostub] Constructor Loaded');
 
     let _this = this;
-
+    this._slack = slack;
+    console.log('slack->', slack);
     this._subscribedList = [];
     this._messageHistoryControl = {};
     this._usersList = [];
@@ -30,7 +31,7 @@ class SlackProtoStub {
 
     this._runtimeSessionURL = config.runtimeURL;
     this._reOpen = false;
-    this._slack = slack;
+
     console.log('[SlackProtostub] instantiate syncher with runtimeUrl', runtimeProtoStubURL);
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
 
@@ -220,13 +221,32 @@ class SlackProtoStub {
     if (!_this._session) {
       console.log('[SlackProtostub] creating Session for token:', token);
       _this._sendStatus('in-progress');
-      _this._session = _this._slack.rtm.client();
+
+
+      _this._session = this._slack.rtm.connect({token});
+      console.log('[SlackProtostub] session', _this._session);
       _this._session.createdTime = new Date().getTime() / 1000;
-      _this._session.listen({token});
-      _this._session.message(message=> {
-        console.log('[SlackProtostub] new message on session', message);
-        _this._handleNewMessage(message);
+
+      _this._session.then(function(result) {
+        if (result.ok) {
+          let ws = new WebSocket(result.url);
+          ws.onmessage = function (event) {
+            let msg = JSON.parse(event.data);
+            console.log('[SlackProtostub] new msg on ws', msg);
+            if (msg.type == 'message') {
+              _this._handleNewMessage(msg);
+              
+            }
+          };
+
+        }
       });
+      //
+      // //_this._session.listen({token});
+      // _this._session.message(message=> {
+      //   console.log('[SlackProtostub] new message on session', message);
+      //   _this._handleNewMessage(message);
+      // });
       _this._sendStatus('live');
 
     } else {
@@ -354,7 +374,7 @@ class SlackProtoStub {
         });
 
         observer.onChange('*', (event) => {
-          console.log('[SlackProtostub] Observer - onChange: ', event);
+          console.log('[SlackProtos_slacktub] Observer - onChange: ', event);
         });
         resolve(true);
 
