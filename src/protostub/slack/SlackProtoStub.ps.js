@@ -4,10 +4,10 @@ import IdentityManager from 'service-framework/dist/IdentityManager';
 import {ChatManager,ChatController, NotificationHandler} from 'service-framework/dist/ChatManager';
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 
-class SlackProtoStub extends ChatManager {
+class SlackProtoStub {
 
   constructor(runtimeProtoStubURL, bus, config) {
-    super(runtimeProtoStubURL, bus, config);
+//    super(runtimeProtoStubURL, bus, config);
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
     if (!bus) throw new Error('The bus is a needed parameter');
     if (!config) throw new Error('The config is a needed parameter');
@@ -28,9 +28,11 @@ class SlackProtoStub extends ChatManager {
     this._continuousOpen = true;
     this._token = '';
 
-/*    this._myUrl = runtimeProtoStubURL;
+    this._chatManager = new ChatManager(runtimeProtoStubURL, bus, config);
+
+    this._myUrl = runtimeProtoStubURL;
     this._bus = bus;
-    this._config = config;*/
+    this._config = config;
 
     this._runtimeSessionURL = config.runtimeURL;
     this._reOpen = false;
@@ -42,13 +44,16 @@ class SlackProtoStub extends ChatManager {
       console.log('[SlackProtostub] On Syncher Notification', event);
     });*/
 
+    this._chatManager.onInvitation((event) => {
+      _this._onSlackInvitation(event);
+    });
+
     this._notificationHandler = new NotificationHandler(bus);
 
-    this._notificationHandler.onNotification(this.processNotification);
-
-    this.onInvitation((event) => {
-      this._onInvitation(event);
+    this._notificationHandler.onNotification((event) => {
+      _this._chatManager.processNotification(event);
     });
+
 
 
     bus.addListener('*', (msg) => {
@@ -66,7 +71,9 @@ class SlackProtoStub extends ChatManager {
 
   }
 
-  _onInvitation(event) {
+  _onSlackInvitation(event) {
+    let _this = this;
+
     if (event.identity.hasOwnProperty('access_token') && event.identity.access_token) {
 
       this._token = event.identity.access_token;
@@ -97,13 +104,13 @@ class SlackProtoStub extends ChatManager {
 
 
                   event.ack(200);
-                  console.log('[SlackProtostub] subscribing object', subscriptionUrl);
+                  console.log('[SlackProtostub] subscribing object', event.url);
 
-                  _this.join(event.url, identity).then((chatController) => {
+                  _this._chatManager.join(event.url, false, identity).then((chatController) => {
 
                     let subscription = {
                       urlDataObj: event.url,
-                      schema: schema,
+                      schema: event.schema,
                       subscribed: true,
                       identity: identity,
                       chat: chatController
@@ -112,10 +119,12 @@ class SlackProtoStub extends ChatManager {
                     _this._subscribedList.push(subscription);
 
                     if (event.identity.userProfile.id) {
-                      _this._id = event.body.identity.userProfile.id;
+                      _this._id = event.identity.userProfile.id;
                     }
 
                     _this._channelStatusInfo(event, userInfo.id, event.url);
+
+                    _this._prepareChat(chatController);
                 });
               });
             } else event.error('Invalid Scheme: ' + schemaSplitted[schemaSplitted.length - 1]);
@@ -277,7 +286,7 @@ class SlackProtoStub extends ChatManager {
   _handleNewMessage(message) {
     let _this = this;
     let channelID = '';
-    let observer ;
+    let chat;
     _this._subscribedList.forEach(function(obj) {
       if (obj.channelID === message.channel) {
         channelID = obj.channelID;
@@ -289,11 +298,8 @@ class SlackProtoStub extends ChatManager {
       if (message.channel === channelID && message.user !== _this._id || (!message.hasOwnProperty('bot_id') && message.user === _this._id && message.channel === channelID)) {
 
         _this._getUserInfo(message.user).then((identity) => {
-          let msg = {
-            type : "chat",
-            content : message.text};
-          console.log('[SlackProtostub] msg to addChild', msg, '     identity:', identity);
-          chat.send(msg, identity);
+          console.log('[SlackProtostub] msg to addChild',  message.text, '     identity:', identity);
+          chat.send( message.text, identity);
         });
       }
     }
@@ -472,7 +478,7 @@ class SlackProtoStub extends ChatManager {
       if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile')
       && msg.identity.userProfile.hasOwnProperty('username') && msg.identity.userProfile.username) {
 
-        let text = '' + msg.identity.userProfile.username + ': ' + msg.value;
+        let text = '' + msg.identity.userProfile.username + ': ' + msg.value.content;
         let message = { as_user: true, token: _this._token, channel: channelID, text: text};
         console.log('[SlackProtostub] (PostMessage slack api) token(', _this._token, ')  channel(', channelID, ') text(',  msg.value.content, ')');
 
