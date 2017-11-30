@@ -89,6 +89,7 @@ let exchangeCode = (function(code) {
 
   return new Promise(function(resolve, reject) {
     sendHTTPRequest('POST', URL).then(function(info) {
+      console.log('[IDPROXY.exchangeCode:info]', info);
       resolve(info);
     }, function(error) {
       reject(error);
@@ -126,35 +127,35 @@ let IdpProxy = {
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
   validateAssertion: (assertion, origin) => {
+    console.info('validateAssertionProxy')
+    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
-    return new Promise(function(resolve,reject) {
+  //  return new Promise(function(resolve,reject) {
 
-      let decodedContent = atob(assertion);
-      let content = JSON.parse(decodedContent);
+      let decodedContent2 = atob(assertion);
+      let content = JSON.parse(decodedContent2);
       let idTokenSplited = content.tokenID.split('.');
       let idToken = JSON.parse(atob(idTokenSplited[1]));
 
-      resolve({identity: idToken.email, contents: idToken.nonce});
+      //resolve({identity: idToken.email, contents: idToken.nonce});
 
-    });
-    /*return new Promise(function(resolve,reject) {
+    //});
+
+    return new Promise(function(resolve,reject) {
       let i = googleInfo;
-
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-      sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(function(result) {
-
+      sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
           resolve({identity: content.tokenIDJSON.email, contents: content.tokenIDJSON});
         } else {
           reject('invalid');
         }
-      }, function(err) {
-
+      }).catch(err => {
         reject(err);
       });
-    });*/
+    });
   },
 
   refreshAssertion: (identity) => {
@@ -216,6 +217,9 @@ let IdpProxy = {
   * @return {Promise} returns a promise with an identity assertion
   */
   generateAssertion: (contents, origin, hint) => {
+    console.log('[IDPROXY.generateAssertion:contents]', contents);
+    console.log('[IDPROXY.generateAssertion:origin]', origin);
+    console.log('[IDPROXY.generateAssertion:hint]', hint);
     let i = googleInfo;
 
     //start the login phase
@@ -228,6 +232,8 @@ let IdpProxy = {
           }
         } catch (error) {*/
 
+        console.log('GOOGLE_PROXY_NO_HINT: ', requestUrl);
+
         let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
@@ -238,6 +244,8 @@ let IdpProxy = {
         let accessToken = urlParser(hint, 'access_token');
         let idToken = urlParser(hint, 'id_token');
         let code = urlParser(hint, 'code');
+
+        console.log('GOOGLE_PROXY_HINT: ', hint);
 
         exchangeCode(code).then(function(value) {
 
@@ -264,6 +272,8 @@ let IdpProxy = {
 
               identities[nIdentity] = returnValue;
               ++nIdentity;
+
+              console.log('[IDPROXY.generateAssertion:returnValue]', JSON.stringify(returnValue));
 
               resolve(returnValue);
             }, function(e) {
@@ -303,7 +313,7 @@ class IdpProxyProtoStub {
    _this.messageBus = bus;
    _this.config = config;
 
-   console.log('[Google IdpProxy] starting', runtimeProtoStubURL);
+   console.log('Google->Google constructor');
 
    _this.messageBus.addListener('*', function(msg) {
      if (msg.to === 'domain-idp://google.com') {
@@ -326,6 +336,7 @@ class IdpProxyProtoStub {
 
     switch (msg.body.method) {
       case 'generateAssertion':
+        console.info('generateAssertion');
         IdpProxy.generateAssertion(params.contents, params.origin, params.usernameHint).then(
           function(value) { _this.replyMessage(msg, value);},
 
@@ -333,6 +344,7 @@ class IdpProxyProtoStub {
         );
         break;
       case 'validateAssertion':
+        console.info('validateAssertion');
         IdpProxy.validateAssertion(params.assertion, params.origin).then(
           function(value) { _this.replyMessage(msg, value);},
 
@@ -340,6 +352,7 @@ class IdpProxyProtoStub {
         );
         break;
       case 'refreshAssertion':
+        console.info('refreshAssertion');
         IdpProxy.refreshAssertion(params.identity).then(
           function(value) { _this.replyMessage(msg, value);},
 
