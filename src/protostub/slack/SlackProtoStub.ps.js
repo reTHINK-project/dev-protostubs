@@ -100,7 +100,7 @@ class SlackProtoStub {
                   'slack://slack.com/' + userInfo.name + '@slack.com',
                   userInfo.profile.image_192,
                   userInfo.name,
-                  '', 'slack.com');
+                  '', 'slack.com', undefined, userInfo.profile);
 
 
                   event.ack(200);
