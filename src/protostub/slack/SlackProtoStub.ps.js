@@ -1,7 +1,7 @@
 import slack from 'slack';
-import { Syncher } from 'service-framework/dist/Syncher';
+import { Syncher, NotificationHandler } from 'service-framework/dist/Syncher';
 import IdentityManager from 'service-framework/dist/IdentityManager';
-import {ChatManager,ChatController, NotificationHandler} from 'service-framework/dist/ChatManager';
+import {ChatManager,ChatController} from 'service-framework/dist/ChatManager';
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 
 class SlackProtoStub {
@@ -50,7 +50,7 @@ class SlackProtoStub {
 
     this._notificationHandler = new NotificationHandler(bus);
 
-    this._notificationHandler.onNotification((event) => {
+    this._notificationHandler.onNotification('comm', (event) => {
       _this._chatManager.processNotification(event);
     });
 
@@ -102,6 +102,7 @@ class SlackProtoStub {
                   userInfo.name,
                   '', 'slack.com', undefined, userInfo.profile);
 
+                  //TODO: add channelId to userProfile and remove _subscribedList
 
                   event.ack(200);
                   console.log('[SlackProtostub] subscribing object', event.url);
