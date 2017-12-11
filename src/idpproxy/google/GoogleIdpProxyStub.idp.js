@@ -296,126 +296,65 @@ let IdpProxy = {
   }
 };
 
-/**
-* Identity Provider Proxy Protocol Stub
-*/
-class IdpProxyProtoStub {
 
-  /**
-  * Constructor of the IdpProxy Stub
-  * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
-  *
-  * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
-  * @param  {Message.Message}                           busPostMessage     configuration
-  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
-  */
- constructor(runtimeProtoStubURL, bus, config) {
-   let _this = this;
-   _this.runtimeProtoStubURL = runtimeProtoStubURL;
-   _this.messageBus = bus;
-   _this.config = config;
+function getAssertion() {
+  console.log('get assertion');
+  var contents = "NDgsMTMwLDEsMzQsNDgsMTMsNiw5LDQyLDEzNCw3MiwxMzQsMjQ3LDEzLDEsMSwxLDUsMCwzLDEzMCwxLDE1LDAsNDgsMTMwLDEsMTAsMiwxMzAsMSwxLDAsMTg0LDE5MCwyMjgsMjQ5LDgwLDM1LDMyLDE4LDE0OCwyMDAsMTM0LDcsMjUxLDQ0LDE1NywxMDgsMTk3LDk0LDg5LDg2LDIyNCwxMCwxNjYsNjksNDgsMTIwLDI3LDIwLDIwNyw5MywxMDEsMjExLDE2Miw5MywxMTgsMiwyNDksOTksMTQ3LDgzLDMsMzQsNjksMTI0LDE0MywxMDcsMTk2LDE2Myw1Myw5NywyMTgsMTg2LDEzNywyNTEsMTI3LDE5NywyMDgsMTc2LDgzLDE1NCwxMTQsMjIsMTIxLDExMiwxODYsMTQsOTIsMTQsMTM0LDgzLDEwMCwxNDYsMjQ1LDE4Niw0Nyw5MiwzMiwyMTcsMjEyLDIxLDI5LDE4MywxMjMsMTExLDQ0LDE4MywxNjIsOTUsMTkzLDE3MCwxNDksODUsMTMsNzIsODAsNjYsNzQsMTgwLDI1MywyNDYsMTczLDE1NywyMjksMjI5LDIwNCw4NCwxMDgsMTQ0LDE2MSw2MiwyNiwxODEsMTgzLDQ5LDEyNiwxNTQsMzgsMTk3LDE4Niw4OCwxMzEsOTcsMjIzLDE1MSw2Niw2Niw0MywxOSwzMCw5MSwyNTMsMjM4LDE3NSwyMTksMTYyLDgyLDIwMywxMTUsMTg2LDE4LDU2LDI1MSwyMSwxMTksMjUyLDk5LDc2LDEwOCwyMTMsMjA5LDMwLDIwNCw5Miw2Miw3OSwxMjMsMTYwLDQ5LDEzOCwyNDEsMTg2LDEyLDc1LDQ1LDE4OSw0NCwyMzksNTAsMjAsMzYsMTU0LDEyNSwyNDgsMjI5LDE1MCw0NywyMTUsMjI5LDYzLDk2LDIzOSwxNjAsMTg2LDIzNCwxMjYsNTMsMTUxLDIxNSwxODEsOTksNTYsMzksMzEsMjI4LDYxLDIzMSwxOTUsNywyMjcsMTQwLDEyNSwxNjYsMjA4LDI0NSwyNDAsNywzOSw4Miw5OCw4OSw3Miw4MCwxMjYsMTE2LDExMiwxOTEsMTkyLDEyNiwxMzgsMjA1LDE2NywyMCwyOCwyMzUsMTU0LDEyNiwyMDEsNzgsNDAsODIsMjAyLDEzNSw0NSwyNDcsMjAzLDE5OCwxMTgsMjM1LDIwNCwyMDMsMjIyLDkyLDE3MiwyNDYsOTQsMjI5LDI1MSwxMjQsMjcsMjE2LDU5LDgzLDIzMiwyNDgsMTQsNzksMiwzLDEsMCwx";
+  var origin = undefined;
+  var requestUrl = "https://accounts.google.com/o/oauth2/auth?scope=openid%20email%20profile&client_id=808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com&redirect_uri=https://localhost&response_type=code&state=state&prompt=consent&access_type=offline&nonce=NDgsMTMwLDEsMzQsNDgsMTMsNiw5LDQyLDEzNCw3MiwxMzQsMjQ3LDEzLDEsMSwxLDUsMCwzLDEzMCwxLDE1LDAsNDgsMTMwLDEsMTAsMiwxMzAsMSwxLDAsMTg0LDE5MCwyMjgsMjQ5LDgwLDM1LDMyLDE4LDE0OCwyMDAsMTM0LDcsMjUxLDQ0LDE1NywxMDgsMTk3LDk0LDg5LDg2LDIyNCwxMCwxNjYsNjksNDgsMTIwLDI3LDIwLDIwNyw5MywxMDEsMjExLDE2Miw5MywxMTgsMiwyNDksOTksMTQ3LDgzLDMsMzQsNjksMTI0LDE0MywxMDcsMTk2LDE2Myw1Myw5NywyMTgsMTg2LDEzNywyNTEsMTI3LDE5NywyMDgsMTc2LDgzLDE1NCwxMTQsMjIsMTIxLDExMiwxODYsMTQsOTIsMTQsMTM0LDgzLDEwMCwxNDYsMjQ1LDE4Niw0Nyw5MiwzMiwyMTcsMjEyLDIxLDI5LDE4MywxMjMsMTExLDQ0LDE4MywxNjIsOTUsMTkzLDE3MCwxNDksODUsMTMsNzIsODAsNjYsNzQsMTgwLDI1MywyNDYsMTczLDE1NywyMjksMjI5LDIwNCw4NCwxMDgsMTQ0LDE2MSw2MiwyNiwxODEsMTgzLDQ5LDEyNiwxNTQsMzgsMTk3LDE4Niw4OCwxMzEsOTcsMjIzLDE1MSw2Niw2Niw0MywxOSwzMCw5MSwyNTMsMjM4LDE3NSwyMTksMTYyLDgyLDIwMywxMTUsMTg2LDE4LDU2LDI1MSwyMSwxMTksMjUyLDk5LDc2LDEwOCwyMTMsMjA5LDMwLDIwNCw5Miw2Miw3OSwxMjMsMTYwLDQ5LDEzOCwyNDEsMTg2LDEyLDc1LDQ1LDE4OSw0NCwyMzksNTAsMjAsMzYsMTU0LDEyNSwyNDgsMjI5LDE1MCw0NywyMTUsMjI5LDYzLDk2LDIzOSwxNjAsMTg2LDIzNCwxMjYsNTMsMTUxLDIxNSwxODEsOTksNTYsMzksMzEsMjI4LDYxLDIzMSwxOTUsNywyMjcsMTQwLDEyNSwxNjYsMjA4LDI0NSwyNDAsNywzOSw4Miw5OCw4OSw3Miw4MCwxMjYsMTE2LDExMiwxOTEsMTkyLDEyNiwxMzgsMjA1LDE2NywyMCwyOCwyMzUsMTU0LDEyNiwyMDEsNzgsNDAsODIsMjAyLDEzNSw0NSwyNDcsMjAzLDE5OCwxMTgsMjM1LDIwNCwyMDMsMjIyLDkyLDE3MiwyNDYsOTQsMjI5LDI1MSwxMjQsMjcsMjE2LDU5LDgzLDIzMiwyNDgsMTQsNzksMiwzLDEsMCwx";
+  var hint;
 
-   console.log('[GoogleIdpProxy] constructor');
-
-   _this.messageBus.addListener('*', function(msg) {
-     if (msg.to === 'domain-idp://google.com') {
-
-       _this.requestToIdp(msg);
-     }
-   });
-   _this._sendStatus('created');
- }
-
-  /**
-  * Function that see the intended method in the message received and call the respective function
-  *
-  * @param {message}  message received in the messageBus
-  */
-  requestToIdp(msg) {
-    let _this = this;
-    let params = msg.body.params;
-    //console.info('requestToIdp:', msg.body.method);
-    console.info('[GoogleIdpProxy] receiving request: ', msg);
-    
-    switch (msg.body.method) {
-      case 'generateAssertion':
-        IdpProxy.generateAssertion(params.contents, params.origin, params.usernameHint).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      case 'validateAssertion':
- //       console.info('validateAssertion');
-        IdpProxy.validateAssertion(params.assertion, params.origin).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      case 'refreshAssertion':
-   //     console.info('refreshAssertion');
-        IdpProxy.refreshAssertion(params.identity).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-      default:
-        break;
-    }
-  }
-
-  /**
-  * This function receives a message and a value. It replies the value to the sender of the message received
-  *
-  * @param  {message}   message received
-  * @param  {value}     value to include in the new message to send
-  */
-  replyMessage(msg, value) {
-    let _this = this;
-
-    let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
-                   body: {code: 200, value: value}};
-
-    _this.messageBus.postMessage(message);
-  }
-
-  _sendStatus(value, reason) {
-    let _this = this;
-
-    console.log('[GoogleIdpProxy.sendStatus] ', value);
-
-    _this._state = value;
-
-    let msg = {
-      type: 'update',
-      from: _this.runtimeProtoStubURL,
-      to: _this.runtimeProtoStubURL + '/status',
-      body: {
-        value: value
-      }
-    };
-
-    if (reason) {
-      msg.body.desc = reason;
-    }
-
-    _this.messageBus.postMessage(msg);
-  }
+  IdpProxy.generateAssertion(contents,origin)
+  .then( function (assertion) {console.log(assertion)},
+      function (error) {
+       openPopup(error.loginUrl).then( function (value) {
+         console.log('getAssertion: result from popup ', value);
+          IdpProxy.generateAssertion(contents,origin, value)
+          .then( function (assertion) {
+          console.log(assertion);
+          });
+      });    
+  });    
 }
 
-// export default IdpProxyProtoStub;
-
-/**
- * To activate this protocol stub, using the same method for all protostub.
- * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
- * @param  {Message.Message}                           busPostMessage     configuration
- * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
- * @return {Object} Object with name and instance of ProtoStub
- */
-export default function activate(url, bus, config) {
-  return {
-    name: 'IdpProxyProtoStub',
-    instance: new IdpProxyProtoStub(url, bus, config)
-  };
-}
+function openPopup(urlreceived) {
+  
+      return new Promise((resolve, reject) => {
+  
+        let win = window.open(urlreceived, 'openIDrequest', 'width=800, height=600');
+        if (window.cordova) {
+          win.addEventListener('loadstart', function(e) {
+            let url = e.url;
+            let code = /\&code=(.+)$/.exec(url);
+            let error = /\&error=(.+)$/.exec(url);
+  
+            if (code || error) {
+              win.close();
+              return resolve(url);
+            } else {
+              return reject('openPopup error 1 - should not happen');
+            }
+          });
+        } else {
+          let pollTimer = setInterval(function() {
+            try {
+              if (win.closed) {
+                return reject('Some error occured when trying to get identity.');
+                clearInterval(pollTimer);
+              }
+  
+              if (win.document.URL.indexOf('id_token') !== -1 || win.document.URL.indexOf(location.origin) !== -1) {
+                window.clearInterval(pollTimer);
+                let url =   win.document.URL;
+  
+                win.close();
+                return resolve(url);
+              }
+            } catch (e) {
+              //return reject('openPopup error 2 - should not happen');
+              //console.log(e);
+            }
+          }, 500);
+        }
+      });
+    }
