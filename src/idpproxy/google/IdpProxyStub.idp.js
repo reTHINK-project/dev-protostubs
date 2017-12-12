@@ -17,7 +17,7 @@ let nIdentity = 0;
 let googleInfo = {
   clientSecret:          'Xx4rKucb5ZYTaXlcZX9HLfZW',
   clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
-  redirectURI:           location.protocol + '//' + location.hostname, //location.origin,
+  redirectURI:            location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' ), 
   issuer:                'https://accounts.google.com',
   tokenEndpoint:         'https://www.googleapis.com/oauth2/v4/token?',
   jwksUri:               'https://www.googleapis.com/oauth2/v3/certs?',
@@ -29,6 +29,21 @@ let googleInfo = {
   scope:                 'openid%20email%20profile',
   state:                 'state'
 };
+/*
+let googleInfo = {
+  clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
+  redirectURI:            location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' ), 
+  issuer:                'https://accounts.google.com',
+  tokenEndpoint:         'https://www.googleapis.com/oauth2/v4/token?',
+  jwksUri:               'https://www.googleapis.com/oauth2/v3/certs?',
+  authorisationEndpoint: 'https://accounts.google.com/o/oauth2/auth?',
+  userinfo:              'https://www.googleapis.com/oauth2/v3/userinfo?access_token=',
+  tokenInfo:             'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
+  accessType:            'online',
+  type:                  'token',
+  scope:                 'https://www.googleapis.com/auth/userinfo.profile',
+  state:                 'state'
+};*/
 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -116,7 +131,7 @@ let exchangeRefreshToken = (function(refreshToken) {
 /**
 * Identity Provider Proxy
 */
-let IdpProxy = {
+export let IdpProxy = {
 
   /**
   * Function to validate an identity Assertion received

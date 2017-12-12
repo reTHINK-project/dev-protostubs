@@ -17,7 +17,7 @@ let nIdentity = 0;
 let googleInfo = {
   clientSecret:          'Xx4rKucb5ZYTaXlcZX9HLfZW',
   clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
-  redirectURI:           location.protocol + '//' + location.hostname, //location.origin,
+  redirectURI:            location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' ), 
   issuer:                'https://accounts.google.com',
   tokenEndpoint:         'https://www.googleapis.com/oauth2/v4/token?',
   jwksUri:               'https://www.googleapis.com/oauth2/v3/certs?',
@@ -29,6 +29,21 @@ let googleInfo = {
   scope:                 'openid%20email%20profile',
   state:                 'state'
 };
+/*
+let googleInfo = {
+  clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
+  redirectURI:            location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' ), 
+  issuer:                'https://accounts.google.com',
+  tokenEndpoint:         'https://www.googleapis.com/oauth2/v4/token?',
+  jwksUri:               'https://www.googleapis.com/oauth2/v3/certs?',
+  authorisationEndpoint: 'https://accounts.google.com/o/oauth2/auth?',
+  userinfo:              'https://www.googleapis.com/oauth2/v3/userinfo?access_token=',
+  tokenInfo:             'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
+  accessType:            'online',
+  type:                  'token',
+  scope:                 'https://www.googleapis.com/auth/userinfo.profile',
+  state:                 'state'
+};*/
 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -232,6 +247,9 @@ let IdpProxy = {
           }
         } catch (error) {*/
 
+//        let requestUrl = i.authorisationEndpoint + 'redirect_uri=' + i.redirectURI + '&prompt=consent&response_type=token' +
+//        '&client_id=' + i.clientID + '&scope=' + i.scope + '&access_type=' + i.accessType;
+            
         let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
         console.log('[GoogleIdpProxy.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
@@ -313,11 +331,13 @@ function getAssertion() {
           .then( function (assertion) {
           console.log(assertion);
           });
-      });    
+      }).catch((error) => {console.error(error)});    
   });    
 }
 
 function openPopup(urlreceived) {
+
+  console.log('[openPopup] url ', urlreceived );
   
       return new Promise((resolve, reject) => {
   
@@ -342,6 +362,10 @@ function openPopup(urlreceived) {
                 return reject('Some error occured when trying to get identity.');
                 clearInterval(pollTimer);
               }
+
+              console.log('openPopup url: ', win.document.URL);
+              console.log('openPopup origin: ', location.origin);
+              
   
               if (win.document.URL.indexOf('id_token') !== -1 || win.document.URL.indexOf(location.origin) !== -1) {
                 window.clearInterval(pollTimer);
