@@ -73,8 +73,9 @@ module.exports = function(config) {
       ChromeTravis: {
         base: 'Chrome',
         flags: [
-          '--disable-popup',
           '--disable-web-security',
+          '--disable-popup',
+          '--disable-popup-blocking',
           '--ignore-certificate-errors'
         ]
       }

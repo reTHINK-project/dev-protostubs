@@ -16,7 +16,7 @@ chai.use(sinonChai);
 describe('getAssertion', function() {
 
   it('should get a new assertion', function(done) {
-//    this.timeout(0);
+    this.timeout(120000);
 
 /*    let number = 2;
     let scheme = 'hyperty';
