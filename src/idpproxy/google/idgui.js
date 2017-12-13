@@ -15,7 +15,7 @@ export function getAssertion() {
       function (error) {
          openPopup(error.loginUrl).then( function (value) {
            console.log('getAssertion: result from popup ', value);
-           IdpProxy.generateAssertion(contents,origin, value)
+           IdpProxy.generateAssertion(contents, origin, value)
             .then( function (assertion) {
               console.log(assertion);
               resolve();
@@ -25,50 +25,61 @@ export function getAssertion() {
   });
 }
 
+let isOpen = false;
+let win = null;
+let pollTimer;
 function openPopup(urlreceived) {
 
   console.log('[openPopup] url ', urlreceived );
   
-      return new Promise((resolve, reject) => {
-  
-        let win = window.open(urlreceived, 'openIDrequest', 'width=800, height=600');
-        if (window.cordova) {
-          win.addEventListener('loadstart', function(e) {
-            let url = e.url;
-            let code = /\&code=(.+)$/.exec(url);
-            let error = /\&error=(.+)$/.exec(url);
-  
-            if (code || error) {
-              win.close();
-              return resolve(url);
-            } else {
-              return reject('openPopup error 1 - should not happen');
-            }
-          });
-        } else {
-          let pollTimer = setInterval(function() {
-            try {
-              if (win.closed) {
-                return reject('Some error occured when trying to get identity.');
-                clearInterval(pollTimer);
-              }
+  return new Promise((resolve, reject) => {
 
-              console.log('openPopup url: ', win.document.URL);
-              console.log('openPopup origin: ', location.origin);
-              
-  
-              if (win.document.URL.indexOf('id_token') !== -1 || win.document.URL.indexOf(location.origin) !== -1) {
-                window.clearInterval(pollTimer);
-                let url =   win.document.URL;
-  
-                win.close();
-                return resolve(url);
-              }
-            } catch (e) {
-              //return reject('openPopup error 2 - should not happen');
-              //console.log(e);
-            }
-          }, 500);
+    if (!win) {
+      win = window.open(urlreceived, 'openIDrequest', 'width=800, height=600');
+    }
+
+    if (window.cordova) {
+      win.addEventListener('loadstart', function(e) {
+        let url = e.url;
+        let code = /\&code=(.+)$/.exec(url);
+        let error = /\&error=(.+)$/.exec(url);
+
+        if (code || error) {
+          win.close();
+          return resolve(url);
+        } else {
+          return reject('openPopup error 1 - should not happen');
         }
       });
+    } else {
+
+      if (!pollTimer) {
+
+        pollTimer = setInterval(function() {
+
+          try {
+            if (win.closed) {
+              clearInterval(pollTimer);
+              return reject('Some error occured when trying to get identity.');
+            }
+
+            console.log('openPopup url: ', win.document.URL);
+            console.log('openPopup origin: ', location.origin);
+
+            if ((win.document.URL.indexOf('id_token') !== -1 || win.document.URL.indexOf('code') !== -1) && win.document.URL.indexOf(location.origin) !== -1) {
+              clearInterval(pollTimer);
+              let url =   win.document.URL;
+
+              win.close();
+              return resolve(url);
+            }
+          } catch (e) {
+            //return reject('openPopup error 2 - should not happen');
+            console.log(e);
+          }
+        }, 500);
+      }
+
     }
+  });
+}
