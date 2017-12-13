@@ -1,3 +1,5 @@
+// TODO: remove contents, origin and refresh token
+
 let identities = {};
 let nIdentity = 0;
 
@@ -13,7 +15,7 @@ let nIdentity = 0;
 	3º Add the URI  in the authorized redirect URI section.
   4º change the REDIRECT parameter bellow with the pretended URI
  */
-
+/*
 let googleInfo = {
   clientSecret:          'Xx4rKucb5ZYTaXlcZX9HLfZW',
   clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
@@ -28,8 +30,8 @@ let googleInfo = {
   type:                  'code token id_token',
   scope:                 'openid%20email%20profile',
   state:                 'state'
-};
-/*
+};*/
+
 let googleInfo = {
   clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
   redirectURI:            location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' ), 
@@ -40,10 +42,10 @@ let googleInfo = {
   userinfo:              'https://www.googleapis.com/oauth2/v3/userinfo?access_token=',
   tokenInfo:             'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
   accessType:            'online',
-  type:                  'token',
+  type:                  'code token id_token',
   scope:                 'https://www.googleapis.com/auth/userinfo.profile',
   state:                 'state'
-};*/
+};
 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -98,7 +100,7 @@ function sendHTTPRequest(method, url) {
 let exchangeCode = (function(code) {
   let i = googleInfo;
 
-  let URL = i.tokenEndpoint + 'code=' + code + '&client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&redirect_uri=' + i.redirectURI + '&grant_type=authorization_code&access_type=' + i.accessType;
+  let URL = i.tokenEndpoint + 'code=' + code + '&client_id=' + i.clientID + /*'&client_secret=' + i.clientSecret +*/ '&redirect_uri=' + i.redirectURI + '&grant_type=authorization_code&access_type=' + i.accessType;
 
   //let URL = = i.tokenEndpoint + 'client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&refresh_token=' + code + '&grant_type=refresh_token';
 
@@ -131,7 +133,7 @@ let exchangeRefreshToken = (function(refreshToken) {
 /**
 * Identity Provider Proxy
 */
-export let IdpProxy = {
+let IdpProxy = {
 
   /**
   * Function to validate an identity Assertion received
@@ -242,20 +244,24 @@ export let IdpProxy = {
     return new Promise(function(resolve, reject) {
       if (!hint) {
         /*try {
-          if (window) {
+          if (window) { 
             resolve('url');
           }
         } catch (error) {*/
 
-//        let requestUrl = i.authorisationEndpoint + 'redirect_uri=' + i.redirectURI + '&prompt=consent&response_type=token' +
-//        '&client_id=' + i.clientID + '&scope=' + i.scope + '&access_type=' + i.accessType;
+        let requestUrl = i.authorisationEndpoint + 'redirect_uri=' + i.redirectURI 
+        + '&prompt=consent&response_type=' + i.type 
+        + '&client_id=' + i.clientID 
+        + '&scope=' + i.scope 
+        + '&access_type=' + i.accessType
+        + '&state=' + i.state ;
             
-        let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
+//        let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
         console.log('[GoogleIdpProxy.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
-      //  }
+      //  } 
 
       } else {
         // the request have already been made, so idpPRoxy will exchange the tokens along to the idp, to obtain the information necessary
@@ -265,26 +271,37 @@ export let IdpProxy = {
 
         //console.log('GOOGLE_PROXY_HINT: ', hint);
 
-        exchangeCode(code).then(function(value) {
+ //       exchangeCode(code).then(function(value) {
 
           //obtain information about the user
-          let infoTokenURL = i.userinfo + value.access_token;
+          //let infoTokenURL = i.userinfo + value.access_token;
+          let infoTokenURL = i.userinfo + accessToken;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
             console.log('[GoogleIdpProxy.generateAssertion] obtained infoToken ', infoToken);
             
-            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
+//            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
+            
+//            let idTokenURL = i.tokenInfo + value.id_token;
 
-            let idTokenURL = i.tokenInfo + value.id_token;
-
+            let identityBundle = {
+              accessToken: accessToken,
+              idToken: idToken,
+//              refreshToken: value.refresh_token,
+//              tokenType: value.token_type,
+              infoToken: infoToken
+            };
+                        
+            let idTokenURL = i.tokenInfo + idToken;
+                                    
             //obtain information about the user idToken
-            sendHTTPRequest('GET', idTokenURL).then(function(idToken) {
-              console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idToken);
+            sendHTTPRequest('GET', idTokenURL).then(function(idTokenJSON) {
+              console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idTokenJSON);
               
-              identityBundle.tokenIDJSON = idToken;
-              identityBundle.expires = idToken.exp;
-              identityBundle.email = idToken.email;
+              identityBundle.tokenIDJSON = idTokenJSON;
+              identityBundle.expires = idTokenJSON.exp;
+              identityBundle.email = idTokenJSON.email;
 
-              let assertion = btoa(JSON.stringify({tokenID: value.id_token, tokenIDJSON: idToken}));
+              let assertion = btoa(JSON.stringify({tokenID: idToken, tokenIDJSON: idTokenJSON}));
               let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
@@ -304,10 +321,10 @@ export let IdpProxy = {
 
             reject(error);
           });
-        }, function(err) {
+/*        }, function(err) {
 
           reject(err);
-        });
+        });*/
 
       }
     });

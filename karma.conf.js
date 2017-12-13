@@ -59,7 +59,7 @@ module.exports = function(config) {
       captureConsole: true
     },
 
-    port: 8080,
+    port: 9789,
     hostname: 'localhost',
     colors: true,
     logLevel: config.LOG_INFO,
@@ -73,7 +73,7 @@ module.exports = function(config) {
       ChromeTravis: {
         base: 'Chrome',
         flags: [
-          '--disable-popup-blocking',
+          '--disable-popup',
           '--disable-web-security',
           '--ignore-certificate-errors'
         ]

@@ -39,7 +39,7 @@ function openPopup(urlreceived) {
             let error = /\&error=(.+)$/.exec(url);
   
             if (code || error) {
-              win.close();
+//              win.close();
               return resolve(url);
             } else {
               return reject('openPopup error 1 - should not happen');
