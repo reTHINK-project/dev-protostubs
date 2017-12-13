@@ -1,5 +1,5 @@
-import {IdpProxy} from "./IdpProxyStub.idp"
-//import {IdpProxy} from "./GoogleIdpProxyStub.idp"
+//import {IdpProxy} from "./IdpProxyStub.idp"
+import {IdpProxy} from "./GoogleIdpProxyStub.idp"
 
 
 export function getAssertion() {

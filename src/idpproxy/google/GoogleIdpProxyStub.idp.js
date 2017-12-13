@@ -43,7 +43,8 @@ let googleInfo = {
   tokenInfo:             'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
   accessType:            'online',
   type:                  'code token id_token',
-  scope:                 'https://www.googleapis.com/auth/userinfo.profile',
+  scope:                 'openid%20email%20profile',
+//  scope:                 'https://www.googleapis.com/auth/userinfo.profile',
   state:                 'state'
 };
 
@@ -331,6 +332,7 @@ let IdpProxy = {
   }
 };
 
+let assertion;
 
 function getAssertion() {
   console.log('get assertion');
@@ -345,10 +347,25 @@ function getAssertion() {
        openPopup(error.loginUrl).then( function (value) {
          console.log('getAssertion: result from popup ', value);
           IdpProxy.generateAssertion(contents,origin, value)
-          .then( function (assertion) {
-          console.log(assertion);
+          .then( function (generated) {
+          console.log(generated);
+          assertion = generated;
           });
       }).catch((error) => {console.error(error)});    
+  });    
+}
+
+function validateAssertion() {
+  console.log('validate assertion: ', assertion);
+
+//  if (!assertion) Window.error('Assertion Not Generated Yet')
+
+  IdpProxy.validateAssertion(assertion.assertion)
+  .then( function (result) {
+    console.log(result)
+  },
+      function (error) {
+        console.error(error);
   });    
 }
 
