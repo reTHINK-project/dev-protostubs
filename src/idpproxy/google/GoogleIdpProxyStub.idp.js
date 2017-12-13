@@ -131,7 +131,7 @@ let exchangeRefreshToken = (function(refreshToken) {
 /**
 * Identity Provider Proxy
 */
-let IdpProxy = {
+export let IdpProxy = {
 
   /**
   * Function to validate an identity Assertion received
