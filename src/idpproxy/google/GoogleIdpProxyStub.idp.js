@@ -1,4 +1,5 @@
-import {IdpProxy} from "./GoogleIdP"
+import {IdpProxy} from "../OIDC"
+import {googleInfo} from "./GoogleInfo"
 
 /**
 * Google Identity Provider Proxy Protocol Stub
@@ -43,7 +44,7 @@ class GoogleIdpProxyProtoStub {
       
       switch (msg.body.method) {
         case 'generateAssertion':
-          IdpProxy.generateAssertion(params.contents, params.origin, params.usernameHint).then(
+          IdpProxy.generateAssertion(googleInfo, params.contents, params.origin, params.usernameHint).then(
             function(value) { _this.replyMessage(msg, value);},
   
             function(error) { _this.replyMessage(msg, error);}
@@ -51,7 +52,7 @@ class GoogleIdpProxyProtoStub {
           break;
         case 'validateAssertion':
    //       console.info('validateAssertion');
-          IdpProxy.validateAssertion(params.assertion, params.origin).then(
+          IdpProxy.validateAssertion(googleInfo, params.assertion, params.origin).then(
             function(value) { _this.replyMessage(msg, value);},
   
             function(error) { _this.replyMessage(msg, error);}
@@ -80,6 +81,8 @@ class GoogleIdpProxyProtoStub {
   
       let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
                      body: {code: 200, value: value}};
+
+      console.log('[IdpProxy.replyMessage] ', message);
   
       _this.messageBus.postMessage(message);
     }

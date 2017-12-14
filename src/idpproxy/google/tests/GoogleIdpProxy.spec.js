@@ -4,7 +4,9 @@ import sinonChai from 'sinon-chai';
 
 //import { generateGUID } from '../src/utils/utils';
 //import IdpProxy from '../GoogleIdpProxyStub.idp';
-import {getAssertion, validateAssertion} from '../tests-helper';
+import GoogleIdpProxyProtoStub from '../GoogleIdpProxyStub.idp';
+import {login} from '../../Login';
+
 
 chai.config.truncateThreshold = 0;
 
@@ -14,26 +16,101 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 let assertion;
+let idpProxyUrl = 'domain-idp://google.com';
+let idmURL = 'runtime://test.com/123/idm';
+let contents = 'BASE64_CONTENT';
+let origin = 'undefined';
+let loginUrl;
 
-describe('getAssertion', function() {
+let generateAssertionMessage = {
+  type: 'execute',
+  to: idpProxyUrl,
+  from: idmURL,
+  body: {
+    resource: 'identity',
+    method: 'generateAssertion',
+    params: { contents: contents, origin: origin }
+  }
+}
 
-  it('should get a new assertion', function(done) {
-    this.timeout(5000);
+let validateAssertionMessage = {
+  type: 'execute',
+  to: idpProxyUrl,
+  from: idmURL,
+  body: {
+    resource: 'identity',
+    method: 'validateAssertion',
+    params: { origin: origin }
+  }
+}
 
-    expect(getAssertion().then((result)=>{
-      assertion = result.assertion;
-    }))
-    .to.be.fulfilled
-    .and.notify(done);
-   });
+let bus = {
+  addListener: (url, callback) => {
+    this._listener = callback;
 
-   it('should validate assertion', function(done) {
+  },
+
+  postMessage: (msg, replyCallback) => { 
+    if (replyCallback) {
+      this._replyCallback = replyCallback;
+      this._listener(msg);
+    } else if (this._replyCallback) this._replyCallback(msg);
+  }
+};
+
+let idpProxy = new GoogleIdpProxyProtoStub(idpProxyUrl, bus, {});
+
+describe('IdP Proxy test', function() {
+
+  it('get login url', function(done) {
+//    this.timeout(5000);
     
-    expect(
-      validateAssertion(assertion)
+//    expect(
+      bus.postMessage( generateAssertionMessage, (reply)=> {
+        console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
+        expect(reply.body.value).to.have.keys('name', 'loginUrl');
+  
+        loginUrl = reply.body.value.loginUrl;
+        done();
+          
+     })
+//    ).to.be.fullfilled.notify(done);
+  });
+
+
+  it('generate Assertion', function(done) {
+    this.timeout(5000);
+    
+//    expect(
+      login(loginUrl)
+        .then(result => {
+
+          generateAssertionMessage.body.params.usernameHint = result;
+
+          bus.postMessage( generateAssertionMessage, (reply)=> {
+            expect(reply.body.value).to.have.keys('assertion', 'idp', 'info', 'infoToken' );
+
+            assertion = reply.body.value.assertion;
       
-    ).to.be.fulfilled
-    .and.notify(done);
+            done();
+              
+         })
+              
+        })
+
+  //    ).to.be.fulfilled.notify(done);
+    });
+
+    it('validate Assertion', function(done) {
+      validateAssertionMessage.body.params.assertion = assertion;
+      
+      bus.postMessage( validateAssertionMessage, (reply)=> {
+        expect(reply.body.value).to.have.keys('identity', 'contents');
+  
+        done();
+          
+     })
+
    });
- 
+  
 });
