@@ -63,9 +63,6 @@ let idpProxy = new GoogleIdpProxyProtoStub(idpProxyUrl, bus, {});
 describe('IdP Proxy test', function() {
 
   it('get login url', function(done) {
-//    this.timeout(5000);
-    
-//    expect(
       bus.postMessage( generateAssertionMessage, (reply)=> {
         console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
         expect(reply.body.value).to.have.keys('name', 'loginUrl');
@@ -74,14 +71,12 @@ describe('IdP Proxy test', function() {
         done();
           
      })
-//    ).to.be.fullfilled.notify(done);
   });
 
 
   it('generate Assertion', function(done) {
     this.timeout(5000);
     
-//    expect(
       login(loginUrl)
         .then(result => {
 
@@ -98,7 +93,6 @@ describe('IdP Proxy test', function() {
               
         })
 
-  //    ).to.be.fulfilled.notify(done);
     });
 
     it('validate Assertion', function(done) {
