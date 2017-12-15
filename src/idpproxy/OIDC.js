@@ -1,34 +1,9 @@
+
 let identities = {};
 let nIdentity = 0;
+let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' );
 
-/*
-	So that an application can use Google's OAuth 2.0 authentication system for user login,
-	first is required to set up a project in the Google Developers Console to obtain OAuth 2.0 credentials and set a redirect URI.
-	A test account was created to set the project in the Google Developers Console to obtain OAuth 2.0 credentials,	with the following credentials:
-      	username: openidtest10@gmail.com
-        password: testOpenID10
-	To add more URI's, follow the steps:
-	1º choose the project ( can be the My OpenID Project)	 from  https://console.developers.google.com/projectselector/apis/credentials using the credentials provided above.
-	2º Open The Client Web 1 listed in OAuth 2.0 Client ID's
-	3º Add the URI  in the authorized redirect URI section.
-  4º change the REDIRECT parameter bellow with the pretended URI
- */
 
-let googleInfo = {
-  clientSecret:          'Xx4rKucb5ZYTaXlcZX9HLfZW',
-  clientID:              '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
-  redirectURI:           location.protocol + '//' + location.hostname, //location.origin,
-  issuer:                'https://accounts.google.com',
-  tokenEndpoint:         'https://www.googleapis.com/oauth2/v4/token?',
-  jwksUri:               'https://www.googleapis.com/oauth2/v3/certs?',
-  authorisationEndpoint: 'https://accounts.google.com/o/oauth2/auth?',
-  userinfo:              'https://www.googleapis.com/oauth2/v3/userinfo?access_token=',
-  tokenInfo:             'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
-  accessType:            'offline',
-  type:                  'code token id_token',
-  scope:                 'openid%20email%20profile',
-  state:                 'state'
-};
 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -80,16 +55,15 @@ function sendHTTPRequest(method, url) {
 * Function to exchange the code received to the id Token, access token and a refresh token
 *
 */
-let exchangeCode = (function(code) {
+/*let exchangeCode = (function(code) {
   let i = googleInfo;
 
   let URL = i.tokenEndpoint + 'code=' + code + '&client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&redirect_uri=' + i.redirectURI + '&grant_type=authorization_code&access_type=' + i.accessType;
 
-  //let URL = = i.tokenEndpoint + 'client_id=' + i.clientID + '&client_secret=' + i.clientSecret + '&refresh_token=' + code + '&grant_type=refresh_token';
 
   return new Promise(function(resolve, reject) {
     sendHTTPRequest('POST', URL).then(function(info) {
-      console.log('[IDPROXY.exchangeCode:info]', info);
+      console.log('[GoogleIdpProxy.exchangeCode] returned info: ', info);
       resolve(info);
     }, function(error) {
       reject(error);
@@ -111,24 +85,25 @@ let exchangeRefreshToken = (function(refreshToken) {
     });
 
   });
-});
+});*/
 
 /**
 * Identity Provider Proxy
 */
-let IdpProxy = {
+export let IdpProxy = {
 
   /**
   * Function to validate an identity Assertion received
   * TODO add details of the implementation, and improve the implementation
   *
+  * @param  {idpInfo}      Object information about IdP endpoints
   * @param  {assertion}    Identity Assertion to be validated
   * @param  {origin}       Origin parameter that identifies the origin of the RTCPeerConnection
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
-  validateAssertion: (assertion, origin) => {
-    console.info('validateAssertionProxy')
-    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
+  validateAssertion: (idpInfo, assertion, origin) => {
+    console.info('[GoogleIdpProxy.validateAssertionProxy] assertion: ', atob(assertion))
+//    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
   //  return new Promise(function(resolve,reject) {
@@ -143,7 +118,7 @@ let IdpProxy = {
     //});
 
     return new Promise(function(resolve,reject) {
-      let i = googleInfo;
+      let i = idpInfo;
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
       sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(result => {
@@ -157,7 +132,7 @@ let IdpProxy = {
       });
     });
   },
-
+/*
   refreshAssertion: (identity) => {
     //console.log('PROXY:refreshAssertion:oldIdentity', identity);
     let i = googleInfo;
@@ -205,39 +180,48 @@ let IdpProxy = {
         });
       }
     });
-  },
+  },*/
 
   /**
   * Function to generate an identity Assertion
   * TODO add details of the implementation, and improve implementation
   *
+  * @param  {idpInfo}      Object information about IdP endpoints
   * @param  {contents} The contents includes information about the identity received
   * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
   * @param  {usernameHint} optional usernameHint parameter
   * @return {Promise} returns a promise with an identity assertion
   */
-  generateAssertion: (contents, origin, hint) => {
-    console.log('[IDPROXY.generateAssertion:contents]', contents);
-    console.log('[IDPROXY.generateAssertion:origin]', origin);
-    console.log('[IDPROXY.generateAssertion:hint]', hint);
-    let i = googleInfo;
+  generateAssertion: (idpInfo, contents, origin, hint) => {
+    console.log('[GoogleIdpProxy.generateAssertion:contents]', contents);
+    console.log('[GoogleIdpProxy.generateAssertion:origin]', origin);
+    console.log('[GoogleIdpProxy.generateAssertion:hint]', hint);
+    let i = idpInfo;
 
     //start the login phase
     //TODO later should be defined a better approach
     return new Promise(function(resolve, reject) {
       if (!hint) {
         /*try {
-          if (window) {
+          if (window) { 
             resolve('url');
           }
         } catch (error) {*/
 
-        console.log('GOOGLE_PROXY_NO_HINT: ', requestUrl);
+        let requestUrl = i.authorisationEndpoint + 'redirect_uri=' + redirectURI 
+        + '&prompt=consent&response_type=' + i.type 
+        + '&client_id=' + i.clientID 
+        + '&scope=' + i.scope 
+        + '&access_type=' + i.accessType
+        + '&nonce=' + contents
+        + '&state=' + i.state ;
+            
+//        let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
+        console.log('[GoogleIdpProxy.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
-        let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
-      //  }
+      //  } 
 
       } else {
         // the request have already been made, so idpPRoxy will exchange the tokens along to the idp, to obtain the information necessary
@@ -245,26 +229,40 @@ let IdpProxy = {
         let idToken = urlParser(hint, 'id_token');
         let code = urlParser(hint, 'code');
 
-        console.log('GOOGLE_PROXY_HINT: ', hint);
+        //console.log('GOOGLE_PROXY_HINT: ', hint);
 
-        exchangeCode(code).then(function(value) {
-
+//       exchangeCode(code).then(function(value) {
+ //       console.log('[GoogleIdpProxy.generateAssertion] obtained exchanged Token ', value);
+        
           //obtain information about the user
-          let infoTokenURL = i.userinfo + value.access_token;
+          //let infoTokenURL = i.userinfo + value.access_token;
+          let infoTokenURL = i.userinfo + accessToken;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
+            console.log('[GoogleIdpProxy.generateAssertion] obtained infoToken ', infoToken);
+            
+//            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
+            
+//            let idTokenURL = i.tokenInfo + value.id_token;
 
-            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
-
-            let idTokenURL = i.tokenInfo + value.id_token;
-
+            let identityBundle = {
+              accessToken: accessToken,
+              idToken: idToken,
+//              refreshToken: value.refresh_token,
+              tokenType: 'Bearer',  
+              infoToken: infoToken
+            };
+                        
+            let idTokenURL = i.tokenInfo + idToken;
+                                    
             //obtain information about the user idToken
-            sendHTTPRequest('GET', idTokenURL).then(function(idToken) {
+            sendHTTPRequest('GET', idTokenURL).then(function(idTokenJSON) {
+              console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idTokenJSON);
+              
+              identityBundle.tokenIDJSON = idTokenJSON;
+              identityBundle.expires = idTokenJSON.exp;
+              identityBundle.email = idTokenJSON.email;
 
-              identityBundle.tokenIDJSON = idToken;
-              identityBundle.expires = idToken.exp;
-              identityBundle.email = idToken.email;
-
-              let assertion = btoa(JSON.stringify({tokenID: value.id_token, tokenIDJSON: idToken}));
+              let assertion = btoa(JSON.stringify({tokenID: idToken, tokenIDJSON: idTokenJSON}));
               let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
@@ -273,7 +271,7 @@ let IdpProxy = {
               identities[nIdentity] = returnValue;
               ++nIdentity;
 
-              console.log('[IDPROXY.generateAssertion:returnValue]', JSON.stringify(returnValue));
+              console.log('[GoogleIdpProxy.generateAssertion] returning: ', JSON.stringify(returnValue));
 
               resolve(returnValue);
             }, function(e) {
@@ -284,136 +282,12 @@ let IdpProxy = {
 
             reject(error);
           });
-        }, function(err) {
+/*        }, function(err) {
 
           reject(err);
-        });
+        });*/
 
       }
     });
   }
 };
-
-/**
-* Identity Provider Proxy Protocol Stub
-*/
-class IdpProxyProtoStub {
-
-  /**
-  * Constructor of the IdpProxy Stub
-  * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
-  *
-  * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
-  * @param  {Message.Message}                           busPostMessage     configuration
-  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
-  */
- constructor(runtimeProtoStubURL, bus, config) {
-   let _this = this;
-   _this.runtimeProtoStubURL = runtimeProtoStubURL;
-   _this.messageBus = bus;
-   _this.config = config;
-
-   console.log('Google->Google constructor');
-
-   _this.messageBus.addListener('*', function(msg) {
-     if (msg.to === 'domain-idp://google.com') {
-
-       _this.requestToIdp(msg);
-     }
-   });
-   _this._sendStatus('created');
- }
-
-  /**
-  * Function that see the intended method in the message received and call the respective function
-  *
-  * @param {message}  message received in the messageBus
-  */
-  requestToIdp(msg) {
-    let _this = this;
-    let params = msg.body.params;
-    //console.info('requestToIdp:', msg.body.method);
-
-    switch (msg.body.method) {
-      case 'generateAssertion':
-        console.info('generateAssertion');
-        IdpProxy.generateAssertion(params.contents, params.origin, params.usernameHint).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      case 'validateAssertion':
-        console.info('validateAssertion');
-        IdpProxy.validateAssertion(params.assertion, params.origin).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-        break;
-      case 'refreshAssertion':
-        console.info('refreshAssertion');
-        IdpProxy.refreshAssertion(params.identity).then(
-          function(value) { _this.replyMessage(msg, value);},
-
-          function(error) { _this.replyMessage(msg, error);}
-        );
-      default:
-        break;
-    }
-  }
-
-  /**
-  * This function receives a message and a value. It replies the value to the sender of the message received
-  *
-  * @param  {message}   message received
-  * @param  {value}     value to include in the new message to send
-  */
-  replyMessage(msg, value) {
-    let _this = this;
-
-    let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
-                   body: {code: 200, value: value}};
-
-    _this.messageBus.postMessage(message);
-  }
-
-  _sendStatus(value, reason) {
-    let _this = this;
-
-    console.log('[GoogleIdpProxy.sendStatus] ', value);
-
-    _this._state = value;
-
-    let msg = {
-      type: 'update',
-      from: _this.runtimeProtoStubURL,
-      to: _this.runtimeProtoStubURL + '/status',
-      body: {
-        value: value
-      }
-    };
-
-    if (reason) {
-      msg.body.desc = reason;
-    }
-
-    _this.messageBus.postMessage(msg);
-  }
-}
-
-// export default IdpProxyProtoStub;
-
-/**
- * To activate this protocol stub, using the same method for all protostub.
- * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
- * @param  {Message.Message}                           busPostMessage     configuration
- * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
- * @return {Object} Object with name and instance of ProtoStub
- */
-export default function activate(url, bus, config) {
-  return {
-    name: 'IdpProxyProtoStub',
-    instance: new IdpProxyProtoStub(url, bus, config)
-  };
-}
