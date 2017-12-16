@@ -212,7 +212,7 @@ export let IdpProxy = {
 //        + '&prompt=consent&response_type=' + i.type 
         + '&response_type=' + i.type 
         + '&client_id=' + i.clientID 
-//        + '&scope=' + i.scope 
+        + '&granted_scopes=' + i.granted_scopes 
 //        + '&access_type=' + i.accessType
 //        + '&nonce=' + contents
         + '&state=' + i.state ;
@@ -248,11 +248,12 @@ export let IdpProxy = {
 
             let userProfile = {
               identifier: infoToken.id,
-              name: infoToken.id,
+              name: infoToken.name,
               picture: infoToken.picture.data.url,
             }
 
             if (infoToken.hasOwnProperty('email')) userProfile.email = infoToken.email;
+            else userProfile.email = infoToken.id + '@facebook.com';
 
             let identityBundle = {
               accessToken: accessToken,
