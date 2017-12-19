@@ -243,14 +243,14 @@ export let IdpProxy = {
 //            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
             
 //            let idTokenURL = i.tokenInfo + value.id_token;
-
+/*
             let identityBundle = {
               accessToken: accessToken,
               idToken: idToken,
 //              refreshToken: value.refresh_token,
               tokenType: 'Bearer',  
               infoToken: infoToken
-            };
+            };*/
                         
             let idTokenURL = i.tokenInfo + idToken;
                                     
@@ -258,15 +258,15 @@ export let IdpProxy = {
             sendHTTPRequest('GET', idTokenURL).then(function(idTokenJSON) {
               console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idTokenJSON);
               
-              identityBundle.tokenIDJSON = idTokenJSON;
+/*              identityBundle.tokenIDJSON = idTokenJSON;
               identityBundle.expires = idTokenJSON.exp;
-              identityBundle.email = idTokenJSON.email;
+              identityBundle.email = idTokenJSON.email;*/
 
               let assertion = btoa(JSON.stringify({tokenID: idToken, tokenIDJSON: idTokenJSON}));
               let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
-              let returnValue = {assertion: assertion, idp: idpBundle, info: identityBundle, infoToken: infoToken};
+              let returnValue = {assertion: assertion, idp: idpBundle, expires: idTokenJSON.exp, userProfile: infoToken};
 
               identities[nIdentity] = returnValue;
               ++nIdentity;

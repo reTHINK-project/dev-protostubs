@@ -83,7 +83,7 @@ describe('IdP Proxy test', function() {
           generateAssertionMessage.body.params.usernameHint = result;
 
           bus.postMessage( generateAssertionMessage, (reply)=> {
-            expect(reply.body.value).to.have.keys('assertion', 'idp', 'info', 'infoToken' );
+            expect(reply.body.value).to.have.keys('assertion', 'expires', 'idp', 'userProfile' );
 
             assertion = reply.body.value.assertion;
       

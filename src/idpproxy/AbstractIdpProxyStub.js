@@ -1,5 +1,7 @@
 let IdpProxy;
 let idpInfo;
+let convertUserProfile;
+
 /**
 * Abstract Identity Provider Proxy Protocol Stub to be extended by real Idp Proxies
 */
@@ -18,6 +20,8 @@ class AbstractIdpProxyProtoStub {
      _this.runtimeProtoStubURL = runtimeProtoStubURL;
      _this.messageBus = bus;
      _this.config = config;
+
+     convertUserProfile = config.convertUserProfile;
 
      IdpProxy = config.idpProxy;
      idpInfo = config.idpInfo;
@@ -47,7 +51,10 @@ class AbstractIdpProxyProtoStub {
       switch (msg.body.method) {
         case 'generateAssertion':
           IdpProxy.generateAssertion(idpInfo, params.contents, params.origin, params.usernameHint).then(
-            function(value) { _this.replyMessage(msg, value);},
+            function(value) { 
+              value.userProfile = convertUserProfile(value.userProfile);
+              _this.replyMessage(msg, value);
+            },
   
             function(error) { _this.replyMessage(msg, error);}
           );

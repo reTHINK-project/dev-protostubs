@@ -3,11 +3,11 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      './src/idpproxy/facebook/tests/*.spec.js'
+      './src/idpproxy/google/tests/*.spec.js'
     ],
     exclude: [],
     preprocessors: {
-      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap']
+      './src/idpproxy/google/tests/*.spec.js': ['webpack', 'sourcemap']
     },
 
     // webpack configuration
