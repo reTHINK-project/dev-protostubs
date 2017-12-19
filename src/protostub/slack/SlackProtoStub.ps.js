@@ -142,6 +142,10 @@ class SlackProtoStub {
                                   console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser)
                                   _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL).then(function(context) {
                                     console.log('[SlackProtostub] CONTEXT RETURNED', context);
+                                    context.onSubscription(function(event) {
+                                      event.accept();
+                                      console.log('[SlackProtostub] new subs', event);
+                                    });
                                   }).catch(function(err) {
                                     console.error('[SlackProtostub] err', err);
                                   });
@@ -365,6 +369,9 @@ class SlackProtoStub {
                             console.log('[SlackProtostub] creating a new contextReporter for ', objPresence, currentUser);
                             _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL).then(function(context) {
                               console.log('[SlackProtostub] CONTEXT RETURNED', context);
+                              context.onSubscription(function(event) {
+                                console.log('[SlackProtostub] new subs', event);
+                                event.accept();});
                             }).catch(function(err) {
                               console.error('[SlackProtostub] err', err);
                             });
