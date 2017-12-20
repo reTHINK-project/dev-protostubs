@@ -26,7 +26,7 @@ class AbstractIdpProxyProtoStub {
      IdpProxy = config.idpProxy;
      idpInfo = config.idpInfo;
   
-     console.log('[GoogleIdpProxy] constructor');
+     console.log('[AbstractIdpProxy] constructor');
   
      _this.messageBus.addListener('*', function(msg) {
        if (msg.to === config.idpUrl ) {

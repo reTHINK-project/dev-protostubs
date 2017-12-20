@@ -21,7 +21,8 @@ export let googleInfo = {
         "accessType":            "online",
         "type":                  "token id_token",
         "scope":                 "openid%20email%20profile",
-        "state":                 "state"
+        "state":                 "state",
+        "domain":                "google.com"
       };
 
 

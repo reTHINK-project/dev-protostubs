@@ -1,5 +1,6 @@
 import {IdpProxy} from "../OAUTH"
 import {facebookInfo} from "./FacebookInfo"
+import {convertUserProfile} from "./FacebookConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
@@ -19,6 +20,7 @@ class FacebookIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
      config.idpUrl = 'domain-idp://facebook.com';
      config.idpProxy = IdpProxy;
      config.idpInfo = facebookInfo;
+     config.convertUserProfile = convertUserProfile;
      super(runtimeProtoStubURL, bus, config);
    }
   }

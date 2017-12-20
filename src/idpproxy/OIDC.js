@@ -102,7 +102,7 @@ export let IdpProxy = {
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
   validateAssertion: (idpInfo, assertion, origin) => {
-    console.info('[GoogleIdpProxy.validateAssertionProxy] assertion: ', atob(assertion))
+    console.info('[OIDC.validateAssertionProxy] assertion: ', atob(assertion))
 //    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
@@ -263,7 +263,7 @@ export let IdpProxy = {
               identityBundle.email = idTokenJSON.email;*/
 
               let assertion = btoa(JSON.stringify({tokenID: idToken, tokenIDJSON: idTokenJSON}));
-              let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
+              let idpBundle = {domain: i.domain, protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
               let returnValue = {assertion: assertion, idp: idpBundle, expires: idTokenJSON.exp, userProfile: infoToken};

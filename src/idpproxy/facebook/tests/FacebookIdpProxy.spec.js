@@ -75,7 +75,7 @@ describe('IdP Proxy test', function() {
 
 
   it('generate Assertion', function(done) {
-    this.timeout(5000);
+    this.timeout(10000);
     
       login(loginUrl)
         .then(result => {
@@ -83,7 +83,7 @@ describe('IdP Proxy test', function() {
           generateAssertionMessage.body.params.usernameHint = result;
 
           bus.postMessage( generateAssertionMessage, (reply)=> {
-            expect(reply.body.value).to.have.keys('assertion', 'idp', 'info', 'infoToken' );
+            expect(reply.body.value).to.have.keys('assertion', 'idp', 'expires', 'userProfile' );
 
             assertion = reply.body.value.assertion;
       
@@ -95,7 +95,8 @@ describe('IdP Proxy test', function() {
 
     });
 
-    it.skip('validate Assertion', function(done) {
+    it('validate Assertion', function(done) {
+//      this.timeout(5000);
       validateAssertionMessage.body.params.assertion = assertion;
       
       bus.postMessage( validateAssertionMessage, (reply)=> {

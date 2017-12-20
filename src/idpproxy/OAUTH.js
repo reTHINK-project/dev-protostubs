@@ -102,16 +102,16 @@ export let IdpProxy = {
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
   validateAssertion: (idpInfo, assertion, origin) => {
-    console.info('[GoogleIdpProxy.validateAssertionProxy] assertion: ', atob(assertion))
+    console.info('[OAUTH2.validateAssertion] assertion: ', atob(assertion));
 //    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
   //  return new Promise(function(resolve,reject) {
 
-      let decodedContent2 = atob(assertion);
+/*      let decodedContent2 = atob(assertion);
       let content = JSON.parse(decodedContent2);
       let idTokenSplited = content.tokenID.split('.');
-      let idToken = JSON.parse(atob(idTokenSplited[1]));
+      let idToken = JSON.parse(atob(idTokenSplited[1]));*/
 
       //resolve({identity: idToken.email, contents: idToken.nonce});
 
@@ -121,9 +121,10 @@ export let IdpProxy = {
       let i = idpInfo;
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-      sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(result => {
+      sendHTTPRequest('GET', i.userinfo + content.tokenID).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
-          resolve({identity: content.tokenIDJSON.email, contents: content.tokenIDJSON});
+//        if (result.hasOwnProperty('name')) {
+            resolve({identity: result.id, contents: result});
         } else {
           reject('invalid');
         }
@@ -240,12 +241,12 @@ export let IdpProxy = {
           //let infoTokenURL = i.userinfo + value.access_token;
           let infoTokenURL = i.userinfo + accessToken;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
-            console.log('[GoogleIdpProxy.generateAssertion] obtained infoToken ', infoToken);
+            console.log('[OAUTH2.generateAssertion] obtained user profile ', infoToken);
             
 //            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
             
 //            let idTokenURL = i.tokenInfo + value.id_token;
-
+/*
             let userProfile = {
               identifier: infoToken.id,
               name: infoToken.name,
@@ -261,7 +262,7 @@ export let IdpProxy = {
 //              refreshToken: value.refresh_token,
               tokenType: 'Bearer',  
               infoToken: userProfile
-            };
+            };*/
                         
 //            let idTokenURL = i.tokenInfo + idToken;
                                     
@@ -269,15 +270,16 @@ export let IdpProxy = {
   /*          sendHTTPRequest('GET', idTokenURL).then(function(idTokenJSON) {
               console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idTokenJSON);
               
-              identityBundle.tokenIDJSON = idTokenJSON;*/
+              identityBundle.tokenIDJSON = idTokenJSON;
               identityBundle.expires = expires;
-              identityBundle.email = infoToken.email;
+              identityBundle.email = infoToken.email;*/
 
               let assertion = btoa(JSON.stringify({tokenID: accessToken, tokenIDJSON: infoToken}));
-              let idpBundle = {domain: 'facebook.com', protocol: 'OAUTH2'};
+              console.log('atob assertion:', atob(assertion));
+              let idpBundle = {domain: i.domain, protocol: 'OAUTH2'};
 
               //TODO delete later the field infoToken, and delete the need in the example
-              let returnValue = {assertion: assertion, idp: idpBundle, info: identityBundle, infoToken: infoToken};
+              let returnValue = {assertion: assertion, idp: idpBundle, expires: expires , userProfile: infoToken};
 
               identities[nIdentity] = returnValue;
               ++nIdentity;
