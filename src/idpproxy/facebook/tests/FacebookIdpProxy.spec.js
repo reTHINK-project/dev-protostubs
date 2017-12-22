@@ -83,6 +83,8 @@ describe('IdP Proxy test', function() {
           generateAssertionMessage.body.params.usernameHint = result;
 
           bus.postMessage( generateAssertionMessage, (reply)=> {
+            console.log('IdpProxyTest.generateAssertion.reply with value: ', reply.body.value);
+            
             expect(reply.body.value).to.have.keys('assertion', 'idp', 'expires', 'userProfile' );
 
             assertion = reply.body.value.assertion;

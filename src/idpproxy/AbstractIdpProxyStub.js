@@ -1,6 +1,7 @@
 let IdpProxy;
 let idpInfo;
 let convertUserProfile;
+let userInfoEndpoint;
 
 /**
 * Abstract Identity Provider Proxy Protocol Stub to be extended by real Idp Proxies
@@ -20,12 +21,10 @@ class AbstractIdpProxyProtoStub {
      _this.runtimeProtoStubURL = runtimeProtoStubURL;
      _this.messageBus = bus;
      _this.config = config;
-
+     IdpProxy = config.idpProxy;
      convertUserProfile = config.convertUserProfile;
 
-     IdpProxy = config.idpProxy;
-     idpInfo = config.idpInfo;
-  
+ 
      console.log('[AbstractIdpProxy] constructor');
   
      _this.messageBus.addListener('*', function(msg) {
@@ -46,12 +45,13 @@ class AbstractIdpProxyProtoStub {
       let _this = this;
       let params = msg.body.params;
       //console.info('requestToIdp:', msg.body.method);
-      console.info('[GoogleIdpProxy] receiving request: ', msg);
+      console.info('[AbstractIdpProxyProtoStub] receiving request: ', msg);
       
       switch (msg.body.method) {
         case 'generateAssertion':
-          IdpProxy.generateAssertion(idpInfo, params.contents, params.origin, params.usernameHint).then(
+          IdpProxy.generateAssertion(_this.config, params.contents, params.origin, params.usernameHint).then(
             function(value) { 
+              
               value.userProfile = convertUserProfile(value.userProfile);
               _this.replyMessage(msg, value);
             },
@@ -61,7 +61,7 @@ class AbstractIdpProxyProtoStub {
           break;
         case 'validateAssertion':
    //       console.info('validateAssertion');
-          IdpProxy.validateAssertion(idpInfo, params.assertion, params.origin).then(
+          IdpProxy.validateAssertion(_this.config, params.assertion, params.origin).then(
             function(value) { _this.replyMessage(msg, value);},
   
             function(error) { _this.replyMessage(msg, error);}
@@ -91,7 +91,7 @@ class AbstractIdpProxyProtoStub {
       let message = {id: msg.id, type: 'response', to: msg.from, from: msg.to,
                      body: {code: 200, value: value}};
 
-      console.log('[IdpProxy.replyMessage] ', message);
+      console.log('[AbstractIdpProxyProtoStub.replyMessage] ', message);
   
       _this.messageBus.postMessage(message);
     }
@@ -99,7 +99,7 @@ class AbstractIdpProxyProtoStub {
     _sendStatus(value, reason) {
       let _this = this;
   
-      console.log('[GoogleIdpProxy.sendStatus] ', value);
+      console.log('[AbstractIdpProxyProtoStub.sendStatus] ', value);
   
       _this._state = value;
   
