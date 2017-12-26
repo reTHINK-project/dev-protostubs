@@ -111,7 +111,7 @@ let generateAssertionWithCodeToken = (function ( contents, expires, hint) {
   });
 });
 
-let getAccessTokenWithCodeToken = (function (resources, schemes, login) {
+let getAccessTokenWithCodeToken = (function (resources, login) {
   return new Promise(function (resolve, reject) {
     let code = urlParser(login, 'code');
 
@@ -121,7 +121,7 @@ let getAccessTokenWithCodeToken = (function (resources, schemes, login) {
 
         if (info.hasOwnProperty('access_token')) {
           let expires = getExpires(info);
-          resolve (accessTokenResult(resources, schemes, info.access_token, expires, info));
+          resolve (accessTokenResult(resources, info.access_token, expires, info));
         } else reject('[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ', info);
       }, function (error) {
         reject(error);
@@ -140,9 +140,9 @@ let getExpires = (function (url) {
 
 });
 
-let accessTokenResult = (function (resources, schemes, accessToken, expires, input, refresh) {
+let accessTokenResult = (function (resources, accessToken, expires, input, refresh) {
 
-  let result = { resources: resources, schemes: schemes, accessToken: accessToken, expires: expires, input: input };
+  let result = { domain: domain, resources: resources, accessToken: accessToken, expires: expires, input: input };
 
   if (refresh) result.refresh = refresh;
 
@@ -285,6 +285,34 @@ export let IdpProxy = {
   /**
   * Function to get an Access Token
   *
+  * @param  {config}      Object information about IdP endpoints
+  * @param  {resources} Object contents includes information about the identity received
+  * @return {Promise} returns a promise with an identity assertion
+  */
+
+  getAccessTokenAuthorisationEndpoint: (config, resources) => {
+    console.log('[OAUTH2.getAccessTokenAuthorisationEndpoint:config]', config);
+//    console.log('[OAUTH2.generateAssertion:contents]', contents);
+//    console.log('[OAUTH2.generateAssertion:origin]', origin);
+    console.log('[OAUTH2.getAccessTokenAuthorisationEndpoint:resources]', resources);
+//    let i = idpInfo;
+    accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
+
+    let _this = this;
+    //start the login phase
+    return new Promise(function (resolve, reject) {
+
+        resolve( accessTokenAuthorisationEndpoint(resources));
+
+    }, function (e) {
+
+      reject(e);
+    });
+  },
+  
+  /**
+  * Function to get an Access Token
+  *
   * @param  {idpInfo}      Object information about IdP endpoints
   * @param  {contents} The contents includes information about the identity received
   * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
@@ -292,34 +320,25 @@ export let IdpProxy = {
   * @return {Promise} returns a promise with an identity assertion
   */
 
-  getAccessToken: (config, resources, schemes, login) => {
+  getAccessToken: (config, resources, login) => {
     console.log('[OAUTH2.getAccessToken:config]', config);
 //    console.log('[OAUTH2.generateAssertion:contents]', contents);
 //    console.log('[OAUTH2.generateAssertion:origin]', origin);
     console.log('[OAUTH2.getAccessToken:login]', login);
 //    let i = idpInfo;
     accessTokenEndpoint = config.accessTokenEndpoint;
-    accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
     domain = config.domain;
 
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
-      if (!login) { // the user is not authenticated yet
-
-//        console.log('[OAUTH2.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
-
-        reject({ name: 'IdPLoginError', loginUrl: accessTokenAuthorisationEndpoint(resources, schemes) });
-
-      } else {
         // the user is loggedin, try to extract the Access Token and its expires
         let expires = getExpires(login);
 
         let accessToken = urlParser(login, 'access_token');
 
-        if (accessToken) resolve( accessTokenResult(resources, schemes, accessToken, expires, login) );
-        else resolve( getAccessTokenWithCodeToken(resources, schemes, login) );
-      }
+        if (accessToken) resolve( accessTokenResult(resources, accessToken, expires, login) );
+        else resolve( getAccessTokenWithCodeToken(resources, login) );
     }, function (e) {
 
       reject(e);

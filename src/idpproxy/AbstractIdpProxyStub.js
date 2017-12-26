@@ -76,16 +76,28 @@ class AbstractIdpProxyProtoStub {
 
           function (error) { _this.replyMessage(msg, error); }
         );
-      case 'getAccessToken':
+        break;
+      case 'getAccessTokenAuthorisationEndpoint':
         //     console.info('getAccessToken');
-        IdpProxy.getAccessToken(_this.config, params.resources, params.schemes, params.login).then(
-          function (value) { 
-            value.input = accessTokenInput(value.input);
-            _this.replyMessage(msg, value); 
+        IdpProxy.getAccessTokenAuthorisationEndpoint(_this.config, params.resources).then(
+          function (value) {
+            _this.replyMessage(msg, value);
           },
 
           function (error) { _this.replyMessage(msg, error); }
         );
+        break;
+      case 'getAccessToken':
+        //     console.info('getAccessToken');
+        IdpProxy.getAccessToken(_this.config, params.resources, params.login).then(
+          function (value) {
+            value.input = accessTokenInput(value.input);
+            _this.replyMessage(msg, value);
+          },
+
+          function (error) { _this.replyMessage(msg, error); }
+        );
+        break;
       default:
         break;
     }
