@@ -173,10 +173,10 @@ export let IdpProxy = {
 //      let i = idpInfo;
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-      sendHTTPRequest('GET', userInfoEndpoint({access_token: content.tokenID})).then(result => {
+      sendHTTPRequest('GET', config.validateAssertionEndpoint({access_token: content.tokenID, input: content.tokenIDJSON })).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
           //        if (result.hasOwnProperty('name')) {
-          resolve({ identity: result.id, contents: result });
+          resolve({ identity: config.convertUserProfile(result).id, contents: result });
         } else {
           reject('invalid');
         }

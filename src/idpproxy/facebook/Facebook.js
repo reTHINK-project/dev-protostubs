@@ -53,3 +53,9 @@ export function authorisationEndpoint() {
   return url;
 }
 
+export function validateAssertionEndpoint(info) {
+
+  return facebookInfo.userinfo + info.access_token;
+
+}
+

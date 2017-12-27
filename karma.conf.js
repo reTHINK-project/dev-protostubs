@@ -3,11 +3,11 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      './src/idpproxy/slack/tests/*.spec.js'
+      './src/idpproxy/facebook/tests/*.spec.js'
     ],
     exclude: [],
     preprocessors: {
-      './src/idpproxy/slack/tests/*.spec.js': ['webpack', 'sourcemap']
+      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap']
     },
 
     // webpack configuration
@@ -59,7 +59,7 @@ module.exports = function(config) {
       captureConsole: true
     },
 
-    port: 80,
+    port: 8080,
     hostname: 'localhost',
     colors: true,
     logLevel: config.LOG_INFO,

@@ -2,7 +2,7 @@ import {IdpProxy} from "../OAUTH"
 import {convertUserProfile, userInfoEndpoint, 
   authorisationEndpoint, tokenEndpoint, 
   accessTokenAuthorisationEndpoint, 
-  accessTokenEndpoint, accessTokenInput} from "./Slack"
+  accessTokenEndpoint, accessTokenInput, validateAssertionEndpoint} from "./Slack"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
@@ -25,6 +25,7 @@ class SlackProxyStub extends AbstractIdpProxyProtoStub {
      config.domain = 'slack.com';
      config.convertUserProfile = convertUserProfile;
      config.userInfoEndpoint = userInfoEndpoint;
+     config.validateAssertionEndpoint = validateAssertionEndpoint;
      config.authorisationEndpoint = authorisationEndpoint;
      config.tokenEndpoint = tokenEndpoint;
      config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;

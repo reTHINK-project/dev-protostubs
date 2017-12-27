@@ -1,6 +1,7 @@
 import { IdpProxy } from "../OAUTH"
 //import {facebookInfo} from "./FacebookInfo"
-import { convertUserProfile, userInfoEndpoint, authorisationEndpoint } from "./Facebook"
+import { convertUserProfile, userInfoEndpoint,
+   authorisationEndpoint, validateAssertionEndpoint } from "./Facebook"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
@@ -24,6 +25,7 @@ class FacebookIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.convertUserProfile = convertUserProfile;
     config.userInfoEndpoint = userInfoEndpoint;
     config.authorisationEndpoint = authorisationEndpoint;
+    config.validateAssertionEndpoint = validateAssertionEndpoint;
     super(runtimeProtoStubURL, bus, config);
   }
 }
