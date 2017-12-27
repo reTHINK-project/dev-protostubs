@@ -74,9 +74,9 @@ class SlackProtoStub {
   _onSlackInvitation(event) {
     let _this = this;
 
-    if (event.identity.hasOwnProperty('access_token') && event.identity.access_token) {
+    if (event.identity.hasOwnProperty('accessToken') && event.identity.accessToken) {
 
-      this._token = event.identity.access_token;
+      this._token = event.identity.accessToken;
 
       _this._open(this._token, ()=> {
         if (_this._filter(event)) {
