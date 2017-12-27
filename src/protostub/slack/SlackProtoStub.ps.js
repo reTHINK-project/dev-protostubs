@@ -140,7 +140,7 @@ class SlackProtoStub {
 
                                   let objPresence = _this._createNewObjPresence(data.presence);
                                   console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser)
-                                  _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL).then(function(context) {
+                                  _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
                                     console.log('[SlackProtostub] CONTEXT RETURNED', context);
                                     context.onSubscription(function(event) {
                                       event.accept();
@@ -367,7 +367,7 @@ class SlackProtoStub {
                           if (data.ok) {
                             let objPresence = _this._createNewObjPresence(data.presence);
                             console.log('[SlackProtostub] creating a new contextReporter for ', objPresence, currentUser);
-                            _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL).then(function(context) {
+                            _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
                               console.log('[SlackProtostub] CONTEXT RETURNED', context);
                               context.onSubscription(function(event) {
                                 console.log('[SlackProtostub] new subs', event);
