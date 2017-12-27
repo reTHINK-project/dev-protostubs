@@ -474,9 +474,7 @@ class SlackProtoStub {
   _deliver(msg, channelID) {
     let _this = this;
 
-    console.info('[SlackProtostub._deliver] msg, ', msg);
-    console.info('[SlackProtostub._deliver] channel, ', channelID);
-    
+   
     if (channelID && msg.value) {
 
       if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile')
