@@ -119,8 +119,8 @@ class SlackProtoStub {
 
                     _this._subscribedList.push(subscription);
 
-                    if (event.identity.userProfile.id) {
-                      _this._id = event.identity.userProfile.id;
+                    if (event.identity.input.user_id) {
+                      _this._id = event.identity.input.user_id;
                     }
 
                     _this._channelStatusInfo(event, userInfo.id, event.url);
@@ -474,12 +474,15 @@ class SlackProtoStub {
   _deliver(msg, channelID) {
     let _this = this;
 
+    console.info('[SlackProtostub._deliver] msg, ', msg);
+    console.info('[SlackProtostub._deliver] channel, ', channelID);
+    
     if (channelID && msg.value) {
 
       if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile')
-      && msg.identity.userProfile.hasOwnProperty('username') && msg.identity.userProfile.username) {
+      && msg.identity.userProfile.hasOwnProperty('name') && msg.identity.userProfile.name) {
 
-        let text = '' + msg.identity.userProfile.username + ': ' + msg.value.content;
+        let text = '' + msg.identity.userProfile.name + ': ' + msg.value.content;
         let message = { as_user: true, token: _this._token, channel: channelID, text: text};
         console.log('[SlackProtostub] (PostMessage slack api) token(', _this._token, ')  channel(', channelID, ') text(',  msg.value.content, ')');
 
