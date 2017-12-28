@@ -32,6 +32,7 @@ class SlackProtoStub {
     this._continuousOpen = true;
     this._token = '';
     this._chatController;
+    this._chatControllersExtra = {};
     this._schemaURL;
     this._dataObjectReporterURL;
     this._contextReportersInfo = {};
@@ -133,50 +134,18 @@ class SlackProtoStub {
                     _this._dataObjectReporterURL = event.url;
 
                     _this._chatManager.join(event.url, false, identity).then((chatController) => {
-                      _this._chatController = chatController;
-                      console.log('[SlackProtostub] chatController', _this._chatController);
-
-                      chatController.onChange(function(event){
-                        console.log('[SlackProtos_slacktub] Observer - onChange: ', event);
-                      });
-
-
-                      _this._chatController.onUserAdded(function(ev) {
-                        console.log('[SlackProtostub] new user added', ev);
-                        _this._addedUsersInfo.forEach(function(currentUser) {
-
-                          if(currentUser.userURL == ev.data.identity.userProfile.userURL) {
-                            console.log('[SlackProtostub] PRESENCE working on presence of', currentUser);
-
-                            let toGetPresence = { token: _this._token, user: currentUser.id };
-
-                            _this._slack.users.getPresence(toGetPresence, (err, data) => {
-
-                              if (err) {
-                                console.error('[SlackProtostub] error', err);
-                              } else {
-                                console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
-                                if (data.ok) {
-
-                                  let objPresence = _this._createNewObjPresence(data.presence);
-                                  console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser)
-                                  _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
-                                    console.log('[SlackProtostub] CONTEXT RETURNED', context);
-                                    context.onSubscription(function(event) {
-                                      event.accept();
-                                      console.log('[SlackProtostub] new subs', event);
-                                    });
-                                    _this._contextReportersInfo[currentUser.userURL] = context;
-                                  }).catch(function(err) {
-                                    console.error('[SlackProtostub] err', err);
-                                  });
-                                }
-                              }
-                            });
-                          }
-                        });
-
-                      })
+                      _this._prepareChat(chatController);
+                      //_this._chatController = chatController;
+                      // console.log('[SlackProtostub] chatController', _this._chatController);
+                      //
+                      // _this._chatController.onMessage(function(event){
+                      //   console.log('[SlackProtos_slacktub] Observer - onChange: ', event);
+                      // });
+                      //
+                      //
+                      // _this._chatController.onUserAdded(function(ev) {
+                      //   _this._createNewContextReporter(ev.data.identity.userProfile.userURL);
+                      // })
                       let subscription = {
                         urlDataObj: event.url,
                         schema: event.schema,
@@ -190,10 +159,8 @@ class SlackProtoStub {
                       if (event.identity.userProfile.id) {
                         _this._id = event.identity.userProfile.id;
                       }
-
-                      _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv);
-
-                      _this._prepareChat(chatController);
+                      _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL);
+                      //_this._prepareChat(chatController);
                     });
                   }
 
@@ -203,6 +170,43 @@ class SlackProtoStub {
         }
       });
     } else event.error('Access Token Missing');
+  }
+
+  _createNewContextReporter(userURL) {
+    let _this = this;
+    console.log('[SlackProtostub] TEST creating reporter for', userURL);
+    _this._addedUsersInfo.forEach(function(currentUser) {
+
+      if(currentUser.userURL == userURL ) {
+        console.log('[SlackProtostub] TEST get presense for ', currentUser);
+
+        let toGetPresence = { token: _this._token, user: currentUser.id };
+
+        _this._slack.users.getPresence(toGetPresence, (err, data) => {
+
+          if (err) {
+            console.error('[SlackProtostub] error', err);
+          } else {
+            console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
+            if (data.ok) {
+
+              let objPresence = _this._createNewObjPresence(data.presence);
+              console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
+              _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
+                console.log('[SlackProtostub] CONTEXT RETURNED', context);
+                context.onSubscription(function(event) {
+                  event.accept();
+                  console.log('[SlackProtostub] new subs', event);
+                });
+                _this._contextReportersInfo[currentUser.id] = context;
+              }).catch(function(err) {
+                console.error('[SlackProtostub] err', err);
+              });
+            }
+          }
+        });
+      }
+    });
   }
 
   // To acknowledge the invitation received
@@ -228,15 +232,16 @@ class SlackProtoStub {
     } else {
       status = 'unavailable'
     }
-      return Object.assign({}, {
-          id: '_' + Math.random().toString(36).substr(2, 9),// do we need this?
-          values: [{
-              name: "availability",
-              type: "availability_status",
-              unit: "pres",
-              value: status
-          }]
-      });
+    // return Object.assign({}, {
+    //     id: '_' + Math.random().toString(36).substr(2, 9),// do we need this?
+    //     values: [{
+    //         name: "availability",
+    //         type: "availability_status",
+    //         unit: "pres",
+    //         value: status
+    //     }]
+    // });
+    return [{value: status}];
   };
 
   get config() { return this._config; }
@@ -286,7 +291,7 @@ class SlackProtoStub {
 
   }
 
-  _channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv) {
+  _channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL) {
     let _this = this;
     let channelName = msg.value.name.split(' ').join('-').replace(/\//gi, '-');
     let channelExists = _this._channelsList.filter(function(value) { return value.name === channelName; })[0];
@@ -306,7 +311,7 @@ class SlackProtoStub {
       console.log('[SlackProtostub] channel members', channelMembers, '   ->', alreadyOnChannel);
 
       if (! _this._usersUpdated) {
-        _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv);
+        _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL);
       }
 
       let count = 0;
@@ -336,12 +341,12 @@ class SlackProtoStub {
     // _this._addedUsersInfo.push(userToAdd);
   }
 
-  _addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv) {
+  _addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL) {
     let _this = this;
     _this._usersUpdated = true;
     let usersInfo = {};
     let toADD = [];
-
+    let userToAdd;
     console.log('[SlackProtostub] lets check if users needs to be added');
     _this._usersList.forEach(function(currentUser) {
       channelMembers.forEach(function(s) {
@@ -358,7 +363,7 @@ class SlackProtoStub {
               currentUser.name,
               '', 'slack.com', undefined, currentUser.profile);
 
-            let userToAdd = { user : 'slack://'+currentUser.name+'@slack.com', domain: 'slack.com', id: currentUser.id, userURL: 'slack://slack.com/'+currentUser.name+'@slack.com', identity: identity};
+            userToAdd = { user : 'slack://'+currentUser.name+'@slack.com', domain: 'slack.com', id: currentUser.id, userURL: 'slack://slack.com/'+currentUser.name+'@slack.com', identity: identity};
             _this._addedUsersInfo.push(userToAdd);
 
             toADD.push(userToAdd);
@@ -367,39 +372,28 @@ class SlackProtoStub {
       });
     });
 
-    // setInterval(() => {},2000);
-    // _this._chatController.addUserReq(toADD).then(function(){
-    //
-    //     console.log('[SlackProtostub] to add users request accepted', userToAdd);
-    //
-    // }).catch(function(err){
-    //   console.error('[SlackProtostub] to add users request rejected', userToAdd, err);
-    // });
-
-
-    //add invited User
-    let userToAdd = { user : 'slack://'+userName+'@slack.com', domain: 'slack.com', id: userID, userURL: 'slack://slack.com/'+userName+'@slack.com', identity: identityToInv};
+    userToAdd = { user : 'slack://'+userName+'@slack.com', domain: 'slack.com', id: userID, userURL: 'slack://slack.com/'+userName+'@slack.com', identity: identityToInv};
     _this._addedUsersInfo.push(userToAdd);
-    //let toADD = [];
     toADD.push(userToAdd);
 
-    _this._chatController.addUserReq(toADD).then(function(){
 
-        console.log('[SlackProtostub] to add users request accepted', toADD);
-        toADD.forEach(function(user) {
-          _this._chatManager.join(_this._dataObjectReporterURL, false, user.identity).then(function(result) {
-            console.log('[SlackProtostub] chatmanager JOIN', result);
-            result.onUserAdded(function(ev) {
-              console.log('[SlackProtostub] new user added', ev);
-            });
-          }).catch(function(error) {
-            console.log('[SlackProtostub] chatmanager JOIN error', error);
-          });
-        })
+    toADD.forEach(function(user) {
+      console.log('[SlackProtostub] TEST joining with user', user);
+      _this._chatManager.join(_this._dataObjectReporterURL, false, user.identity).then(function(result) {
+        console.log('[SlackProtostub] chatmanager JOIN', result, user.userURL, ownUserURL);
+        _this._prepareChat(result);
+        if (user.userURL !== ownUserURL) {
+          _this._createNewContextReporter(user.userURL);
+        }
 
-    }).catch(function(err){
-      console.error('[SlackProtostub] to add users request rejected', toADD, err);
-    });
+      }).catch(function(error) {
+        console.log('[SlackProtostub] chatmanager JOIN error', error);
+      });
+    })
+
+    //}).catch(function(err){
+    //  console.error('[SlackProtostub] to add users request rejected', toADD, err);
+    //});
 
   }
 
@@ -431,7 +425,8 @@ class SlackProtoStub {
             console.log('[SlackProtostub] new msg on ws', msg);
             if (msg.type == 'message') {
               _this._handleNewMessage(msg);
-
+            } else if (msg.type == 'presence_change') {
+              _this._handlePresenceChange(msg);
             }
           };
 
@@ -451,6 +446,16 @@ class SlackProtoStub {
     setTimeout(() => {callback();});
   }
 
+  _handlePresenceChange(message) {
+    let _this = this;
+    if (_this._contextReportersInfo[message.user]) {
+      let reporter = _this._contextReportersInfo[message.user];
+      let newContext = _this._createNewObjPresence(message.presence);
+      reporter.data.values = newContext;
+      console.log('[SlackProtostub] presence of user', message.user, ' updated to', newContext);
+    }
+  }
+
   _handleNewMessage(message) {
     let _this = this;
     let channelID = '';
@@ -461,7 +466,6 @@ class SlackProtoStub {
         chat = obj.chat;
       }
     });
-
     if (message.channel && message.ts > _this._session.createdTime ) {
       if (message.channel === channelID && message.user !== _this._id || (!message.hasOwnProperty('bot_id') && message.user === _this._id && message.channel === channelID)) {
 
@@ -505,6 +509,7 @@ class SlackProtoStub {
 
   _prepareChat(chat) {
     let _this = this;
+    console.log('[SlackProtostub] chat', chat);
     chat.onMessage((msg) => {
       console.info('[SlackProtostub] onMessage: ', msg);
       console.info('[SlackProtostub] Observer - Message History Control ', _this._messageHistoryControl);
@@ -512,7 +517,7 @@ class SlackProtoStub {
       //check if for each msg message has been delivered, and control that for when we have more than one slack user subscribed
       let currentID = chat.child_cseq;
       // check if this child already sent messages
-      let channelObjUrl = chat.url;
+      let channelObjUrl = chat._dataObjectObserver.url;
       let channelID;
 
       _this._subscribedList.forEach(function(obj) {
