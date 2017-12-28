@@ -396,6 +396,8 @@ class SlackProtoStub {
               _this._handleNewMessage(msg);
             } else if (msg.type == 'presence_change') {
               _this._handlePresenceChange(msg);
+            } else if (msg.type == 'member_joined_channel') {
+              _this._handleNewUser(msg);
             }
           };
 
@@ -413,6 +415,38 @@ class SlackProtoStub {
       console.log('[SlackProtostub] session already exist');
     }
     setTimeout(() => {callback();});
+  }
+
+  _handleNewUser(message) {
+    let _this = this;
+    let subcribed;
+    _this._subscribedList.forEach(function(obj) {
+      if (obj.channelID === message.channel) {
+        subcribed = obj;
+      }
+    });
+    if (subcribed) {
+      let invInfo = _this._usersList.filter(function(value) {
+        return value.id === message.user;
+      })[0];
+
+      let identity = new MessageBodyIdentity(
+        invInfo.name,
+        'slack://slack.com/' + invInfo.name + '@slack.com',
+        invInfo.profile.image_192,
+        invInfo.name,
+        '', 'slack.com', undefined, invInfo.profile);
+
+      let userToAdd = { user : 'slack://'+invInfo.name+'@slack.com', domain: 'slack.com', id: message.user, userURL: 'slack://slack.com/'+invInfo.name+'@slack.com', identity: identity};
+      _this._addedUsersInfo.push(userToAdd);
+
+      _this._chatManager.join(subcribed.urlDataObj, false, identity).then(function(result) {
+        _this._prepareChat(result);
+        _this._createNewContextReporter(identity.userProfile.userURL);
+      });
+    }
+
+
   }
 
   _handlePresenceChange(message) {
