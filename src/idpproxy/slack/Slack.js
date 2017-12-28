@@ -80,7 +80,7 @@ export function validateAssertionEndpoint(info) {
 
 }
 
-export function authorisationEndpoint() {
+export function authorisationEndpoint(nonce) {
 
   let url = slackIdAssertionInfo.authorisationEndpoint 
     + 'redirect_uri=' + redirectURI
@@ -88,7 +88,7 @@ export function authorisationEndpoint() {
     + '&client_id=' + slackIdAssertionInfo.clientID
     + '&scope=' + slackIdAssertionInfo.scope
     + '&access_type=' + slackIdAssertionInfo.accessType
-    + '&state=' + slackIdAssertionInfo.state;
+    + '&state=' + nonce;
   console.log('[Slack.authorisationEndpoint] ', url);
   return url;
 }

@@ -500,7 +500,7 @@ class SlackProtoStub {
       msg.body.desc = reason;
     }
 
-    _this._bus.postMessage(msg);
+    _this._bus.postMessage( JSON.parse(JSON.stringify(msg)));
   }
 }
 

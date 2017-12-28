@@ -262,7 +262,7 @@ export let IdpProxy = {
 
 //        console.log('[OAUTH2.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
-        reject({ name: 'IdPLoginError', loginUrl: authorisationEndpoint() });
+        reject({ name: 'IdPLoginError', loginUrl: authorisationEndpoint(contents) });
 
       } else {
         // the request have already been made, so idpPRoxy will try to access the user information

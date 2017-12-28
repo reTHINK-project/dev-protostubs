@@ -9,7 +9,7 @@ let redirectURI = location.protocol + '//' + location.hostname + (location.port 
 let facebookInfo = {
   "clientID":             "516850078685290",
   "authorisationEndpoint": "https://www.facebook.com/v2.11/dialog/oauth?",
-  "userinfo":              "https://graph.facebook.com/v2.11/me/?fields=id,name,picture,email&access_token=",
+  "userinfo":              "https://graph.facebook.com/v2.2/me/?fields=id,first_name,last_name,picture,email&access_token=",
   "type":                  "token",
   "granted_scopes":        "email,public_profile",
   "state":                 "state",
@@ -41,14 +41,15 @@ export function userInfoEndpoint(info) {
 
 }
 
-export function authorisationEndpoint() {
+export function authorisationEndpoint(nonce) {
 
   let url = facebookInfo.authorisationEndpoint 
     + 'redirect_uri=' + redirectURI
     + '&response_type=' + facebookInfo.type
     + '&client_id=' + facebookInfo.clientID
     + '&granted_scopes=' + facebookInfo.granted_scopes
-    + '&state=' + facebookInfo.state;
+    + '&nonce=' + nonce
+    + '&state=' + nonce;
   console.log('[Slack.authorisationEndpoint] ', url);
   return url;
 }
