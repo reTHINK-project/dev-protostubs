@@ -46,7 +46,7 @@ export function convertUserProfile(userSlack) {
   let userProfile = userSlack.user.profile;
   userProfile.userURL = 'user://slack.com/' + userSlack.user.name;
 
-  userProfile.picture = userProfile.image_original;
+  userProfile.picture = (userProfile.image_original) ? userProfile.image_original : userProfile.image_72;
 
   userProfile.id = userSlack.user.id;
 

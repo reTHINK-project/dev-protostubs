@@ -77,7 +77,7 @@ let generateAssertionWithAccessToken = ( function (contents, expires, info) {
       console.log('[OAUTH2.generateAssertion] obtained user profile ', infoToken);
 
       let assertion = btoa(JSON.stringify({ tokenID: info.access_token, tokenIDJSON: infoToken, publicKey: contents }));
-      console.log('atob assertion:', atob(assertion));
+      console.log('[OAUTH2.generateAssertion] atob assertion:', atob(assertion));
       let idpBundle = { domain: domain, protocol: 'OAUTH2' };
 
       //TODO delete later the field infoToken, and delete the need in the example
