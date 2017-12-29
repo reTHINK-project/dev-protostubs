@@ -76,7 +76,7 @@ let generateAssertionWithAccessToken = ( function (contents, expires, info) {
     sendHTTPRequest('GET', userInfoEndpoint(info)).then(function (infoToken) {
       console.log('[OAUTH2.generateAssertion] obtained user profile ', infoToken);
 
-      let assertion = btoa(JSON.stringify({ tokenID: info.access_token, tokenIDJSON: infoToken }));
+      let assertion = btoa(JSON.stringify({ tokenID: info.access_token, tokenIDJSON: infoToken, publicKey: contents }));
       console.log('atob assertion:', atob(assertion));
       let idpBundle = { domain: domain, protocol: 'OAUTH2' };
 
@@ -176,7 +176,7 @@ export let IdpProxy = {
       sendHTTPRequest('GET', config.validateAssertionEndpoint({access_token: content.tokenID, input: content.tokenIDJSON })).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
           //        if (result.hasOwnProperty('name')) {
-          resolve({ identity: config.convertUserProfile(result).id, contents: result });
+          resolve({ identity: config.convertUserProfile(result).id, contents: content.publicKey });
         } else {
           reject('invalid');
         }

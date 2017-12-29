@@ -9,7 +9,7 @@ let redirectURI = location.protocol + '//' + location.hostname + (location.port 
 let facebookInfo = {
   "clientID":             "516850078685290",
   "authorisationEndpoint": "https://www.facebook.com/v2.11/dialog/oauth?",
-  "userinfo":              "https://graph.facebook.com/v2.2/me/?fields=id,first_name,last_name,picture,email&access_token=",
+  "userinfo":              "https://graph.facebook.com/v2.2/me/?fields=id,first_name,last_name,name,picture,email&access_token=",
   "type":                  "token",
   "granted_scopes":        "email,public_profile",
   "state":                 "state",
@@ -23,12 +23,15 @@ let facebookInfo = {
 export function convertUserProfile(userProfile) {
 
   console.log('[FaceboolUserProfileConverter] ', userProfile );
+  userProfile.name = userProfile.first_name + ' ' + userProfile.last_name;
+
   userProfile.userURL = 'user://facebook.com/' + userProfile.name;
 
   userProfile.picture = userProfile.picture.data.url;
 
   if (!userProfile.hasOwnProperty('preferred_username')) 
-  userProfile.preferred_username = userProfile.id;
+  userProfile.preferred_username = userProfile.last_name;
+
 
   return userProfile;
 }
