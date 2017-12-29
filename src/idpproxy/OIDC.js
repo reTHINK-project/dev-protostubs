@@ -63,7 +63,7 @@ function sendHTTPRequest(method, url) {
 
   return new Promise(function(resolve, reject) {
     sendHTTPRequest('POST', URL).then(function(info) {
-      console.log('[GoogleIdpProxy.exchangeCode] returned info: ', info);
+      console.log('[OIDC.exchangeCode] returned info: ', info);
       resolve(info);
     }, function(error) {
       reject(error);
@@ -101,8 +101,8 @@ export let IdpProxy = {
   * @param  {origin}       Origin parameter that identifies the origin of the RTCPeerConnection
   * @return {Promise}      Returns a promise with the identity assertion validation result
   */
-  validateAssertion: (idpInfo, assertion, origin) => {
-    console.info('[GoogleIdpProxy.validateAssertionProxy] assertion: ', atob(assertion))
+  validateAssertion: (config, assertion, origin) => {
+    console.info('[OIDC.validateAssertionProxy] assertion: ', atob(assertion))
 //    console.info('validateAssertionProxy:atob(assertion)', atob(assertion));
 
     //TODO check the values with the hash received
@@ -118,7 +118,7 @@ export let IdpProxy = {
     //});
 
     return new Promise(function(resolve,reject) {
-      let i = idpInfo;
+      let i = config.idpInfo;
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
       sendHTTPRequest('GET', i.tokenInfo + content.tokenID).then(result => {
@@ -192,11 +192,11 @@ export let IdpProxy = {
   * @param  {usernameHint} optional usernameHint parameter
   * @return {Promise} returns a promise with an identity assertion
   */
-  generateAssertion: (idpInfo, contents, origin, hint) => {
-    console.log('[GoogleIdpProxy.generateAssertion:contents]', contents);
-    console.log('[GoogleIdpProxy.generateAssertion:origin]', origin);
-    console.log('[GoogleIdpProxy.generateAssertion:hint]', hint);
-    let i = idpInfo;
+  generateAssertion: (config, contents, origin, hint) => {
+    console.log('[OIDC.generateAssertion:contents]', contents);
+    console.log('[OIDC.generateAssertion:origin]', origin);
+    console.log('[OIDC.generateAssertion:hint]', hint);
+    let i = config.idpInfo;
 
     //start the login phase
     //TODO later should be defined a better approach
@@ -217,7 +217,7 @@ export let IdpProxy = {
         + '&state=' + i.state ;
             
 //        let requestUrl = i.authorisationEndpoint + 'scope=' + i.scope + '&client_id=' + i.clientID + '&redirect_uri=' + i.redirectURI + '&response_type=code' + /*i.type +*/ '&state=' + i.state + '&prompt=consent&access_type=' + i.accessType + '&nonce=' + contents;
-        console.log('[GoogleIdpProxy.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
+        console.log('[OIDC.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
         reject({name: 'IdPLoginError', loginUrl: requestUrl});
 
@@ -232,46 +232,46 @@ export let IdpProxy = {
         //console.log('GOOGLE_PROXY_HINT: ', hint);
 
 //       exchangeCode(code).then(function(value) {
- //       console.log('[GoogleIdpProxy.generateAssertion] obtained exchanged Token ', value);
+ //       console.log('[OIDC.generateAssertion] obtained exchanged Token ', value);
         
           //obtain information about the user
           //let infoTokenURL = i.userinfo + value.access_token;
           let infoTokenURL = i.userinfo + accessToken;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
-            console.log('[GoogleIdpProxy.generateAssertion] obtained infoToken ', infoToken);
+            console.log('[OIDC.generateAssertion] obtained infoToken ', infoToken);
             
 //            let identityBundle = {accessToken: value.access_token, idToken: value.id_token, refreshToken: value.refresh_token, tokenType: value.token_type, infoToken: infoToken};
             
 //            let idTokenURL = i.tokenInfo + value.id_token;
-
+/*
             let identityBundle = {
               accessToken: accessToken,
               idToken: idToken,
 //              refreshToken: value.refresh_token,
               tokenType: 'Bearer',  
               infoToken: infoToken
-            };
+            };*/
                         
             let idTokenURL = i.tokenInfo + idToken;
                                     
             //obtain information about the user idToken
             sendHTTPRequest('GET', idTokenURL).then(function(idTokenJSON) {
-              console.log('[GoogleIdpProxy.generateAssertion] obtained idToken ', idTokenJSON);
+              console.log('[OIDC.generateAssertion] obtained idToken ', idTokenJSON);
               
-              identityBundle.tokenIDJSON = idTokenJSON;
+/*              identityBundle.tokenIDJSON = idTokenJSON;
               identityBundle.expires = idTokenJSON.exp;
-              identityBundle.email = idTokenJSON.email;
+              identityBundle.email = idTokenJSON.email;*/
 
               let assertion = btoa(JSON.stringify({tokenID: idToken, tokenIDJSON: idTokenJSON}));
-              let idpBundle = {domain: 'google.com', protocol: 'OIDC'};
+              let idpBundle = {domain: i.domain, protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
-              let returnValue = {assertion: assertion, idp: idpBundle, info: identityBundle, infoToken: infoToken};
+              let returnValue = {assertion: assertion, idp: idpBundle, expires: idTokenJSON.exp, userProfile: infoToken};
 
               identities[nIdentity] = returnValue;
               ++nIdentity;
 
-              console.log('[GoogleIdpProxy.generateAssertion] returning: ', JSON.stringify(returnValue));
+              console.log('[OIDC.generateAssertion] returning: ', JSON.stringify(returnValue));
 
               resolve(returnValue);
             }, function(e) {
