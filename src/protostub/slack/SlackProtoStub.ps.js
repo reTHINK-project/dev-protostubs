@@ -156,39 +156,50 @@ class SlackProtoStub {
 
   _createNewContextReporter(userURL) {
     let _this = this;
-    console.log('[SlackProtostub] TEST creating reporter for', userURL);
-    _this._addedUsersInfo.forEach(function(currentUser) {
+    _this._resumeReporter(userURL).then(function(reporterResumed) {
 
-      if(currentUser.userURL == userURL ) {
-        console.log('[SlackProtostub] TEST get presense for ', currentUser);
+      console.log('[SlackProtostub] TEST creating reporter for', userURL);
+      _this._addedUsersInfo.forEach(function(currentUser) {
 
-        let toGetPresence = { token: _this._token, user: currentUser.id };
+        if(currentUser.userURL == userURL ) {
+          console.log('[SlackProtostub] TEST get presense for ', currentUser);
 
-        _this._slack.users.getPresence(toGetPresence, (err, data) => {
+          let toGetPresence = { token: _this._token, user: currentUser.id };
 
-          if (err) {
-            console.error('[SlackProtostub] error', err);
-          } else {
-            console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
-            if (data.ok) {
+          _this._slack.users.getPresence(toGetPresence, (err, data) => {
 
-              let objPresence = _this._createNewObjPresence(data.presence);
-              console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
-              _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
-                console.log('[SlackProtostub] CONTEXT RETURNED', context);
-                context.onSubscription(function(event) {
-                  event.accept();
-                  console.log('[SlackProtostub] new subs', event);
-                });
-                _this._contextReportersInfo[currentUser.id] = context;
-              }).catch(function(err) {
-                console.error('[SlackProtostub] err', err);
-              });
+            if (err) {
+              console.error('[SlackProtostub] error', err);
+            } else {
+              console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
+              if (data.ok) {
+
+                if (!reporterResumed) {
+                  let objPresence = _this._createNewObjPresence(data.presence);
+                  console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
+                  _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
+                    console.log('[SlackProtostub] CONTEXT RETURNED', context);
+                    context.onSubscription(function(event) {
+                      event.accept();
+                      console.log('[SlackProtostub] new subs', event);
+                    });
+                    _this._contextReportersInfo[currentUser.id] = context;
+                  }).catch(function(err) {
+                    console.error('[SlackProtostub] err', err);
+                  });
+                } else {
+                  _this._contextReportersInfo[currentUser.id] = reporterResumed;
+                }
+
+              }
             }
-          }
-        });
-      }
+          });
+        }
+      });
     });
+
+
+
   }
 
   _createNewObjPresence(info) {
@@ -415,6 +426,21 @@ class SlackProtoStub {
       console.log('[SlackProtostub] session already exist');
     }
     setTimeout(() => {callback();});
+  }
+
+  _resumeReporter(reporterURL) {
+    let _this = this;
+    return new Promise(function(resolve,reject) {
+      console.log('[SlackProtostub] resuming reporter of ', reporterURL);
+      _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
+        let dataObjectReporter;
+        let reportersList = Object.keys(reporters);
+
+        console.log('[SlackProtostub] ', reporters, reportersList);
+        return resolve(reporters[reportersList.find((key) => key.startsWith('context://'))]);
+      });
+    })
+
   }
 
   _handleNewUser(message) {
