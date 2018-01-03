@@ -499,7 +499,6 @@ class SlackProtoStub {
     if (reason) {
       msg.body.desc = reason;
     }
-    debugger;
     _this._bus.postMessage(msg);
   }
 }
