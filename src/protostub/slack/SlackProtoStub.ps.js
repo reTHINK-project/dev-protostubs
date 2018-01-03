@@ -397,7 +397,7 @@ class SlackProtoStub {
   _deliver(msg, channelID) {
     let _this = this;
 
-   
+
     if (channelID && msg.value) {
 
       if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile')
@@ -499,8 +499,8 @@ class SlackProtoStub {
     if (reason) {
       msg.body.desc = reason;
     }
-
-    _this._bus.postMessage( JSON.parse(JSON.stringify(msg)));
+    debugger;
+    _this._bus.postMessage(msg);
   }
 }
 
