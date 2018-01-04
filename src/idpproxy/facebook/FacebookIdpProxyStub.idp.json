@@ -1,0 +1,11 @@
+{
+  "language": "javascript",
+  "description": "IDPProxy for Facebook idp",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": false,
+  "objectName": "facebook.com"
+}

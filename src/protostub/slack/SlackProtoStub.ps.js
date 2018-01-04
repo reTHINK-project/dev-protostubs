@@ -126,7 +126,13 @@ class SlackProtoStub {
                       let userToAdd = { user : 'slack://'+userInfo.name+'@slack.com', domain: 'slack.com', id: event.identity.input.user_id, userURL: 'slack://slack.com/'+userInfo.name+'@slack.com', identity: identity};
                       _this._addedUsersInfo.push(userToAdd);
 
+<<<<<<< HEAD
                       _this._createNewContextReporter(identity.userProfile.userURL);
+=======
+                    if (event.identity.input.user_id) {
+                      _this._id = event.identity.input.user_id;
+                    }
+>>>>>>> develop
 
                       let subscription = {
                         urlDataObj: event.url,
@@ -571,6 +577,10 @@ class SlackProtoStub {
     });
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> develop
   _invite(idUser, idChannel = '', channelObjUrl) {
     let _this = this;
 
@@ -596,6 +606,7 @@ class SlackProtoStub {
 
   _deliver(msg, channelID) {
     let _this = this;
+
 
     if (channelID && msg.value) {
 
@@ -708,7 +719,6 @@ class SlackProtoStub {
     if (reason) {
       msg.body.desc = reason;
     }
-
     _this._bus.postMessage(msg);
   }
 }

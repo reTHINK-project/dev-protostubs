@@ -1,14 +1,12 @@
-import {IdpProxy} from "../OAUTH"
-import {convertUserProfile, userInfoEndpoint, 
-  authorisationEndpoint, tokenEndpoint, 
-  accessTokenAuthorisationEndpoint, 
-  accessTokenEndpoint, accessTokenInput, validateAssertionEndpoint} from "./Slack"
+import {IdpProxy} from "../OIDC"
+import {googleInfo} from "./GoogleInfo"
+import {convertUserProfile} from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
-* Slack Identity Provider Proxy Protocol Stub
+* Google Identity Provider Proxy Protocol Stub
 */
-class SlackProxyStub extends AbstractIdpProxyProtoStub {
+class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   
     /**
     * Constructor of the IdpProxy Stub
@@ -19,18 +17,10 @@ class SlackProxyStub extends AbstractIdpProxyProtoStub {
     * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
     */
    constructor(runtimeProtoStubURL, bus, config) {
-     config.idpUrl = 'domain-idp://slack.com';
+     config.idpUrl = 'domain-idp://google.com';
      config.idpProxy = IdpProxy;
-//     config.idpInfo = slackInfo;
-     config.domain = 'slack.com';
+     config.idpInfo = googleInfo;
      config.convertUserProfile = convertUserProfile;
-     config.userInfoEndpoint = userInfoEndpoint;
-     config.validateAssertionEndpoint = validateAssertionEndpoint;
-     config.authorisationEndpoint = authorisationEndpoint;
-     config.tokenEndpoint = tokenEndpoint;
-     config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
-     config.accessTokenEndpoint = accessTokenEndpoint;
-     config.accessTokenInput = accessTokenInput;
      super(runtimeProtoStubURL, bus, config);
    }
   }
@@ -46,8 +36,8 @@ class SlackProxyStub extends AbstractIdpProxyProtoStub {
    */
   export default function activate(url, bus, config) {
     return {
-      name: 'SlackProxyStub',
-      instance: new SlackProxyStub(url, bus, config)
+      name: 'GoogleIdpProxyProtoStub',
+      instance: new GoogleIdpProxyProtoStub(url, bus, config)
     };
   }
   
