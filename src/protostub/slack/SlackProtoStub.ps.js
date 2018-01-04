@@ -141,7 +141,7 @@ class SlackProtoStub {
                       if (event.identity.input.user_id) {
                         _this._id = event.identity.input.user_id
                       }
-                      _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL);
+                      _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL, event.identity.input.user_id);
                       //_this._prepareChat(chatController);
                     });
                   }
@@ -173,7 +173,7 @@ class SlackProtoStub {
             } else {
               console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
               if (data.ok) {
-
+                console.log('[SlackProtostub] resumed obj', reporterResumed);
                 if (!reporterResumed) {
                   let objPresence = _this._createNewObjPresence(data.presence);
                   console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
@@ -271,7 +271,7 @@ class SlackProtoStub {
 
   }
 
-  _channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL) {
+  _channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL, ownUserID) {
     let _this = this;
     let channelName = msg.value.name.split(' ').join('-').replace(/\//gi, '-');
     let channelExists = _this._channelsList.filter(function(value) { return value.name === channelName; })[0];
@@ -290,9 +290,6 @@ class SlackProtoStub {
       });
       console.log('[SlackProtostub] channel members', channelMembers, '   ->', alreadyOnChannel);
 
-      // if (! _this._usersUpdated) {
-      //   _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL);
-      // }
 
       let count = 0;
       let key = 0;
@@ -319,12 +316,12 @@ class SlackProtoStub {
       });
     }
       if (! _this._usersUpdated) {
-      _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL);
+      _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID);
     }
 
   }
 
-  _addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL) {
+  _addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID) {
     let _this = this;
     _this._usersUpdated = true;
     let usersInfo = {};
@@ -337,7 +334,7 @@ class SlackProtoStub {
           //console.log('[SlackProtostub] currentUser', currentUser);
           if (s === currentUser.id) {
 
-            if (userID != currentUser.id) {
+            if (userID != currentUser.id && ownUserID != currentUser.id) {
               console.log('[SlackProtostub] to add ', currentUser.id);
               let identity = new MessageBodyIdentity(
                 currentUser.name,
@@ -414,12 +411,6 @@ class SlackProtoStub {
 
         }
       });
-      //
-      // //_this._session.listen({token});
-      // _this._session.message(message=> {
-      //   console.log('[SlackProtostub] new message on session', message);
-      //   _this._handleNewMessage(message);
-      // });
       _this._sendStatus('live');
 
     } else {
