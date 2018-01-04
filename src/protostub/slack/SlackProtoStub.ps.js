@@ -75,9 +75,9 @@ class SlackProtoStub {
   _onSlackInvitation(event) {
     let _this = this;
 
-    if (event.identity.hasOwnProperty('access_token') && event.identity.access_token) {
+    if (event.identity.hasOwnProperty('accessToken') && event.identity.accessToken) {
 
-      this._token = event.identity.access_token;
+      this._token = event.identity.accessToken;
 
       _this._open(this._token, ()=> {
         if (_this._filter(event)) {
@@ -91,7 +91,7 @@ class SlackProtoStub {
 
             if (schemaSplitted[schemaSplitted.length - 1] === 'Communication') {
 
-              _this._getSlackInformation(event.to, event.identity.userProfile.id).then((infoReturned) => {
+              _this._getSlackInformation(event.to, event.identity.input.user_id).then((infoReturned) => {
 
                 let userInfo = infoReturned.ownInfo;
                 let toInvInfo = infoReturned.invInfo;
@@ -123,7 +123,7 @@ class SlackProtoStub {
 
                     _this._chatManager.join(event.url, false, identity).then((chatController) => {
                       _this._prepareChat(chatController);
-                      let userToAdd = { user : 'slack://'+userInfo.name+'@slack.com', domain: 'slack.com', id: event.identity.userProfile.id, userURL: 'slack://slack.com/'+userInfo.name+'@slack.com', identity: identity};
+                      let userToAdd = { user : 'slack://'+userInfo.name+'@slack.com', domain: 'slack.com', id: event.identity.input.user_id, userURL: 'slack://slack.com/'+userInfo.name+'@slack.com', identity: identity};
                       _this._addedUsersInfo.push(userToAdd);
 
                       _this._createNewContextReporter(identity.userProfile.userURL);
@@ -138,8 +138,8 @@ class SlackProtoStub {
 
                       _this._subscribedList.push(subscription);
 
-                      if (event.identity.userProfile.id) {
-                        _this._id = event.identity.userProfile.id;
+                      if (event.identity.input.user_id) {
+                        _this._id = event.identity.input.user_id
                       }
                       _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL);
                       //_this._prepareChat(chatController);
@@ -600,9 +600,9 @@ class SlackProtoStub {
     if (channelID && msg.value) {
 
       if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile')
-      && msg.identity.userProfile.hasOwnProperty('username') && msg.identity.userProfile.username) {
+      && msg.identity.userProfile.hasOwnProperty('name') && msg.identity.userProfile.name) {
 
-        let text = '' + msg.identity.userProfile.username + ': ' + msg.value.content;
+        let text = '' + msg.identity.userProfile.name + ': ' + msg.value.content;
         let message = { as_user: true, token: _this._token, channel: channelID, text: text};
         console.log('[SlackProtostub] (PostMessage slack api) token(', _this._token, ')  channel(', channelID, ') text(',  msg.value.content, ')');
 
