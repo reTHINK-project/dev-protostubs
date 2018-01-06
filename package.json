@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
   "dependencies": {
+    "all": "0.0.0",
     "atob": "^2.0.3",
     "btoa": "^1.1.2"
   },

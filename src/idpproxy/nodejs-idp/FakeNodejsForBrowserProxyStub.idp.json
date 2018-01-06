@@ -4,8 +4,8 @@
   "signature": "",
   "configuration": {},
   "constraints": {
-    "browser": true
-  },
+    "browser": true,
+    "onlyIdAssertionValidation": true  },
   "interworking": false,
   "objectName": "nodejs-idp"
 }
