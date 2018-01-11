@@ -1,8 +1,8 @@
 {
-  "name": "nodejs-idp",
+  "name": "microsoft",
   "version": "0.2.0",
   "description": "",
-  "main": "IdpProxyStub.idp.js",
+  "main": "MicrosoftProxyStub.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

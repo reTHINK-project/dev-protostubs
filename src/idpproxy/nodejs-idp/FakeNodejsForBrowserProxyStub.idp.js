@@ -62,9 +62,9 @@ let idp = {
   * @return {Promise} returns a promise with an identity assertion
   */
   generateAssertion: (contents, origin, hint) => {
-    console.log('[IDPROXY.generateAssertionFAKE:contents]', contents);
-    console.log('[IDPROXY.generateAssertionFAKE:origin]', origin);
-    console.log('[IDPROXY.generateAssertionFAKE:hint]', hint);
+    console.log('[IDPROXY.generateAssertionFAKE_BROWSER:contents]', contents);
+    console.log('[IDPROXY.generateAssertionFAKE_BROWSER:origin]', origin);
+    console.log('[IDPROXY.generateAssertionFAKE_BROWSER:hint]', hint);
 
     return new Promise(function(resolve, reject) {
 

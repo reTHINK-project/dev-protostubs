@@ -2,7 +2,7 @@
   "name": "google",
   "version": "0.2.0",
   "description": "",
-  "main": "IdpProxyStub.idp.js",
+  "main": "FacebookIdpProxyStub.idp.js",
   "scripts": {
     "test": "karma start"
   },
@@ -10,7 +10,6 @@
   "license": "ISC",
   "devDependencies": {
     "atob": "^2.0.3",
-    "btoa": "^1.1.2",
-    "node-fetch": "^1.7.3"
+    "btoa": "^1.1.2"
   }
 }
