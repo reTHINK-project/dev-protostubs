@@ -23,16 +23,16 @@ class SlackProtoStub {
     this._subscribedList = [];
     this._messageHistoryControl = {};
     this._usersList = [];
-    this._groupsList = [];
+    //this._groupsList = [];
     this._channelsList = [];
-    this._imsList = [];
-    this._observer;
+    //this._imsList = [];
+    //this._observer;
     this._id = 0;
-    this._continuousOpen = true;
+    //this._continuousOpen = true;
     this._token = '';
-    this._chatController;
-    this._chatControllersExtra = {};
-    this._schemaURL;
+    //this._chatController;
+    //this._chatControllersExtra = {};
+    //this._schemaURL;
     this._dataObjectReporterURL;
     this._contextReportersInfo = {};
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
@@ -194,7 +194,7 @@ class SlackProtoStub {
 
                   if (! _this._alreadyCreated) {
                     _this._alreadyCreated = true;
-                    _this._schemaURL = event.schema;
+                    //_this._schemaURL = event.schema;
                     _this._dataObjectReporterURL = event.url;
 
                     _this._chatManager.join(event.url, false, identity).then((chatController) => {
@@ -332,20 +332,21 @@ class SlackProtoStub {
     return new Promise((resolve, reject) => {
 
       let URLUsersList = 'https://slack.com/api/users.list?token=' + _this._token;
-      let URLGroupsList = 'https://slack.com/api/groups.list?token=' + _this._token;
+      //let URLGroupsList = 'https://slack.com/api/groups.list?token=' + _this._token;
       let URLChannelsList = 'https://slack.com/api/channels.list?token=' + _this._token;
-      let URLImsList = 'https://slack.com/api/im.list?token=' + _this._token;
+      //let URLImsList = 'https://slack.com/api/im.list?token=' + _this._token;
 
       let UsersListPromise = _this._sendHTTPRequest('GET', URLUsersList);
-      let GroupsListPromise = _this._sendHTTPRequest('GET', URLGroupsList);
+      //let GroupsListPromise = _this._sendHTTPRequest('GET', URLGroupsList);
       let ChannelsListPromise = _this._sendHTTPRequest('GET', URLChannelsList);
-      let ImsListPromise = _this._sendHTTPRequest('GET', URLImsList);
+      //let ImsListPromise = _this._sendHTTPRequest('GET', URLImsList);
 
-      Promise.all([UsersListPromise, GroupsListPromise, ChannelsListPromise, ImsListPromise]).then(function(result) {
+      Promise.all([UsersListPromise, ChannelsListPromise]).then(function(result) {
+      //Promise.all([UsersListPromise, GroupsListPromise, ChannelsListPromise, ImsListPromise]).then(function(result) {
         _this._usersList = result[0].members;
-        _this._groupsList = result[1].groups;
-        _this._channelsList = result[2].channels;
-        _this._imsList = result[3].ims;
+        //_this._groupsList = result[1].groups;
+        _this._channelsList = result[1].channels;
+        //_this._imsList = result[2].ims;
 
         //get userID to invite
         let toSplitted = to.split('://')[1];
