@@ -144,7 +144,10 @@ class SlackProtoStub {
   }
 
 
-
+  /*****************************************************************************************************
+  * It is called when a event ocurred related with a invitation of a slack User
+  * @param {Object} event - Object event
+  *******************************************************************************************************/
   _onSlackInvitation(event) {
     let _this = this;
 
@@ -214,8 +217,12 @@ class SlackProtoStub {
                       if (event.identity.input.user_id) {
                         _this._id = event.identity.input.user_id
                       }
-                      _this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL, event.identity.input.user_id);
-                      //_this._prepareChat(chatController);
+                      let neededInfoInvited = { id: toInvInfo.id, name: toInvInfo.name, userURL: identityToInv.userProfile.userURL, identity: identityToInv}
+                      let neededOwnInfo = { id: event.identity.input.user_id, userURL: identity.userProfile.userURL}
+
+                      //_this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL, event.identity.input.user_id);
+                      _this._channelStatusInfo(event, neededInfoInvited, neededOwnInfo);
+
                     });
                   }
 
@@ -227,6 +234,10 @@ class SlackProtoStub {
     } else event.error('Access Token Missing');
   }
 
+  /*****************************************************************************************************
+  * It creates a new contextReporter with userURL
+  * @param {string} userURL - userURL of user to create a new ContextReporter
+  *******************************************************************************************************/
   _createNewContextReporter(userURL) {
     let _this = this;
     _this._resumeReporter(userURL).then(function(reporterResumed) {
@@ -261,6 +272,7 @@ class SlackProtoStub {
                     console.error('[SlackProtostub] err', err);
                   });
                 } else {
+                  console.log('[SlackProtostub] reporter for this userURL:', userURL, ' already exists ', reporterResumed);
                   _this._contextReportersInfo[currentUser.id] = reporterResumed;
                 }
 
@@ -275,6 +287,11 @@ class SlackProtoStub {
 
   }
 
+  /*****************************************************************************************************
+  * It returns a dataobject with info of a slack User
+  * @param {string} info - status info of a slackUser
+  * @return {object} return a object related with info of a slackUser
+  *******************************************************************************************************/
   _createNewObjPresence(info) {
     let _this = this;
 
@@ -286,6 +303,11 @@ class SlackProtoStub {
     });
   };
 
+  /*****************************************************************************************************
+  * It returns a string with info related with presence of a user
+  * @param {string} info - status info of a slackUser
+  * @return {string} return info of presence of a slack user
+  *******************************************************************************************************/
   _getPresence(info) {
     let status;
 
@@ -297,6 +319,13 @@ class SlackProtoStub {
     }
   }
 
+  /*****************************************************************************************************
+  * It get some info about channels, users, and groups of slack using token and returns info
+  * of who invite and who was invited
+  * @param {string} to - status info of a slackUser
+  * @param {string} ownID - status info of a slackUser
+  * @return {object} return object with info of who invite and who was invited
+  *******************************************************************************************************/
   _getSlackInformation(to, ownID) {
     let _this = this;
 
@@ -335,12 +364,17 @@ class SlackProtoStub {
         console.error('[SlackProtostub] ', error);
         reject(error);
       });
-
     });
-
   }
 
-  _channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL, ownUserID) {
+  /*****************************************************************************************************
+  * It check if channelexist, if user is on channel and check which users need to be invited
+  * @param {string} msg - message related with event received
+  * @param {Object} neededInfoInvited - info about user to be invited
+  * @param {Object} neededOwnInfo - info about user own info
+  *******************************************************************************************************/
+  _channelStatusInfo(msg, neededInfoInvited, neededOwnInfo) {
+    //_channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL, ownUserID) {
     let _this = this;
     let channelName = msg.value.name.split(' ').join('-').replace(/\//gi, '-');
     let channelExists = _this._channelsList.filter(function(value) { return value.name === channelName; })[0];
@@ -353,7 +387,7 @@ class SlackProtoStub {
       let alreadyOnChannel = false;
 
       channelMembers.forEach(function(s) {
-        if (s === userID) {
+        if (s === neededInfoInvited.id) {
           alreadyOnChannel = true;
         }
       });
@@ -363,7 +397,7 @@ class SlackProtoStub {
       let count = 0;
       let key = 0;
       _this._subscribedList.forEach(function(obj) {
-        if (obj.urlDataObj === channelObjUrl ) {
+        if (obj.urlDataObj === msg.url ) {
           key = count;
         }
         count++;
@@ -372,25 +406,34 @@ class SlackProtoStub {
       console.log('[SlackProtostub] subscribed list', _this._subscribedList);
       // if user isnt on Channel invite, else just set channelID
       if (!alreadyOnChannel) {
-        _this._invite(userID, channelExists.id);
+        _this._invite(neededInfoInvited.id, channelExists.id);
       }
 
     } else {
-      _this._createChannel(channelName, channelObjUrl).then(function(result) {
+      _this._createChannel(channelName, msg.url).then(function(result) {
         console.log('[SlackProtostub]  after create channel ', result );
         if (result) {
-          _this._invite(userID,'',channelObjUrl);
+          _this._invite(neededInfoInvited.id,'',msg.url);
         }
 
       });
     }
       if (! _this._usersUpdated) {
-      _this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID);
+      _this._addAllUsersToHyperty(channelMembers, neededInfoInvited, neededOwnInfo);
+      //_this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID);
+
     }
 
   }
 
-  _addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID) {
+  /*****************************************************************************************************
+  * It add all users to dataobject and  create contextReporters for each one
+  * @param {Object[]} channelMembers - List of channel Members
+  * @param {Object} neededInfoInvited - info about user to be invited
+  * @param {Object} neededOwnInfo - info about user own info
+  *******************************************************************************************************/
+  _addAllUsersToHyperty(channelMembers, neededInfoInvited, neededOwnInfo) {
+    //_addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID) {
     let _this = this;
     _this._usersUpdated = true;
     let usersInfo = {};
@@ -403,7 +446,7 @@ class SlackProtoStub {
           //console.log('[SlackProtostub] currentUser', currentUser);
           if (s === currentUser.id) {
 
-            if (userID != currentUser.id && ownUserID != currentUser.id) {
+            if (neededInfoInvited.id != currentUser.id && neededOwnInfo.id != currentUser.id) {
               console.log('[SlackProtostub] to add ', currentUser.id);
               let identity = new MessageBodyIdentity(
                 currentUser.name,
@@ -422,7 +465,7 @@ class SlackProtoStub {
       });
     }
 
-    userToAdd = { user : 'slack://'+userName+'@slack.com', domain: 'slack.com', id: userID, userURL: 'slack://slack.com/'+userName+'@slack.com', identity: identityToInv};
+    userToAdd = { user : 'slack://'+neededInfoInvited.name+'@slack.com', domain: 'slack.com', id: neededInfoInvited.id, userURL: 'slack://slack.com/'+neededInfoInvited.name+'@slack.com', identity: neededInfoInvited.identity};
     _this._addedUsersInfo.push(userToAdd);
     toADD.push(userToAdd);
 
@@ -430,9 +473,9 @@ class SlackProtoStub {
     toADD.forEach(function(user) {
       console.log('[SlackProtostub] TEST joining with user', user);
       _this._chatManager.join(_this._dataObjectReporterURL, false, user.identity).then(function(result) {
-        console.log('[SlackProtostub] chatmanager JOIN', result, user.userURL, ownUserURL);
+        console.log('[SlackProtostub] chatmanager JOIN', result, user.userURL, neededOwnInfo.userURL);
         _this._prepareChat(result);
-        if (user.userURL !== ownUserURL) {
+        if (user.userURL !== neededOwnInfo.userURL) {
           _this._createNewContextReporter(user.userURL);
         }
 
@@ -445,7 +488,7 @@ class SlackProtoStub {
 
   /*****************************************************************************************************
   * It handle a new user added to a Slack channel, and add him to DataObject.participants
-  * @param {object} message - message with a new user added
+  * @param {Object} message - message with a new user added
   *******************************************************************************************************/
   _handleNewUser(message) {
     console.log('[SlackProtostub] Handling a new user', message);
@@ -482,7 +525,7 @@ class SlackProtoStub {
 
   /*****************************************************************************************************
   * It handle a new Presence change of Slack user, and change his status
-  * @param {object} message - message with info about user and his status
+  * @param {Object} message - message with info about user and his status
   *******************************************************************************************************/
 
   _handlePresenceChange(message) {
@@ -497,7 +540,7 @@ class SlackProtoStub {
 
   /*****************************************************************************************************
   * It handle a new message received on channel, and send it to hyperty
-  * @param {object} message - message with info about channel and text to send
+  * @param {Object} message - message with info about channel and text to send
   *******************************************************************************************************/
 
   _handleNewMessage(message) {
@@ -524,12 +567,11 @@ class SlackProtoStub {
     }
   }
 
-/*****************************************************************************************************
-* It retrieves information from a slack user and creates a reTHINK Identity object with it
-* @param {string} user - slack user id
-* @return {Promise<Object>} Returns a promise with an Identity object resolved
-*******************************************************************************************************/
-
+  /*****************************************************************************************************
+  * It retrieves information from a slack user and creates a reTHINK Identity object with it
+  * @param {string} user - slack user id
+  * @return {Promise<Object>} Returns a promise with an Identity object resolved
+  *******************************************************************************************************/
   _getUserInfo(user) {
     let _this = this;
 
