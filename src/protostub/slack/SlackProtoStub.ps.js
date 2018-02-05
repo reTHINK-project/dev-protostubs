@@ -645,7 +645,7 @@ class SlackProtoStub {
 
         // in that case check if the currentID its equal to oldID
         let oldID = _this._messageHistoryControl[channelObjUrl].id;
-        if ( _this._messageHistoryControl[channelObjUrl].id !== currentID ) {
+        if ( oldID !== currentID ) {
           _this._messageHistoryControl[channelObjUrl].id = currentID;
           _this._deliver(msg, channelID);
         }
