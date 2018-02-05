@@ -147,7 +147,6 @@ class SlackProtoStub {
         console.log('[SlackProtostub] ', reporters, reportersList);
         let i = 0;
         reportersList.forEach(function(key) {
-          //debugger;
           if(reporters[key]._name === reporterURL && key.startsWith('context://')) {
             console.log('[SlackProtostub] reporter to return', reporters[key]);
             return resolve(reporters[key]);
@@ -207,6 +206,9 @@ class SlackProtoStub {
 
                   console.log('[SlackProtostub] subscribing object', event.url, identity);
 
+                  let neededInfoInvited = { id: toInvInfo.id, name: toInvInfo.name, userURL: identityToInv.userProfile.userURL, identity: identityToInv}
+                  let neededOwnInfo = { id: event.identity.input.user_id, userURL: identity.userProfile.userURL}
+
                   if (! _this._alreadyCreated) {
                     _this._alreadyCreated = true;
                     //_this._schemaURL = event.schema;
@@ -232,13 +234,15 @@ class SlackProtoStub {
                       if (event.identity.input.user_id) {
                         _this._id = event.identity.input.user_id
                       }
-                      let neededInfoInvited = { id: toInvInfo.id, name: toInvInfo.name, userURL: identityToInv.userProfile.userURL, identity: identityToInv}
-                      let neededOwnInfo = { id: event.identity.input.user_id, userURL: identity.userProfile.userURL}
 
                       //_this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL, event.identity.input.user_id);
                       _this._channelStatusInfo(event, neededInfoInvited, neededOwnInfo);
 
                     });
+                  } else {
+                    console.log('[SlackProtostub] Alread created');
+
+                    _this._channelStatusInfo(event, neededInfoInvited, neededOwnInfo);
                   }
 
               });
@@ -277,7 +281,6 @@ class SlackProtoStub {
                 if (!reporterResumed) {
                   let objPresence = _this._createNewObjPresence(data.presence);
                   console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
-                  //debugger;
                   _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
                     console.log('[SlackProtostub] CONTEXT RETURNED', context);
                     context.onSubscription(function(event) {
@@ -445,7 +448,8 @@ class SlackProtoStub {
       if (! _this._usersUpdated) {
       _this._addAllUsersToHyperty(channelMembers, neededInfoInvited, neededOwnInfo);
       //_this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID);
-
+    } else {
+      console.log('[SlackProtostub] users Already Updated');
     }
 
   }
