@@ -4,7 +4,8 @@
   "signature": "",
   "configuration": {},
   "constraints": {
-    "node": true
+    "node": true,
+    "onlyIdAssertionValidation": true    
   },
   "interworking": false,
   "objectName": "google.com"

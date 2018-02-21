@@ -4,7 +4,8 @@
   "signature": "",
   "configuration": {},
   "constraints": {
-    "browser": true
+    "browser": true,
+    "onlyAccessToken": true
   },
   "interworking": true,
   "objectName": "rethink-project.eu"

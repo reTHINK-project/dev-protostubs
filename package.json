@@ -1,6 +1,6 @@
 {
   "name": "dev-protostubs",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Repository where all the protostubs and idp-proxyies are",
   "main": "webpack.config.js",
   "scripts": {
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
   "dependencies": {
+    "all": "0.0.0",
     "atob": "^2.0.3",
     "btoa": "^1.1.2"
   },
