@@ -9,8 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#v0.8.0",
-    "slack": "v9.0.9"
+    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "slack": "9.0.1"
   },
   "devDependencies": {}
 }
