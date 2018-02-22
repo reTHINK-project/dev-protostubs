@@ -161,7 +161,14 @@ class VertxAppProtoStub {
           _this._syncher.subscribe(schema_url, context_url, true).then(function(obj) {
             console.log('[VertxAppProtoStub] subscribe success', obj);
             obj.onChange('*', (event) => {
-              console.log('[VertxAppProtoStub] onChange :', event); 
+              console.log('[VertxAppProtoStub] onChange :', event);
+              if (event.field === 'values') {
+                  let valuesToPublish = {
+                    url : obj.url,
+                    values: event.data
+                  };
+                _this._eb.publish('school://vertx-app/location-changes', JSON.stringify(valuesToPublish));
+              }
             });
           }).catch(function(error) {
             console.log('[VertxAppProtoStub] error', error);
