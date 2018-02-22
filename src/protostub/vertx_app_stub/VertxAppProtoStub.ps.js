@@ -52,7 +52,8 @@ class VertxAppProtoStub {
     if (!config.runtimeURL) throw new Error('The config.runtimeURL is a needed parameter');
 
     let _this = this;
-    console.log("VERTX APP PROTOSTUB", _this);
+    this._alreadySubscribe = false;
+    console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB", _this);
     this._id = 0;
     this._continuousOpen = true;
 
@@ -64,34 +65,45 @@ class VertxAppProtoStub {
     this._reOpen = false;
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
     this._contextReporter = new ContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
-    console.log('this._contextReporter', this._contextReporter);
+    console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
+
 
     this._eb = new EventBus(config.eventbusUrl, {"vertxbus_ping_interval": config.vertxbus_ping_interval});
-    console.log('Eventbus', _this._eb);
+    console.log('[VertxAppProtoStub] Eventbus', _this._eb);
 
     _this._sendStatus('created');
 
     _this._eventBusUsage();
     _this._setUpContextReporter();
 
-    //
-    bus.addListener('*', (msg) => {
-      console.log('[VertxAppProtoStub] Message : ', msg);
 
 
-      if (msg.to === 'domain://msg-node.vertx-app/sm') {
+    // bus.addListener('*', (msg) => {
+    //   console.log('[VertxAppProtoStub] Message : ', msg);
+    // });
 
-        let msgResponse = {
-          id: msg.id,
-          type: 'response',
-          from: msg.to,
-          to: msg.from,
-          body: {
-            code: 200
-          }
-        };
+    bus.addListener('domain://msg-node.vertx-app/sm', (msg) => {
+      console.log('[VertxAppProtoStub] Message on (domain://msg-node.vertx-app/sm) : ', msg);
 
-        _this._bus.postMessage(msgResponse);
+      let msgResponse = {
+        id: msg.id,
+        type: 'response',
+        from: msg.to,
+        to: msg.from,
+        body: {
+          code: 200
+        }
+      };
+
+      _this._bus.postMessage(msgResponse);
+
+    });
+
+
+    bus.addListener('school://vertx-app/announcement', (msg) => {
+      console.log('[VertxAppProtoStub] Message on (school://vertx-app/announcement)', msg, _this._eb.state);
+      if (_this._eb.state === 1) {
+        _this._eb.publish('school://vertx-app/announcements', JSON.stringify(msg.body));
       }
 
       // _this._open(() => {
@@ -130,18 +142,38 @@ class VertxAppProtoStub {
     let _this = this;
 
     _this._eb.onopen = () => {
-      console.log('_this._eb-> open');
+      console.log('[VertxAppProtoStub] _this._eb-> open');
       _this._eb.registerHandler('school://vertx-app/stream', function(error, message) {
-        console.log('received a message: ' + JSON.stringify(message));
+        console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
 
         let objUpdated = _this._createNewObj(JSON.stringify(message.body));
         _this._contextReporter.setContext('testIntegration@vetxapp.com', objUpdated.values);
+      });
+      _this._eb.registerHandler('school://vertx-app/subscription', function(error, message) {
+        console.log('[VertxAppProtoStub] received a message: (toSubscription) ' + JSON.stringify(message));
+
+        if (!_this._alreadySubscribe) {
+          _this._alreadySubscribe = true;
+
+          let body_obj = JSON.parse(message.body);
+          let context_url = body_obj.events[0].url;
+          let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+          _this._syncher.subscribe(schema_url, context_url, true).then(function(obj) {
+            console.log('[VertxAppProtoStub] subscribe success', obj);
+            obj.onChange('*', (event) => {
+              console.log('[VertxAppProtoStub] onChange :', event); 
+            });
+          }).catch(function(error) {
+            console.log('[VertxAppProtoStub] error', error);
+          });
+
+        }
       });
       _this._eb.publish('school://vertx-app', "write last value");
     }
 
     _this._eb.onerror = function(e) {
-        console.log('General error: ', e); // this does happen
+        console.log('[VertxAppProtoStub] General error: ', e); // this does happen
     }
   }
 
