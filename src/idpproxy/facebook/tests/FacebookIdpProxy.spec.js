@@ -50,7 +50,7 @@ let bus = {
 
   },
 
-  postMessage: (msg, replyCallback) => { 
+  postMessage: (msg, replyCallback) => {
     if (replyCallback) {
       this._replyCallback = replyCallback;
       this._listener(msg);
@@ -66,17 +66,17 @@ describe('IdP Proxy test', function() {
       bus.postMessage( generateAssertionMessage, (reply)=> {
         console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
         expect(reply.body.value).to.have.keys('name', 'loginUrl');
-  
+
         loginUrl = reply.body.value.loginUrl;
         done();
-          
+
      })
   });
 
 
-  it('generate Assertion', function(done) {
+  it.skip('generate Assertion', function(done) {
     this.timeout(10000);
-    
+
       login(loginUrl)
         .then(result => {
 
@@ -84,30 +84,30 @@ describe('IdP Proxy test', function() {
 
           bus.postMessage( generateAssertionMessage, (reply)=> {
             console.log('IdpProxyTest.generateAssertion.reply with value: ', reply.body.value);
-            
+
             expect(reply.body.value).to.have.keys('assertion', 'idp', 'expires', 'userProfile' );
 
             assertion = reply.body.value.assertion;
-      
+
             done();
-              
+
          })
-              
+
         })
 
     });
 
-    it('validate Assertion', function(done) {
+    it.skip('validate Assertion', function(done) {
 //      this.timeout(5000);
       validateAssertionMessage.body.params.assertion = assertion;
-      
+
       bus.postMessage( validateAssertionMessage, (reply)=> {
         expect(reply.body.value).to.have.keys('identity', 'contents');
-  
+
         done();
-          
+
      })
 
    });
-  
+
 });
