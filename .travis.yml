@@ -3,17 +3,17 @@ dist: trusty
 
 language: node_js
 
-addons:
-  chrome: stable
+# addons:
+#   chrome: stable
 
 node_js:
   - "8"
 
-services:
-  - docker
+# services:
+#   - docker
 
-before_install:
-  - sudo setcap 'cap_net_bind_service=+ep' `which node`
-  - export CHROME_BIN=google-chrome
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+# before_install:
+#   - sudo setcap 'cap_net_bind_service=+ep' `which node`
+#   - export CHROME_BIN=google-chrome
+#   - export DISPLAY=:99.0
+#   - sh -e /etc/init.d/xvfb start
