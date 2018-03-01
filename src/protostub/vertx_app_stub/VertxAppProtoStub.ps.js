@@ -78,8 +78,10 @@ class VertxAppProtoStub {
     _this._eventBusUsage();
     _this._setUpContextReporter();
 
-
-
+    _this._latitude = 0;
+    _this._longitude = 0;
+    _this._timestamp = 0;
+    _this._data;
     // bus.addListener('*', (msg) => {
     //   console.log('[VertxAppProtoStub] Message : ', msg);
     // });
@@ -174,15 +176,32 @@ class VertxAppProtoStub {
             obj.onChange('*', (event) => {
               console.log('[VertxAppProtoStub] onChange :', event);
               if (event.field === 'values') {
+
+                  _this._data = event.data;
+
+                let lat = event.data[0].value;
+                let long = event.data[1].value;
+
+                if (_this._latitude != lat || _this._longitude != long) {
+                  _this._latitude = lat;
+                  _this._longitude = long;
+
+
+                }
+              } else if(event.field === 'time') {
+
+                if (_this._timestamp != event.data) {
+                  _this._timestamp = event.data;
                   let valuesToPublish = {
                     url : obj.url,
-                    values: event.data
+                    values: _this._data,
+                    timestamp: _this._timestamp
                   };
-                _this._eb.publish('school://vertx-app/location-changes', JSON.stringify(valuesToPublish));
-                console.log('url to publish', obj.url);
-                valuesToPublish.toContext = true;
-                _this._eb.publish(obj.url, JSON.stringify(valuesToPublish));
+                  console.log('url to publish', obj.url);
+                  _this._eb.publish(obj.url, JSON.stringify(valuesToPublish));
+                }
               }
+
             });
           }).catch(function(error) {
             console.log('[VertxAppProtoStub] error', error);
