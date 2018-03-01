@@ -23,6 +23,8 @@
 import EventBus from 'vertx3-eventbus-client';
 import {ContextReporter} from 'service-framework/dist/ContextManager';
 import {Syncher} from 'service-framework/dist/Syncher';
+import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
+
 class VertxAppProtoStub {
   /* private
     _continuousOpen: boolean
@@ -156,9 +158,18 @@ class VertxAppProtoStub {
           _this._alreadySubscribe = true;
 
           let body_obj = JSON.parse(message.body);
-          let context_url = body_obj.events[0].url;
+          let context_url = body_obj.url;
+          let identity_url = body_obj.identity;
+
+          let identityToUse = new MessageBodyIdentity(
+            'Vertx Location',
+            identity_url,
+            undefined,
+            'Vertx Location',
+            '', 'vertx-app', undefined, undefined);
+
           let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
-          _this._syncher.subscribe(schema_url, context_url, true).then(function(obj) {
+          _this._syncher.subscribe(schema_url, context_url, true, false, true, identityToUse).then(function(obj) {
             console.log('[VertxAppProtoStub] subscribe success', obj);
             obj.onChange('*', (event) => {
               console.log('[VertxAppProtoStub] onChange :', event);
@@ -168,6 +179,9 @@ class VertxAppProtoStub {
                     values: event.data
                   };
                 _this._eb.publish('school://vertx-app/location-changes', JSON.stringify(valuesToPublish));
+                console.log('url to publish', obj.url);
+                valuesToPublish.toContext = true;
+                _this._eb.publish(obj.url, JSON.stringify(valuesToPublish));
               }
             });
           }).catch(function(error) {
