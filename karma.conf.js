@@ -3,11 +3,15 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      './src/idpproxy/facebook/tests/*.spec.js'
+      './src/idpproxy/facebook/tests/*.spec.js',
+      // './src/idpproxy/google/tests/*.spec.js'
+      // './src/idpproxy/slack/tests/*.spec.js'
     ],
     exclude: [],
     preprocessors: {
-      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap']
+      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap'],
+      './src/idpproxy/google/tests/*.spec.js': ['webpack', 'sourcemap'],
+      './src/idpproxy/slack/tests/*.spec.js': ['webpack', 'sourcemap'],
     },
 
     // webpack configuration
@@ -83,6 +87,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
   });
 };
