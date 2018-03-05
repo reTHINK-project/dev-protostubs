@@ -1,11 +1,13 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
+import $ from 'jquery';
+
 
 //import { generateGUID } from '../src/utils/utils';
 //import IdpProxy from '../GoogleIdpProxyStub.idp';
-import { login } from '../../Login';
-import SlackProxyStub from '../SlackProxyStub.idp';
+import {login} from '../idpproxy/Login';
+import SlackProxyStub from '../idpproxy/slack/SlackProxyStub.idp';
 
 
 chai.config.truncateThreshold = 0;
@@ -84,7 +86,7 @@ let idpProxy = new SlackProxyStub(idpProxyUrl, bus, {});
 
 describe('Slack IdP Proxy test', function () {
 
-  it.skip('get IdAssertion login url', function (done) {
+  it('get IdAssertion login url', function (done) {
     bus.postMessage(generateAssertionMessage, (reply) => {
       console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
       expect(reply.body.value).to.have.keys('name', 'loginUrl');
@@ -96,8 +98,17 @@ describe('Slack IdP Proxy test', function () {
   });
 
 
-  it.skip('generate Assertion', function (done) {
-    this.timeout(10000);
+  it('generate Assertion', function (done) {
+    this.timeout(15000);
+
+    // replace window.open to get reference to opened windows
+    var windows = [];
+    var winOpen = window.open;
+    window.open = function() {
+      var win = winOpen.apply(this, arguments);
+      windows.push(win);
+      return win;
+    };
 
     login(loginUrl)
       .then(result => {
@@ -115,9 +126,48 @@ describe('Slack IdP Proxy test', function () {
 
       })
 
+
+      // Slack domain
+      setTimeout(function(){
+        if (windows.length > 0) {
+          // access window
+          var w = windows[0];
+          // email
+          const slackChannel = "rethink-project";
+          $("#domain", w.document.body).val( slackChannel );
+          $("#submit_team_domain", w.document.body ).click();
+        }
+      }, 4000);
+
+      // account login
+      setTimeout(function(){
+        if (windows.length > 0) {
+          // access window
+          var w = windows[0];
+
+          const email = "rethink.eu.project@gmail.com";
+          const pass = "rethink";
+          $("#email", w.document.body).val( email );
+          // password
+          $( "#password", w.document.body ).val( pass );
+          // submit login
+          $( "#signin_btn", w.document.body ).click();
+        }
+
+      }, 7000);
+
+      // authorize
+      setTimeout(function(){
+        if (windows.length > 0) {
+          // access window
+          var w = windows[0];
+          $("#oauth_authorizify", w.document.body ).click();
+        }
+      }, 10000);
+
   });
 
-  it.skip('validate Assertion', function (done) {
+  it('validate Assertion', function (done) {
     //      this.timeout(5000);
     validateAssertionMessage.body.params.assertion = assertion;
 
@@ -139,7 +189,7 @@ describe('Slack IdP Proxy test', function () {
     });
   });
 
-  it('get Access Token', function (done) {
+  it.skip('get Access Token', function (done) {
     this.timeout(10000);
 
     login(loginUrl)

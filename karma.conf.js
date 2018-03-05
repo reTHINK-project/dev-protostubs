@@ -3,17 +3,11 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      // './src/idpproxy/facebook/tests/*.spec.js',
-      './src/tests/*.spec.js',
-      // './src/idpproxy/google/tests/*.spec.js'
-      // './src/idpproxy/slack/tests/*.spec.js'
+      './src/tests/*.spec.js'
     ],
     exclude: [],
     preprocessors: {
-      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap'],
-      './src/tests/*.spec.js': ['webpack', 'sourcemap'],
-      './src/idpproxy/google/tests/*.spec.js': ['webpack', 'sourcemap'],
-      './src/idpproxy/slack/tests/*.spec.js': ['webpack', 'sourcemap'],
+      './src/tests/*.spec.js': ['webpack', 'sourcemap']
     },
 
     // webpack configuration
@@ -46,13 +40,13 @@ module.exports = function(config) {
     },
 
     plugins: ['karma-spec-reporter',
-      'karma-webpack',
-      'karma-sourcemap-loader',
-      'karma-mocha', 'karma-chai',
-      'karma-sinon',
-//      'karma-htmlfile-reporter',
-      'karma-mocha-reporter',
-      'karma-chrome-launcher'],
+    'karma-webpack',
+    'karma-sourcemap-loader',
+    'karma-mocha', 'karma-chai',
+    'karma-sinon',
+    //      'karma-htmlfile-reporter',
+    'karma-mocha-reporter',
+    'karma-chrome-launcher'],
 
     // customDebugFile: './test/units.html',
 
@@ -78,6 +72,8 @@ module.exports = function(config) {
     customLaunchers: {
       ChromeTravis: {
         base: 'Chrome',
+        browserDisconnectTolerance: 10,
+        browserNoActivityTimeout: 100000,
         flags: [
           '--disable-web-security',
           '--disable-popup',
