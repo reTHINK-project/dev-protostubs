@@ -75,12 +75,12 @@ module.exports = function(config) {
 
     customLaunchers: {
       ChromeTravis: {
-        base: 'ChromeHeadless',
+        base: 'Chrome',
         flags: [
           '--web-security=false',
           '--ignore-ssl-errors=true',
           '--disable-web-security',
-          '--disable-popup',
+          //'--disable-popup',
           '--disable-popup-blocking',
           '--ignore-certificate-errors'
         ]
