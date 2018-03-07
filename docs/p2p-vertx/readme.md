@@ -23,7 +23,20 @@ The Stub includes the following components:
 
 **Reporter**
 
-Extends the ContextReporter service framework lib, invokes `ContextReporter.create()` with data defined at `config.streams` and add handlers to vertx event bus to addresses defined at `config.streams.stream` where each received data from the Event BUS is written in the Data Object by calling `contextReporter.setContext(..)`.
+For each address at `config.streams` requests the last value, sending:
+
+```
+{
+  type: read
+}
+```
+
+
+Extends the ContextReporter (or have a lighter version?) service framework lib, invokes `ContextReporter.create()` with data defined at `config.streams` using as initial data, the data returned in the first step as well as the identity.
+
+Add handlers to vertx event bus to addresses defined at `config.streams.stream` where each received data from the Event BUS is written in the Data Object by calling `contextReporter.setContext(..)`.
+
+
 
 **Observer**
 
