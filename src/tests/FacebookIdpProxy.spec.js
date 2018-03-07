@@ -20,7 +20,7 @@ let assertion;
 let idpProxyUrl = 'domain-idp://facebook.com';
 let idmURL = 'runtime://test.com/123/idm';
 let contents = 'BASE64_CONTENT';
-let origin = 'undefined';
+let origin = 'localhost:8080';
 let loginUrl;
 
 let generateAssertionMessage = {

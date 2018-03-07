@@ -5,6 +5,10 @@ module.exports = function(config) {
     files: [
       './src/tests/*.spec.js'
     ],
+    // to avoid DISCONNECTED messages
+    browserDisconnectTimeout : 100000, // default 2000
+    browserDisconnectTolerance : 1, // default 0
+    browserNoActivityTimeout : 60000, //default 10000
     exclude: [],
     preprocessors: {
       './src/tests/*.spec.js': ['webpack', 'sourcemap']
@@ -44,7 +48,7 @@ module.exports = function(config) {
     'karma-sourcemap-loader',
     'karma-mocha', 'karma-chai',
     'karma-sinon',
-    //      'karma-htmlfile-reporter',
+    // 'karma-htmlfile-reporter',
     'karma-mocha-reporter',
     'karma-chrome-launcher'],
 
@@ -62,7 +66,7 @@ module.exports = function(config) {
     port: 8080,
     hostname: 'localhost',
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
     autoWatch: true,
 
     // start these browsers
@@ -71,10 +75,10 @@ module.exports = function(config) {
 
     customLaunchers: {
       ChromeTravis: {
-        base: 'Chrome',
-        browserDisconnectTolerance: 10,
-        browserNoActivityTimeout: 100000,
+        base: 'ChromeHeadless',
         flags: [
+          '--web-security=false',
+          '--ignore-ssl-errors=true',
           '--disable-web-security',
           '--disable-popup',
           '--disable-popup-blocking',
