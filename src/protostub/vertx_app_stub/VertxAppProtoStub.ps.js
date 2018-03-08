@@ -185,8 +185,12 @@ class VertxAppProtoStub {
       console.log('[VertxAppProtoStub] _this._eb-> open');
       _this._configAvailableStreams();
 
-      /*
 
+
+
+
+
+/*
       _this._eb.registerHandler('school://vertx-app/stream', function(error, message) {
         console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
 
@@ -249,7 +253,8 @@ class VertxAppProtoStub {
 
         }
       });
-      _this._eb.publish('school://vertx-app', "write last value");*/
+      _this._eb.publish('school://vertx-app', "write last value");
+      */
     }
 
     _this._eb.onerror = function(e) {
