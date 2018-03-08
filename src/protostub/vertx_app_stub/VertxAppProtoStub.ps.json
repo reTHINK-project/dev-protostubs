@@ -3,13 +3,19 @@
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "wss://msg-node.localhost:9091/ws",
-    "eventbusUrl": "https://msg-node.localhost:9091/eventbus",
-    "vertxbus_ping_interval": 10000
+    "url": "https://msg-node.localhost:9091/eventbus",
+    "vertxbus_ping_interval": 10000,
+    "host": "https://msg-node.localhost",
+    "streams": [{
+      "stream": "school://sharing-cities-dsm/location-url",
+      "resources": ["kwh"],
+      "id": "location-res",
+      "name": "Location DSM"
+    }]
   },
   "constraints": {
     "browser": true
   },
   "interworking": true,
-  "objectName": "vertx-app"
+  "objectName": "sharing-cities-dsm"
 }
