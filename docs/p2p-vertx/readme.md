@@ -9,13 +9,13 @@ The Protostub configuration includes:
 * `host` the hostname or domain associated to the remote Vertx Runtime.
 * `url` vertx Web socket server address
 * `streams` an array of JSON Objects defining Vertx Event BUS addresses where the Reporter should set handlers to convert into Vertx Data Objects:
+
   ```
   {
     stream: <event bus address>,
     resource: <hyperty resource type>,
     id: <stream identifier>,
-    name: <stream name>,
-    init: <initial data>
+    name: <stream name>
   }
   ```
 
@@ -31,11 +31,9 @@ For each address at `config.streams` requests the last value, sending:
 }
 ```
 
-
 Extends the ContextReporter (or have a lighter version?) service framework lib, invokes `ContextReporter.create()` with data defined at `config.streams` using as initial data, the data returned in the first step as well as the identity.
 
 Add handlers to vertx event bus to addresses defined at `config.streams.stream` where each received data from the Event BUS is written in the Data Object by calling `contextReporter.setContext(..)`.
-
 
 
 **Observer**
