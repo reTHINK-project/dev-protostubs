@@ -35,11 +35,12 @@ Extends the ContextReporter (or have a lighter version?) service framework lib, 
 
 Add handlers to vertx event bus to addresses defined at `config.streams.stream` where each received data from the Event BUS is written in the Data Object by calling `contextReporter.setContext(..)`.
 
-
 **Observer**
 
 Provides a function to subscribe a certain Data Object URL. An event handler is set for the subscribed Data Object changes, to publish them in the Vertx Event BUS using as address the Data Object URL.
 
 **Subscription Manager**
 
-The Subscription Manager has a rethink bus listener for invitations (create messages) targeting addresses for the protostub hostname ie `config.host`. These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests. Subscription requests are forwarded into the Message BUS.
+The Subscription Manager has a message handler for invitations that is called by the protostub bus listener for create messages targeting vertx hyperties. These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
+
+On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe` function defined above.
