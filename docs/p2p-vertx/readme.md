@@ -8,7 +8,7 @@ The Protostub configuration includes:
 
 * `host` the hostname or domain associated to the remote Vertx Runtime.
 * `url` vertx Web socket server address
-* `streams` an array of JSON Objects defining Vertx Event BUS addresses where the Reporter should set handlers to convert into Vertx Data Objects:
+* `streams` an array of JSON Objects defining Vertx Event BUS addresses where the Reporter should set handlers to convert into reTHINK Data Objects:
 
   ```
   {
@@ -21,9 +21,22 @@ The Protostub configuration includes:
 
 The Stub includes the following components:
 
+**Mini BUS Message listener**
+
+Has a listener at minibus and processes received messages:
+
+* `type = create` and `from = <runtimeUrl/sm>`: These are invitation messages that are forwarded to "Subscription Manager"
+* all other messages (*to be confirmed*) are posted at Vertx Event BUS with `sendMessage()` to `message.to` address with callback to handle replied message which are posted in the reTHINK Minibus as response messages.
+
 **Reporter**
 
-For each address at `config.streams` requests the last value, sending:
+
+Extends the ContextReporter (or have a lighter version?) service framework lib.
+
+It provides a `create()` function that invokes `ContextReporter.create()` adding handlers to vertx event bus to new created data object URLs, where data received is written in the Data Object by calling `contextReporter.setContext(..)`.
+
+
+The `create()` function is invoked for each stream defined at `config.streams` using as initial data, data returned by the vertx Hyperty when requested by sending:
 
 ```
 {
@@ -31,9 +44,6 @@ For each address at `config.streams` requests the last value, sending:
 }
 ```
 
-Extends the ContextReporter (or have a lighter version?) service framework lib, invokes `ContextReporter.create()` with data defined at `config.streams` using as initial data, the data returned in the first step as well as the identity.
-
-Add handlers to vertx event bus to addresses defined at `config.streams.stream` where each received data from the Event BUS is written in the Data Object by calling `contextReporter.setContext(..)`.
 
 **Observer**
 
@@ -41,6 +51,10 @@ Provides a function to subscribe a certain Data Object URL. An event handler is 
 
 **Subscription Manager**
 
-The Subscription Manager has a message handler for invitations that is called by the protostub bus listener for create messages targeting vertx hyperties. These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
+The Subscription Manager has a message handler for invitations that is called by the protostub bus listener for create messages coming from the runtime sync manager and targeting vertx hyperties. These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
 
-On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe` function defined above.
+On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive:
+
+* subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
+
+* create requests from `abstractHyperty.create()` that is used to call the `Reporter.create()` function defined above.
