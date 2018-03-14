@@ -51,10 +51,10 @@ Provides a function to subscribe a certain Data Object URL. An event handler is 
 
 **Subscription Manager**
 
-The Subscription Manager has a message handler for invitations that is called by the protostub bus listener for create messages coming from the runtime sync manager and targeting vertx hyperties. These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
+The Subscription Manager has a message handler for invitations that is called by the protostub bus listener for create messages coming from the runtime sync manager and targeting vertx hyperties.
 
-On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive:
+These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
 
-* subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
+But before invitations are sent to vertx, the subscription manager set vertx handlers to the `from` of the invitations, ie `<objectUrl>/sm`, to be prepared to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
 
-* create requests from `abstractHyperty.create()` that is used to call the `Reporter.create()` function defined above.
+On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive create requests from `abstractHyperty.create()` that is used to call the `Reporter.create()` function defined above.
