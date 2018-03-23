@@ -86,8 +86,25 @@ class VertxAppProtoStub {
     });
 
 
-    bus.addListener(this._config.host, (msg) => {
-      console.log('[VertxAppProtoStub] Message on (', this._config, ')', msg, _this._eb.state);
+    bus.addListener('*', (msg) => {
+      console.log('[VertxAppProtoStub] Message ', msg, _this._eb.state, JSON.stringify(_this._dataStreamIdentity));
+      /*if (_this._dataStreamIdentity.hasOwnProperty(msg.to)) {
+        if (msg.type === 'forward') {
+          msg.type = 'create';
+          msg.from = _this._runtimeProtoStubURL;
+
+          _this._eb.send(stream.stream, msg, function (reply_err, reply) {
+            if (reply_err == null) {
+              console.log("[VertxAppProtoStub] Received reply ", reply);
+              //TODO send ack.. to hyperty
+
+            } else {
+              console.log("[VertxAppProtoStub] No reply", reply_err);
+            }
+          });
+
+        }
+      }*/
     });
 
     _this._eventBusUsage();
@@ -100,7 +117,6 @@ class VertxAppProtoStub {
   _configAvailableStreams() {
     let _this = this;
     console.log('[VertxAppProtoStub] EB on readyState(OPEN) Streams', _this._streams);
-
     _this._streams.forEach(function(stream) {
       console.log('[VertxAppProtoStub] Stream', stream, _this._eb.sockJSConn.readyState);
       let msg = { type: 'read' };
@@ -109,13 +125,16 @@ class VertxAppProtoStub {
         if (reply_err == null) {
           console.log("[VertxAppProtoStub] Received reply ", reply.body);
           _this._dataStreamIdentity[stream.stream] = reply.body.identity;
-          _this._setUpContextReporter(reply.body.identity, reply.body.data, stream.resources, stream.name, stream.stream).then(function(result) {
+
+          let reuseURL = _this._formCtxUrl(stream);
+          debugger;
+          _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
             if (result) {
 
-              _this._eb.registerHandler(stream.stream, function(error, message) {
+              _this._eb.registerHandler(reuseURL, function(error, message) {
                 console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
                 //TODO Check if message.body.values is compatible to just setContext Like that
-                _this._contextReporter.setContext(reply.body.identity, message.body.values);
+                _this._contextReporter.setContext(reply.body.identity.userProfile.userURL, message.body.values);
               });
             }
           });
@@ -133,6 +152,12 @@ class VertxAppProtoStub {
         break;
       }
     }
+  }
+
+  _formCtxUrl(stream) {
+    let _this = this;
+    let ID = _this._config.runtimeURL.split('/')[3];
+    return 'context://' + _this._config.host + '/' + ID + '/' + stream.id;
   }
 
   _setUpContextReporter(identity, data, resources, name, reuseURL) {
@@ -155,7 +180,6 @@ class VertxAppProtoStub {
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(name, contextUrl, schemaUrl) {
     let _this = this;
-    debugger;
     //MessageBodyIdentity Constructor
     let identityToUse = new MessageBodyIdentity(
       name, _this._dataStreamIdentity[contextUrl],
