@@ -54,10 +54,10 @@ class VertxAppProtoStub {
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
     this._contextReporter = new ContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
+    this._eb = null;
 
 
-    this._eb = new EventBus(config.url, {"vertxbus_ping_interval": config.vertxbus_ping_interval});
-    console.log('[VertxAppProtoStub] Eventbus', _this._eb);
+
 
     _this._sendStatus('created');
 
@@ -72,7 +72,7 @@ class VertxAppProtoStub {
     //Listener to accept subscribe request of ContextReporters
     bus.addListener('domain://msg-node.sharing-cities-dsm/sm', (msg) => {
       console.log('[VertxAppProtoStub] Message on (domain://msg-node.sharing-cities-dsm/sm) : ', msg);
-      let msgResponse = {
+    let msgResponse = {
         id: msg.id,
         type: 'response',
         from: msg.to,
@@ -87,7 +87,14 @@ class VertxAppProtoStub {
 
 
     bus.addListener('*', (msg) => {
-      console.log('[VertxAppProtoStub] Message ', msg, _this._eb.state, JSON.stringify(_this._dataStreamIdentity));
+      console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+      if (_this._eb === null) {
+        _this._eb = new EventBus(config.url, {"vertxbus_ping_interval": config.vertxbus_ping_interval});
+        console.log('[VertxAppProtoStub] Eventbus', _this._eb);
+        _this._eventBusUsage();
+      }
+
+
       /*if (_this._dataStreamIdentity.hasOwnProperty(msg.to)) {
         if (msg.type === 'forward') {
           msg.type = 'create';
@@ -105,9 +112,15 @@ class VertxAppProtoStub {
 
         }
       }*/
+
+
     });
 
-    _this._eventBusUsage();
+    //
+
+
+
+
     //_this._setUpContextReporter();
 
     //_this._configAvailableStreams();
@@ -127,7 +140,6 @@ class VertxAppProtoStub {
           _this._dataStreamIdentity[stream.stream] = reply.body.identity;
 
           let reuseURL = _this._formCtxUrl(stream);
-          debugger;
           _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
             if (result) {
 
@@ -209,16 +221,17 @@ class VertxAppProtoStub {
 
   _eventBusUsage() {
     let _this = this;
-    console.log('[VertxAppProtoStub] waiting for eb Open');
+    console.log('[VertxAppProtoStub] waiting for eb Open', _this._eb);
+
     _this._eb.onopen = () => {
       console.log('[VertxAppProtoStub] _this._eb-> open');
       let done = false;
       while (! done) {
+        console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(',WebSocket.OPEN,')');
         if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
           done = true;
           _this._configAvailableStreams();
         } else {
-          console.log('[VertxAppProtoStub] Waiting for SockJS readyState');
           _this._sleep(1000);
         }
       }
