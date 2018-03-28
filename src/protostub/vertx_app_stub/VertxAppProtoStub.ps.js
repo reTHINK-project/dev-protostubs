@@ -88,30 +88,72 @@ class VertxAppProtoStub {
 
     bus.addListener('*', (msg) => {
       console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+      let hypertyURL = msg.from;
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, {"vertxbus_ping_interval": config.vertxbus_ping_interval});
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
-        _this._eventBusUsage();
+        _this._eventBusUsage().then(function(result){
+          console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
+
+          if(result) {
+            if (msg.type === 'forward') {
+              msg.type = msg.body.type;
+              msg.from = _this._runtimeProtoStubURL;
+
+              delete msg.body;
+
+              _this._eb.send(msg.to, msg, function (reply_err, reply) {
+                if (reply_err == null) {
+                  console.log("[VertxAppProtoStub] Received reply ", reply);
+                  //TODO send ack.. to hyperty
+                  let responseMsg = {
+                    id: msg.id,
+                    type: 'response',
+                    from : msg.to,
+                    to : hypertyURL,
+                    body : reply.body
+                  };
+                  _this._bus.postMessage(responseMsg);
+                } else {
+                  console.log("[VertxAppProtoStub] No reply", reply_err);
+                }
+              });
+
+            }
+
+
+          }
+        });
+      } else {
+        if (msg.type === 'forward') {
+          msg.type = msg.body.type;
+          msg.from = msg.identity.userProfile.userURL;
+          msg.to = msg.body.to;
+          delete msg.body;
+          _this._eb.send(msg.to, msg, function (reply_err2, reply2) {
+            if (reply_err2 == null) {
+              console.log("[VertxAppProtoStub] Received reply2 ", reply2);
+              //TODO send ack.. to hyperty
+              let responseMsg2 = {
+                id: msg.id,
+                type: 'response',
+                from : msg.to,
+                to : hypertyURL,
+                body : reply2.body.body
+              };
+              _this._bus.postMessage(responseMsg2);
+            } else {
+              console.log("[VertxAppProtoStub] No reply", reply_err2);
+            }
+
+          });
+        }
       }
 
-
-      /*if (_this._dataStreamIdentity.hasOwnProperty(msg.to)) {
-        if (msg.type === 'forward') {
-          msg.type = 'create';
-          msg.from = _this._runtimeProtoStubURL;
-
-          _this._eb.send(stream.stream, msg, function (reply_err, reply) {
-            if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply ", reply);
-              //TODO send ack.. to hyperty
-
-            } else {
-              console.log("[VertxAppProtoStub] No reply", reply_err);
-            }
-          });
-
-        }
-      }*/
+      //
+      // if (_this._dataStreamIdentity.hasOwnProperty(msg.to)) {
+      //
+      // }
 
 
     });
@@ -221,24 +263,28 @@ class VertxAppProtoStub {
 
   _eventBusUsage() {
     let _this = this;
-    console.log('[VertxAppProtoStub] waiting for eb Open', _this._eb);
 
-    _this._eb.onopen = () => {
-      console.log('[VertxAppProtoStub] _this._eb-> open');
-      let done = false;
-      while (! done) {
-        console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(',WebSocket.OPEN,')');
-        if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-          done = true;
-          _this._configAvailableStreams();
-        } else {
-          _this._sleep(1000);
+    return new Promise(function(resolve, reject) {
+      console.log('[VertxAppProtoStub] waiting for eb Open', _this._eb);
+
+      _this._eb.onopen = () => {
+        console.log('[VertxAppProtoStub] _this._eb-> open');
+        let done = false;
+        while (! done) {
+          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(',WebSocket.OPEN,')');
+          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+            done = true;
+            _this._configAvailableStreams();
+            resolve(true)
+          } else {
+            _this._sleep(1000);
+          }
         }
       }
-    }
-    _this._eb.onerror = function(e) {
-        console.log('[VertxAppProtoStub] General error: ', e); // this does happen
-    }
+      _this._eb.onerror = function(e) {
+          console.log('[VertxAppProtoStub] General error: ', e); // this does happen
+      }
+    });
   }
 
 
