@@ -88,85 +88,48 @@ class VertxAppProtoStub {
 
     bus.addListener('*', (msg) => {
       console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
-      let hypertyURL = msg.from;
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, {"vertxbus_ping_interval": config.vertxbus_ping_interval});
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
         _this._eventBusUsage().then(function(result){
           console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
-
           if(result) {
-            if (msg.type === 'forward') {
-              msg.type = msg.body.type;
-              msg.from = _this._runtimeProtoStubURL;
-
-              delete msg.body;
-
-              _this._eb.send(msg.to, msg, function (reply_err, reply) {
-                if (reply_err == null) {
-                  console.log("[VertxAppProtoStub] Received reply ", reply);
-                  //TODO send ack.. to hyperty
-                  let responseMsg = {
-                    id: msg.id,
-                    type: 'response',
-                    from : msg.to,
-                    to : hypertyURL,
-                    body : reply.body
-                  };
-                  _this._bus.postMessage(responseMsg);
-                } else {
-                  console.log("[VertxAppProtoStub] No reply", reply_err);
-                }
-              });
-
-            }
-
-
+            _this._handleNewMessage(msg);
           }
         });
       } else {
-        if (msg.type === 'forward') {
-          msg.type = msg.body.type;
-          msg.from = msg.identity.userProfile.userURL;
-          msg.to = msg.body.to;
-          delete msg.body;
-          _this._eb.send(msg.to, msg, function (reply_err2, reply2) {
-            if (reply_err2 == null) {
-              console.log("[VertxAppProtoStub] Received reply2 ", reply2);
-              //TODO send ack.. to hyperty
-              let responseMsg2 = {
-                id: msg.id,
-                type: 'response',
-                from : msg.to,
-                to : hypertyURL,
-                body : reply2.body.body
-              };
-              _this._bus.postMessage(responseMsg2);
-            } else {
-              console.log("[VertxAppProtoStub] No reply", reply_err2);
-            }
-
-          });
-        }
+        _this._handleNewMessage(msg);
       }
-
-      //
-      // if (_this._dataStreamIdentity.hasOwnProperty(msg.to)) {
-      //
-      // }
-
-
     });
+  }
 
-    //
+  _handleNewMessage(msg) {
 
+    let _this = this;
+    if (msg.type === 'forward') {
+      let hypertyURL = msg.from;
+      msg.type = msg.body.type;
+      msg.from = msg.identity.userProfile.userURL;
+      msg.to = msg.body.to;
+      delete msg.body;
 
-
-
-    //_this._setUpContextReporter();
-
-    //_this._configAvailableStreams();
-
+      _this._eb.send(msg.to, msg, function (reply_err, reply) {
+        if (reply_err == null) {
+          console.log("[VertxAppProtoStub] Received reply ", reply);
+          //TODO send ack.. to hyperty
+          let responseMsg = {
+            id: msg.id,
+            type: 'response',
+            from : msg.to,
+            to : hypertyURL,
+            body : reply.body.body
+          };
+          _this._bus.postMessage(responseMsg);
+        } else {
+          console.log("[VertxAppProtoStub] No reply", reply_err);
+        }
+      });
+    }
   }
 
   _configAvailableStreams() {
