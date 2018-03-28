@@ -109,7 +109,7 @@ class VertxAppProtoStub {
     if (msg.type === 'forward') {
       let hypertyURL = msg.from;
       msg.type = msg.body.type;
-      msg.from = msg.identity.userProfile.userURL;
+      msg.from = hypertyURL;
       msg.to = msg.body.to;
       delete msg.body;
 
