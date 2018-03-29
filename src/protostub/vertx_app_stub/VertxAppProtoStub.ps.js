@@ -111,11 +111,24 @@ class VertxAppProtoStub {
       msg.type = msg.body.type;
       msg.from = hypertyURL;
       msg.to = msg.body.to;
+      /*if (msg.body.hasOwnProperty('data')) {
+        msg.body = msg.body.data;
+      } else {
+        delete msg.body;
+      }*/
+      if (msg.body.hasOwnProperty('data')) {
+        msg.latitude = msg.body.data.latitude;
+        msg.longitude = msg.body.data.longitude;
+        msg.shopID = msg.body.data.shopID;
+        msg.userID = msg.body.data.userID;
+      }
       delete msg.body;
+
+
 
       _this._eb.send(msg.to, msg, function (reply_err, reply) {
         if (reply_err == null) {
-          console.log("[VertxAppProtoStub] Received reply ", reply);
+          console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', msg);
           //TODO send ack.. to hyperty
           let responseMsg = {
             id: msg.id,
@@ -124,6 +137,8 @@ class VertxAppProtoStub {
             to : hypertyURL,
             body : reply.body.body
           };
+          console.log('send reply', responseMsg);
+
           _this._bus.postMessage(responseMsg);
         } else {
           console.log("[VertxAppProtoStub] No reply", reply_err);
