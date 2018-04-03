@@ -186,7 +186,7 @@ class VertxAppProtoStub {
 
   _configAvailableStreams() {
     let _this = this;
-    return new Promise(function(resolve, reject) {
+    return new Promise(function(resolve) {
       console.log('[VertxAppProtoStub] EB on readyState(OPEN) Streams', _this._streams);
       _this._streams.forEach(function(stream) {
         console.log('[VertxAppProtoStub] Stream', stream, _this._eb.sockJSConn.readyState);
@@ -215,7 +215,7 @@ class VertxAppProtoStub {
         });
       });
       resolve();
-    }
+    });
 
   }
 
@@ -294,9 +294,9 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(',WebSocket.OPEN,')');
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             done = true;
-            _this._configAvailableStreams().then(function( {
+            _this._configAvailableStreams().then(function() {
               resolve(true);
-            }));
+            });
           } else {
             _this._sleep(1000);
           }
