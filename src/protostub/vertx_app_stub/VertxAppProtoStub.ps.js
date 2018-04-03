@@ -67,6 +67,9 @@ class VertxAppProtoStub {
     //used to save identity of each stream url
     _this._dataStreamIdentity = {};
 
+    //used to save hypertyWallet of each AddressWallet
+    _this._hypertyWalletAddress = {};
+
 
 
     //Listener to accept subscribe request of ContextReporters
@@ -129,15 +132,35 @@ class VertxAppProtoStub {
       _this._eb.send(msg.to, msg, function (reply_err, reply) {
         if (reply_err == null) {
           console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', msg);
-          //TODO send ack.. to hyperty
+
           let responseMsg = {
             id: msg.id,
             type: 'response',
             from : msg.to,
             to : hypertyURL,
-            body : reply.body.body
+            body : reply.body
           };
           console.log('send reply', responseMsg);
+
+          //
+          if (msg.to.includes('/subscription') && reply.body.body.code == 200 ) {
+
+            let addressChanges = msg.address + '/changes';
+            _this._hypertyWalletAddress[addressChanges] = msg.from;
+
+            console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
+            _this._eb.registerHandler(addressChanges, function(error, message) {
+              console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
+              //enviar para o _this._hypertyWalletAddress[message.address] a message
+              let changeMessage = message.body;
+              changeMessage.to = _this._hypertyWalletAddress[message.address];
+              changeMessage.from = message.address;
+
+              _this._bus.postMessage(changeMessage);
+
+            });
+          }
+
 
           _this._bus.postMessage(responseMsg);
         } else {
