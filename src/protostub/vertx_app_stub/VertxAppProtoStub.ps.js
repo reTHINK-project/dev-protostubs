@@ -67,6 +67,9 @@ class VertxAppProtoStub {
     //used to save identity of each stream url
     _this._dataStreamIdentity = {};
 
+    //used to save data of each stream url
+    _this._dataStreamData = {};
+
     //used to save hypertyWallet of each AddressWallet
     _this._hypertyWalletAddress = {};
 
@@ -109,7 +112,8 @@ class VertxAppProtoStub {
   _handleNewMessage(msg) {
 
     let _this = this;
-    if (msg.type === 'forward') {
+    if (msg.type === 'forward' && msg.body.type === 'read') {
+
       let hypertyURL = msg.from;
       msg.type = msg.body.type;
       msg.from = hypertyURL;
@@ -167,6 +171,16 @@ class VertxAppProtoStub {
           console.log("[VertxAppProtoStub] No reply", reply_err);
         }
       });
+    } else {
+
+      console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
+      let responseMsg = {
+        from: msg.to,
+        to: msg.from,
+        id: msg.id,
+        body: _this._dataStreamData[msg.to]
+      };
+      _this._bus.postMessage(responseMsg);
     }
   }
 
@@ -181,6 +195,7 @@ class VertxAppProtoStub {
         if (reply_err == null) {
           console.log("[VertxAppProtoStub] Received reply ", reply.body);
           _this._dataStreamIdentity[stream.stream] = reply.body.identity;
+          _this._dataStreamData[stream.stream] = reply.body.data;
 
           let reuseURL = _this._formCtxUrl(stream);
           _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
