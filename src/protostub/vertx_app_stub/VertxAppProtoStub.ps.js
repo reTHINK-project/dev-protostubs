@@ -112,76 +112,80 @@ class VertxAppProtoStub {
   _handleNewMessage(msg) {
 
     let _this = this;
-    if (msg.type === 'forward' && msg.body.type !== 'read') {
+    if (msg.body.hasOwnProperty('type')) {
+      if (msg.type === 'forward' && msg.body.type === 'create') {
 
-      let hypertyURL = msg.from;
-      msg.type = msg.body.type;
-      msg.from = hypertyURL;
-      msg.to = msg.body.to;
-      /*if (msg.body.hasOwnProperty('data')) {
-        msg.body = msg.body.data;
-      } else {
-        delete msg.body;
-      }*/
-      if (msg.body.hasOwnProperty('data')) {
-        msg.latitude = msg.body.data.latitude;
-        msg.longitude = msg.body.data.longitude;
-        msg.shopID = msg.body.data.shopID;
-        msg.userID = msg.body.data.userID;
-      }
-      delete msg.body;
-
-
-
-      _this._eb.send(msg.to, msg, function (reply_err, reply) {
-        if (reply_err == null) {
-          console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', msg);
-
-          let responseMsg = {
-            id: msg.id,
-            type: 'response',
-            from : msg.to,
-            to : hypertyURL,
-            body : reply.body
-          };
-          console.log('send reply', responseMsg);
-
-          //
-          if (msg.to.includes('/subscription') && reply.body.body.code == 200 ) {
-
-            let addressChanges = msg.address + '/changes';
-            _this._hypertyWalletAddress[addressChanges] = msg.from;
-
-            console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
-            _this._eb.registerHandler(addressChanges, function(error, message) {
-              console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
-              //enviar para o _this._hypertyWalletAddress[message.address] a message
-              let changeMessage = message.body;
-              changeMessage.to = _this._hypertyWalletAddress[message.address];
-              changeMessage.from = message.address;
-
-              _this._bus.postMessage(changeMessage);
-
-            });
-          }
-
-
-          _this._bus.postMessage(responseMsg);
+        let hypertyURL = msg.from;
+        msg.type = msg.body.type;
+        msg.from = hypertyURL;
+        msg.to = msg.body.to;
+        /*if (msg.body.hasOwnProperty('data')) {
+          msg.body = msg.body.data;
         } else {
-          console.log("[VertxAppProtoStub] No reply", reply_err);
+          delete msg.body;
+        }*/
+        if (msg.body.hasOwnProperty('data')) {
+          msg.latitude = msg.body.data.latitude;
+          msg.longitude = msg.body.data.longitude;
+          msg.shopID = msg.body.data.shopID;
+          msg.userID = msg.body.data.userID;
         }
-      });
-    } else {
+        delete msg.body;
 
-      console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
-      let responseMsg = {
-        from: msg.to,
-        to: msg.from,
-        id: msg.id,
-        body: _this._dataStreamData[msg.to]
-      };
-      _this._bus.postMessage(responseMsg);
+
+
+        _this._eb.send(msg.to, msg, function (reply_err, reply) {
+          if (reply_err == null) {
+            console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', msg);
+
+            let responseMsg = {
+              id: msg.id,
+              type: 'response',
+              from : msg.to,
+              to : hypertyURL,
+              body : reply.body
+            };
+            console.log('send reply', responseMsg);
+
+            //
+            if (msg.to.includes('/subscription') && reply.body.body.code == 200 ) {
+
+              let addressChanges = msg.address + '/changes';
+              _this._hypertyWalletAddress[addressChanges] = msg.from;
+
+              console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
+              _this._eb.registerHandler(addressChanges, function(error, message) {
+                console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
+                //enviar para o _this._hypertyWalletAddress[message.address] a message
+                let changeMessage = message.body;
+                changeMessage.to = _this._hypertyWalletAddress[message.address];
+                changeMessage.from = message.address;
+
+                _this._bus.postMessage(changeMessage);
+
+              });
+            }
+
+
+            _this._bus.postMessage(responseMsg);
+          } else {
+            console.log("[VertxAppProtoStub] No reply", reply_err);
+          }
+        });
+      } else if (msg.body.type === 'read') {
+
+        console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
+        let responseMsg = {
+          from: msg.to,
+          to: msg.from,
+          id: msg.id,
+          body: _this._dataStreamData[msg.to]
+        };
+        _this._bus.postMessage(responseMsg);
+      }
     }
+
+
   }
 
   _configAvailableStreams() {
@@ -204,7 +208,7 @@ class VertxAppProtoStub {
             } else {
               count++;
             }
-            
+
             let reuseURL = _this._formCtxUrl(stream);
             _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
               if (result) {
