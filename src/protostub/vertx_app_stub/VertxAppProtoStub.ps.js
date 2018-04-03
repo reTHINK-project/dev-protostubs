@@ -188,6 +188,7 @@ class VertxAppProtoStub {
     let _this = this;
     return new Promise(function(resolve) {
       console.log('[VertxAppProtoStub] EB on readyState(OPEN) Streams', _this._streams);
+      let count = 0;
       _this._streams.forEach(function(stream) {
         console.log('[VertxAppProtoStub] Stream', stream, _this._eb.sockJSConn.readyState);
         let msg = { type: 'read' };
@@ -198,6 +199,12 @@ class VertxAppProtoStub {
             _this._dataStreamIdentity[stream.stream] = reply.body.identity;
             _this._dataStreamData[stream.stream] = reply.body.data;
 
+            if (count == _this._streams.length) {
+              resolve();
+            } else {
+              count++;
+            }
+            
             let reuseURL = _this._formCtxUrl(stream);
             _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
               if (result) {
@@ -214,7 +221,7 @@ class VertxAppProtoStub {
           }
         });
       });
-      resolve();
+
     });
 
   }
