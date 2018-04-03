@@ -179,8 +179,11 @@ class VertxAppProtoStub {
           from: msg.to,
           to: msg.from,
           id: msg.id,
-          body: _this._dataStreamData[msg.to]
+          type: 'response'
         };
+        responseMsg.body = {};
+        responseMsg.body.value =  _this._dataStreamData[msg.to];
+        responseMsg.body.code = 200;
         _this._bus.postMessage(responseMsg);
       }
     }
@@ -199,14 +202,13 @@ class VertxAppProtoStub {
 
         _this._eb.send(stream.stream, msg, function (reply_err, reply) {
           if (reply_err == null) {
+            count++;
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
             _this._dataStreamIdentity[stream.stream] = reply.body.identity;
             _this._dataStreamData[stream.stream] = reply.body.data;
 
             if (count == _this._streams.length) {
               resolve();
-            } else {
-              count++;
             }
 
             let reuseURL = _this._formCtxUrl(stream);
