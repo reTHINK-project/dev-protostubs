@@ -186,33 +186,37 @@ class VertxAppProtoStub {
 
   _configAvailableStreams() {
     let _this = this;
-    console.log('[VertxAppProtoStub] EB on readyState(OPEN) Streams', _this._streams);
-    _this._streams.forEach(function(stream) {
-      console.log('[VertxAppProtoStub] Stream', stream, _this._eb.sockJSConn.readyState);
-      let msg = { type: 'read' };
+    return new Promise(function(resolve, reject) {
+      console.log('[VertxAppProtoStub] EB on readyState(OPEN) Streams', _this._streams);
+      _this._streams.forEach(function(stream) {
+        console.log('[VertxAppProtoStub] Stream', stream, _this._eb.sockJSConn.readyState);
+        let msg = { type: 'read' };
 
-      _this._eb.send(stream.stream, msg, function (reply_err, reply) {
-        if (reply_err == null) {
-          console.log("[VertxAppProtoStub] Received reply ", reply.body);
-          _this._dataStreamIdentity[stream.stream] = reply.body.identity;
-          _this._dataStreamData[stream.stream] = reply.body.data;
+        _this._eb.send(stream.stream, msg, function (reply_err, reply) {
+          if (reply_err == null) {
+            console.log("[VertxAppProtoStub] Received reply ", reply.body);
+            _this._dataStreamIdentity[stream.stream] = reply.body.identity;
+            _this._dataStreamData[stream.stream] = reply.body.data;
 
-          let reuseURL = _this._formCtxUrl(stream);
-          _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
-            if (result) {
+            let reuseURL = _this._formCtxUrl(stream);
+            _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function(result) {
+              if (result) {
 
-              _this._eb.registerHandler(reuseURL, function(error, message) {
-                console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
-                //TODO Check if message.body.values is compatible to just setContext Like that
-                _this._contextReporter.setContext(reply.body.identity.userProfile.userURL, message.body.values);
-              });
-            }
-          });
-        } else {
-          console.log("[VertxAppProtoStub] No reply", reply_err);
-        }
+                _this._eb.registerHandler(reuseURL, function(error, message) {
+                  console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
+                  //TODO Check if message.body.values is compatible to just setContext Like that
+                  _this._contextReporter.setContext(reply.body.identity.userProfile.userURL, message.body.values);
+                });
+              }
+            });
+          } else {
+            console.log("[VertxAppProtoStub] No reply", reply_err);
+          }
+        });
       });
-    });
+      resolve();
+    }
+
   }
 
   _sleep(milliseconds) {
@@ -290,8 +294,9 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(',WebSocket.OPEN,')');
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             done = true;
-            _this._configAvailableStreams();
-            resolve(true)
+            _this._configAvailableStreams().then(function( {
+              resolve(true);
+            }));
           } else {
             _this._sleep(1000);
           }
