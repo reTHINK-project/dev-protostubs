@@ -112,7 +112,7 @@ class VertxAppProtoStub {
   _handleNewMessage(msg) {
 
     let _this = this;
-    if (msg.type === 'forward' && msg.body.type === 'read') {
+    if (msg.type === 'forward' && msg.body.type !== 'read') {
 
       let hypertyURL = msg.from;
       msg.type = msg.body.type;
