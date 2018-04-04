@@ -73,6 +73,9 @@ class VertxAppProtoStub {
     //used to save hypertyWallet of each AddressWallet
     _this._hypertyWalletAddress = {};
 
+    //used to save contextUrl of vertxRemote Stream
+    _this._contextUrlToRemoveStream = {};
+
 
 
     //Listener to accept subscribe request of ContextReporters
@@ -113,17 +116,32 @@ class VertxAppProtoStub {
 
     let _this = this;
     if (msg.body.hasOwnProperty('type')) {
+
+      debugger;
+      // To Handle Message read type to get for example shops List
+      if (msg.body.type === 'read') {
+
+        console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
+        let responseMsg = {
+          from: msg.to,
+          to: msg.from,
+          id: msg.id,
+          type: 'response'
+        };
+        responseMsg.body = {};
+        responseMsg.body.value =  _this._dataStreamData[msg.to];
+        responseMsg.body.code = 200;
+        _this._bus.postMessage(responseMsg);
+      }
+
+      /*
       if (msg.type === 'forward' && msg.body.type === 'create') {
 
         let hypertyURL = msg.from;
         msg.type = msg.body.type;
         msg.from = hypertyURL;
         msg.to = msg.body.to;
-        /*if (msg.body.hasOwnProperty('data')) {
-          msg.body = msg.body.data;
-        } else {
-          delete msg.body;
-        }*/
+
         if (msg.body.hasOwnProperty('data')) {
           msg.latitude = msg.body.data.latitude;
           msg.longitude = msg.body.data.longitude;
@@ -185,6 +203,34 @@ class VertxAppProtoStub {
         responseMsg.body.value =  _this._dataStreamData[msg.to];
         responseMsg.body.code = 200;
         _this._bus.postMessage(responseMsg);
+      }*/
+    } else {
+
+
+      if(msg.type === 'create' && msg.from.includes('/subscription')) {
+        console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
+
+        let inviteMessage = {
+          type: 'create',
+          from: _this._runtimeProtoStubURL,
+          to: msg.to,
+          identity: { userProfile: { userURL: msg.body.identity.userProfile.userURL }}
+        }
+        //Invite Vertx Stream...
+        _this._eb.send(msg.to, inviteMessage, function (reply_err, reply) {
+          if (reply_err == null) {
+            console.log("[VertxAppProtoStub] Received reply Invitation ", reply, '   from msg', inviteMessage);
+            if (reply.body.body.code == 200) {
+              let contextUrl = msg.body.value.url;
+              let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+              let name = msg.body.value.name;
+              let toAddIdentity = { userProfile: {userURL: msg.body.identity.userProfile.userURL }};
+              _this._contextUrlToRemoveStream[contextUrl] = msg.to;
+              _this._dataStreamIdentity[contextUrl] = toAddIdentity;
+              _this._setUpObserver(name, contextUrl, schema_url);
+            }
+          }
+        });
       }
     }
 
@@ -204,6 +250,7 @@ class VertxAppProtoStub {
           if (reply_err == null) {
             count++;
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
+
             _this._dataStreamIdentity[stream.stream] = reply.body.identity;
             _this._dataStreamData[stream.stream] = reply.body.data;
 
@@ -269,26 +316,47 @@ class VertxAppProtoStub {
     let _this = this;
     //MessageBodyIdentity Constructor
     let identityToUse = new MessageBodyIdentity(
-      name, _this._dataStreamIdentity[contextUrl],
+      name, _this._dataStreamIdentity[contextUrl].userProfile.userURL,
       undefined, name,
       '', 'sharing-cities-dsm',
       undefined, undefined);
-
     _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function(obj) {
       console.log('[VertxAppProtoStub] subscribe success', obj);
-      _this._dataObservers[obj.url] = {data: null, time: null};
+
       obj.onChange('*', (event) => {
         console.log('[VertxAppProtoStub] onChange :', event);
-        if (event.field === 'values') {
-          _this._dataObservers[obj.url].data = event.data;
-        } else if(event.field === 'time') {
-          if (_this._dataObservers[obj.url].time != event.data) {
-            _this._dataObservers[obj.url].time = event.data;
-            console.log('[VertxAppProtoStub] PUBLISH (url)', obj.url, '   DATA ', _this._dataObservers[obj.url]);
-            _this._eb.publish(obj.url, JSON.stringify(_this._dataObservers[obj.url]));
+
+        if (event.field == 'values') {
+          let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
+
+          if (filter_checkin.length == 1) {
+
+            let shopID = filter_checkin[0].value;
+            let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
+            let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
+            let checkInMessage = {
+              from: _this._runtimeProtoStubURL,
+              to: _this._contextUrlToRemoveStream[obj.url],
+              identity : _this._dataStreamIdentity[obj.url],
+              type : 'create',
+              userID: _this._dataStreamIdentity[obj.url].userProfile.userURL,
+              latitude : latitude,
+              longitude : longitude,
+              shopID : shopID
+            }
+            console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
+
+
+            _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
+              if (reply_err == null) {
+                console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
+
+              }
+            });
           }
         }
       });
+
     }).catch(function(error) {
       console.log('[VertxAppProtoStub] error', error);
     });
