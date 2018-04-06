@@ -209,15 +209,28 @@ class VertxAppProtoStub {
 
       if(msg.type === 'create' && msg.from.includes('/subscription')) {
         console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
+        debugger;
+        _this._eb.registerHandler(msg.from, function(error, messageFROMsubscription) {
+
+          console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
+          //messageFROMsubscription.body.from = _this._runtimeProtoStubURL;
+          _this._bus.postMessage(messageFROMsubscription.body, (reply) => {
+            debugger;
+            console.log('[VertxAppProtoStub] subscription reply', reply);
+          });
+
+
+        });
 
         let inviteMessage = {
           type: 'create',
-          from: _this._runtimeProtoStubURL,
+          from: msg.from,
           to: msg.to,
           identity: { userProfile: { userURL: msg.body.identity.userProfile.userURL }}
         }
         //Invite Vertx Stream...
-        _this._eb.send(msg.to, inviteMessage, function (reply_err, reply) {
+        _this._eb.publish(msg.to, inviteMessage);
+        /*_this._eb.publish(msg.to, inviteMessage, function (reply_err, reply) {
           if (reply_err == null) {
             console.log("[VertxAppProtoStub] Received reply Invitation ", reply, '   from msg', inviteMessage);
             if (reply.body.body.code == 200) {
@@ -230,7 +243,8 @@ class VertxAppProtoStub {
               _this._setUpObserver(name, contextUrl, schema_url);
             }
           }
-        });
+        });*/
+
       }
     }
 
