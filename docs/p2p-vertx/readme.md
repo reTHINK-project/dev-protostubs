@@ -54,6 +54,6 @@ The Subscription Manager has a message handler for invitations that is called by
 
 These invitations are forwarded to Vertx Event BUS with callback to handle responses as well as subscription requests i.e. `eventBus.sendMessage(msg, callback)` where callback has the logic to call `invitationEvent.ack()` from the syncher (or should we directly send the 200 ok response?).
 
-But before invitations are sent to vertx, the subscription manager set vertx handlers to the `from` of the invitations, ie `<objectUrl>/sm`, to be prepared to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
+But before invitations are sent to vertx, the subscription manager set vertx handlers to the `from` of the invitations, ie `<objectUrl>/subscription`, to be prepared to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
 
 On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive create requests from [`abstractHyperty.create()`](https://github.com/reTHINK-project/dev-java-hyperty/blob/master/docs/abstract-hyperty.md#createdataobjecturl-observers-initialdata--function) that is used to call the `Reporter.create()` function defined above.
