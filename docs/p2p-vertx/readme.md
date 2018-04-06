@@ -35,7 +35,6 @@ Extends the ContextReporter (or have a lighter version?) service framework lib.
 
 It provides a `create()` function that invokes `ContextReporter.create()` adding handlers to vertx event bus to new created data object URLs, where data received is written in the Data Object by calling `contextReporter.setContext(..)`.
 
-
 The `create()` function is invoked for each stream defined at `config.streams` using as initial data, data returned by the vertx Hyperty when requested by sending:
 
 ```
@@ -57,4 +56,4 @@ These invitations are forwarded to Vertx Event BUS with callback to handle respo
 
 But before invitations are sent to vertx, the subscription manager set vertx handlers to the `from` of the invitations, ie `<objectUrl>/sm`, to be prepared to receive subscription requests from `abstractHyperty.subscribe()` that is used to call the `Observer.subscribe()` function defined above.
 
-On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive create requests from `abstractHyperty.create()` that is used to call the `Reporter.create()` function defined above.
+On the other side the Subscription Manager has an event bus handler set at `<runtimeUrl>/sm` to receive create requests from [`abstractHyperty.create()`](https://github.com/reTHINK-project/dev-java-hyperty/blob/master/docs/abstract-hyperty.md#createdataobjecturl-observers-initialdata--function) that is used to call the `Reporter.create()` function defined above.
