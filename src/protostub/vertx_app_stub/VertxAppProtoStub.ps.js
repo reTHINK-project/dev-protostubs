@@ -209,15 +209,27 @@ class VertxAppProtoStub {
 
       if(msg.type === 'create' && msg.from.includes('/subscription')) {
         console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
-        debugger;
+        //debugger;
         _this._eb.registerHandler(msg.from, function(error, messageFROMsubscription) {
 
           console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
-          //messageFROMsubscription.body.from = _this._runtimeProtoStubURL;
-          _this._bus.postMessage(messageFROMsubscription.body, (reply) => {
-            debugger;
-            console.log('[VertxAppProtoStub] subscription reply', reply);
-          });
+          let messageToSubscribe = messageFROMsubscription.body;
+          if (messageToSubscribe.to.includes('/subscription')) {
+            let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+            let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+
+            _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function(result) {
+              if (result) {
+                let response = { body: { code : 200 }};
+                messageFROMsubscription.reply(response);
+              } else {
+                let response = { body: { code : 406 }};
+                messageFROMsubscription.reply(response);
+              }
+            });
+          }
+
+
 
 
         });
@@ -326,53 +338,59 @@ class VertxAppProtoStub {
   }
 
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
-  _setUpObserver(name, contextUrl, schemaUrl) {
+  _setUpObserver(identityToUse, contextUrl, schemaUrl) {
     let _this = this;
     //MessageBodyIdentity Constructor
-    let identityToUse = new MessageBodyIdentity(
-      name, _this._dataStreamIdentity[contextUrl].userProfile.userURL,
-      undefined, name,
-      '', 'sharing-cities-dsm',
-      undefined, undefined);
-    _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function(obj) {
-      console.log('[VertxAppProtoStub] subscribe success', obj);
+    return new Promise(function(resolve) {
+      _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function(obj) {
+        console.log('[VertxAppProtoStub] subscribe success', obj);
+        resolve(true);
+        obj.onChange('*', (event) => {
+          console.log('[VertxAppProtoStub] onChange :', event);
+          //debugger;
+          let changesAddress = obj.url + "/changes";
+          _this._eb.send(changesAddress, event.data, function (reply_err, reply) {
+            if (reply_err == null) {
+              console.log("[VertxAppProtoStub] Received reply from change ", reply);
 
-      obj.onChange('*', (event) => {
-        console.log('[VertxAppProtoStub] onChange :', event);
-
-        if (event.field == 'values') {
-          let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
-
-          if (filter_checkin.length == 1) {
-
-            let shopID = filter_checkin[0].value;
-            let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
-            let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
-            let checkInMessage = {
-              from: _this._runtimeProtoStubURL,
-              to: _this._contextUrlToRemoveStream[obj.url],
-              identity : _this._dataStreamIdentity[obj.url],
-              type : 'create',
-              userID: _this._dataStreamIdentity[obj.url].userProfile.userURL,
-              latitude : latitude,
-              longitude : longitude,
-              shopID : shopID
             }
-            console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
+          });
+          /*
+          if (event.field == 'values') {
+            let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
 
+            if (filter_checkin.length == 1) {
 
-            _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
-              if (reply_err == null) {
-                console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
-
+              let shopID = filter_checkin[0].value;
+              let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
+              let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
+              let checkInMessage = {
+                from: _this._runtimeProtoStubURL,
+                to: _this._contextUrlToRemoveStream[obj.url],
+                identity : _this._dataStreamIdentity[obj.url],
+                type : 'create',
+                userID: _this._dataStreamIdentity[obj.url].userProfile.userURL,
+                latitude : latitude,
+                longitude : longitude,
+                shopID : shopID
               }
-            });
-          }
-        }
-      });
+              console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
 
-    }).catch(function(error) {
-      console.log('[VertxAppProtoStub] error', error);
+
+              _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
+                if (reply_err == null) {
+                  console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
+
+                }
+              });
+            }
+          }*/
+        });
+
+      }).catch(function(error) {
+        resolve(false);
+        console.log('[VertxAppProtoStub] error', error);
+      });
     });
   }
 
