@@ -112,10 +112,150 @@ class VertxAppProtoStub {
     });
   }
 
+  createWallet(msg) {
+
+    let _this = this;
+
+    const walletManagerAddress = msg.body.to;
+
+    // 1 - send to wallet manager (request to create wallet)
+    let hypertyURL = msg.from;
+    msg.type = msg.body.type;
+    msg.from = hypertyURL;
+    msg.to = msg.body.to;
+
+    delete msg.body;
+
+
+    _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
+
+      if (reply_err == null) {
+
+        // TODO 2 - call create() method on reporter (send as reply)
+        console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
+
+        const messageToReporter = {
+          id: 1,
+          type: "create",
+          from: "hyperty://catalogue.localhost/<hyperty-instance-identifier>",
+          to: walletManagerAddress,
+          body: {
+            resource: '<ObjectURL>',
+            value: '<json object>',
+            schema: "hyperty-catalogue://<sp-domain>/dataObjectSchema/<schema-identifier>",
+            "p2p": true | false,
+            "store": true | false
+          }
+        };
+
+        _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
+
+
+          // TODO 3 - send 200 OK to wallet manager
+          let responseMsg = {
+            from: hypertyURL,
+            to: walletManagerAddress,
+            id: msg.id,
+            type: 'create'
+          };
+          responseMsg.body = {};
+          responseMsg.body.value = _this._dataStreamData[msg.to];
+          responseMsg.body.code = 200;
+
+          reply.reply(responseMsg, function (reply_err, reply2) {
+
+            debugger;
+            // 4 - send reply back to the JS wallet hyperty
+            let responseMsg = {
+              id: msg.id,
+              type: 'response',
+              from: msg.to,
+              to: hypertyURL,
+              body: {
+                wallet: reply.wallet,
+                code: 200
+              }
+            };
+
+            console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+
+            _this._bus.postMessage(responseMsg);
+
+          });
+        });
+
+        // const reuseURL = _this._formCtxUrl(stream);
+
+        /*
+        // TODO - resources, reuseURL
+        _this._setUpContextReporter(reply.body.identity, reply.body.data, ['kwh'], 'wallet', reuseURL).then(function (result) {
+          if (result) {
+
+            // send 200 OK message to Verxt Wallet Manager
+            let responseMsg = {
+              from: msg.to,
+              to: msg.from,
+              id: msg.id,
+              type: 'response'
+            };
+            responseMsg.body = {};
+            responseMsg.body.value = _this._dataStreamData[msg.to];
+            responseMsg.body.code = 200;
+            _this._eb.send(responseMsg.to, responseMsg, function (reply_err, reply) {
+
+              debugger;
+              // send reply back to the JS wallet hyperty
+              let responseMsg = {
+                id: msg.id,
+                type: 'response',
+                from: msg.to,
+                to: hypertyURL,
+                body: reply.wallet
+              };
+              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+
+              _this._bus.postMessage(responseMsg);
+
+            });
+          }
+        });
+        */
+
+
+
+
+        //
+        if (msg.to.includes('/subscription') && reply.body.body.code == 200) {
+
+          let addressChanges = msg.address + '/changes';
+          _this._hypertyWalletAddress[addressChanges] = msg.from;
+
+          console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
+          _this._eb.registerHandler(addressChanges, function (error, message) {
+            console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
+            //enviar para o _this._hypertyWalletAddress[message.address] a message
+            let changeMessage = message.body;
+            changeMessage.to = _this._hypertyWalletAddress[message.address];
+            changeMessage.from = message.address;
+
+            _this._bus.postMessage(changeMessage);
+
+          });
+        }
+
+
+
+      } else {
+        console.log("[VertxAppProtoStub] No reply", reply_err);
+      }
+    });
+
+  }
+
+
   _handleNewMessage(msg) {
 
     console.log('[VertxAppProtoStub] handling messages');
-
 
     let _this = this;
     if (msg.body.hasOwnProperty('type')) {
@@ -137,104 +277,8 @@ class VertxAppProtoStub {
       }
 
       if (msg.type === 'forward' && msg.body.type === 'create') {
+        _this.createWallet(msg);
 
-        // send to wallet manager
-
-        let hypertyURL = msg.from;
-        msg.type = msg.body.type;
-        msg.from = hypertyURL;
-        msg.to = msg.body.to;
-
-        delete msg.body;
-
-
-        _this._eb.send(msg.to, msg, function (reply_err, reply) {
-
-          if (reply_err == null) {
-
-            // call create() method on reporter
-            console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', msg);
-
-            const stream = {
-              id: 'something'
-            };
-
-            const messageToReporter = {
-              id: 1,
-              type: "create",
-              from: "hyperty://<sp-domain>/<hyperty-instance-identifier>",
-              to: "hyperty-runtime://<sp-domain>/<hyperty-runtime-instance-identifier>/sm",
-              body: {
-                resource: '<ObjectURL>',
-                value: '<json object>',
-                schema: "hyperty-catalogue://<sp-domain>/dataObjectSchema/<schema-identifier>",
-                "p2p": true | false,
-                "store": true | false
-              }
-            };
-
-            // const reuseURL = _this._formCtxUrl(stream);
-
-            // TODO - resources, reuseURL
-            _this._setUpContextReporter(reply.body.identity, reply.body.data, ['kwh'], 'wallet', reuseURL).then(function (result) {
-              if (result) {
-
-                // send 200 OK message to Verxt Wallet Manager
-                let responseMsg = {
-                  from: msg.to,
-                  to: msg.from,
-                  id: msg.id,
-                  type: 'response'
-                };
-                responseMsg.body = {};
-                responseMsg.body.value = _this._dataStreamData[msg.to];
-                responseMsg.body.code = 200;
-                _this._eb.send(responseMsg.to, responseMsg, function (reply_err, reply) {
-
-                  debugger;
-                  // send reply back to the JS wallet hyperty
-                  let responseMsg = {
-                    id: msg.id,
-                    type: 'response',
-                    from: msg.to,
-                    to: hypertyURL,
-                    body: reply.wallet
-                  };
-                  console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
-
-                  _this._bus.postMessage(responseMsg);
-
-                });
-              }
-            });
-
-
-
-            //
-            if (msg.to.includes('/subscription') && reply.body.body.code == 200) {
-
-              let addressChanges = msg.address + '/changes';
-              _this._hypertyWalletAddress[addressChanges] = msg.from;
-
-              console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
-              _this._eb.registerHandler(addressChanges, function (error, message) {
-                console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
-                //enviar para o _this._hypertyWalletAddress[message.address] a message
-                let changeMessage = message.body;
-                changeMessage.to = _this._hypertyWalletAddress[message.address];
-                changeMessage.from = message.address;
-
-                _this._bus.postMessage(changeMessage);
-
-              });
-            }
-
-
-
-          } else {
-            console.log("[VertxAppProtoStub] No reply", reply_err);
-          }
-        });
       } else if (msg.body.type === 'read') {
 
         console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
@@ -403,9 +447,9 @@ class VertxAppProtoStub {
           /*
           if (event.field == 'values') {
             let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
- 
+   
             if (filter_checkin.length == 1) {
- 
+   
               let shopID = filter_checkin[0].value;
               let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
               let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
@@ -420,12 +464,12 @@ class VertxAppProtoStub {
                 shopID : shopID
               }
               console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
- 
- 
+   
+   
               _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
                 if (reply_err == null) {
                   console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
- 
+   
                 }
               });
             }
@@ -469,7 +513,7 @@ class VertxAppProtoStub {
 
   /**
    * Get the configuration for this ProtoStub
-* @return {Object} - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
+  * @return {Object} - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
       */
   get config() { return this._config; }
 
