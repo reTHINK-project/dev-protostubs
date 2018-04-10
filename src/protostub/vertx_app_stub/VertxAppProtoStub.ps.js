@@ -176,7 +176,7 @@ class VertxAppProtoStub {
             // const reuseURL = _this._formCtxUrl(stream);
 
             // TODO - resources, reuseURL
-            _this._setUpContextReporter(reply.body.identity, reply.body.data, ['kwh'], 'wallet', reuseURL).then(function (result) {
+            _this._setUpReporter(reply.body.identity, reply.body.data, ['kwh'], 'wallet', reuseURL).then(function (result) {
               if (result) {
 
                 // send 200 OK message to Verxt Wallet Manager
@@ -330,13 +330,15 @@ class VertxAppProtoStub {
             }
 
             let reuseURL = _this._formCtxUrl(stream);
-            _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
+            let schemaURL = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+            //_this._setUpReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL)
+            _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
               if (result) {
 
                 _this._eb.registerHandler(reuseURL, function (error, message) {
-                  console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
-                  //TODO Check if message.body.values is compatible to just setContext Like that
-                  _this._contextReporter.setContext(reply.body.identity.userProfile.userURL, message.body.values);
+                  console.log('[VertxAppProtoStub] received a message on : ', result, JSON.stringify(message));
+                  //TODO new data on reporter,, to update? or not? should be static?
+
                 });
               }
             });
@@ -365,9 +367,11 @@ class VertxAppProtoStub {
     return 'context://' + _this._config.host + '/' + ID + '/' + stream.id;
   }
 
-  _setUpContextReporter(identity, data, resources, name, reuseURL) {
+  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL) {
     let _this = this;
     return new Promise(function (resolve, reject) {
+
+      /*
       _this._contextReporter.create(identity, data, resources, identity, identity, reuseURL).then(function (context) {
         console.log('[VertxAppProtoStub] CONTEXT RETURNED', context);
         context.onSubscription(function (event) {
@@ -378,7 +382,29 @@ class VertxAppProtoStub {
       }).catch(function (err) {
         console.error('[VertxAppProtoStub] err', err);
         resolve(false);
-      });
+      });*/
+
+      let input = {
+        resources: resources,
+        expires:3600,
+        reporter: identityURL,
+        reuseURL: reuseURL
+       }
+
+      _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
+        .then((reporter) => {
+          console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
+          reporter.onSubscription(function (event) {
+            event.accept();
+            console.log('[VertxAppProtoStub] new subs', event);
+          });
+          resolve(true);
+
+        }).catch(function (err) {
+          console.error('[VertxAppProtoStub] err', err);
+          resolve(false);
+        });
+
     });
   }
 
@@ -403,9 +429,9 @@ class VertxAppProtoStub {
           /*
           if (event.field == 'values') {
             let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
- 
+
             if (filter_checkin.length == 1) {
- 
+
               let shopID = filter_checkin[0].value;
               let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
               let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
@@ -420,12 +446,12 @@ class VertxAppProtoStub {
                 shopID : shopID
               }
               console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
- 
- 
+
+
               _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
                 if (reply_err == null) {
                   console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
- 
+
                 }
               });
             }
