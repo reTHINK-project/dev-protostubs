@@ -131,6 +131,7 @@ class VertxAppProtoStub {
 
       if (reply_err == null) {
 
+
         // TODO 2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
 
@@ -221,36 +222,46 @@ class VertxAppProtoStub {
         });
         */
 
+        // TODO - resources, reuseURL
+        _this._setUpReporter(reply.body.identity, reply.body.data, ['kwh'], 'wallet', reuseURL).then(function (result) {
+          if (result) {
 
 
 
-        //
-        if (msg.to.includes('/subscription') && reply.body.body.code == 200) {
+            //
+            if (msg.to.includes('/subscription') && reply.body.body.code == 200) {
 
-          let addressChanges = msg.address + '/changes';
-          _this._hypertyWalletAddress[addressChanges] = msg.from;
+              let addressChanges = msg.address + '/changes';
+              _this._hypertyWalletAddress[addressChanges] = msg.from;
 
-          console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
-          _this._eb.registerHandler(addressChanges, function (error, message) {
-            console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
-            //enviar para o _this._hypertyWalletAddress[message.address] a message
-            let changeMessage = message.body;
-            changeMessage.to = _this._hypertyWalletAddress[message.address];
-            changeMessage.from = message.address;
+              console.log('[VertxAppProtoStub] waiting for changes on', addressChanges);
+              _this._eb.registerHandler(addressChanges, function (error, message) {
+                console.log('[VertxAppProtoStub] received a message on Changes Handler: ' + JSON.stringify(message), message, _this._hypertyWalletAddress);
+                //enviar para o _this._hypertyWalletAddress[message.address] a message
+                let changeMessage = message.body;
+                changeMessage.to = _this._hypertyWalletAddress[message.address];
+                changeMessage.from = message.address;
 
-            _this._bus.postMessage(changeMessage);
+                _this._bus.postMessage(changeMessage);
 
-          });
-        }
+              });
+            }
 
 
 
-      } else {
-        console.log("[VertxAppProtoStub] No reply", reply_err);
+          } else {
+            console.log("[VertxAppProtoStub] No reply", reply_err);
+          }
+        });
+
       }
+
     });
 
   }
+
+
+
 
 
   _handleNewMessage(msg) {
@@ -374,13 +385,15 @@ class VertxAppProtoStub {
             }
 
             let reuseURL = _this._formCtxUrl(stream);
-            _this._setUpContextReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
+            let schemaURL = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+            //_this._setUpReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL)
+            _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
               if (result) {
 
                 _this._eb.registerHandler(reuseURL, function (error, message) {
-                  console.log('[VertxAppProtoStub] received a message: ' + JSON.stringify(message));
-                  //TODO Check if message.body.values is compatible to just setContext Like that
-                  _this._contextReporter.setContext(reply.body.identity.userProfile.userURL, message.body.values);
+                  console.log('[VertxAppProtoStub] received a message on : ', result, JSON.stringify(message));
+                  //TODO new data on reporter,, to update? or not? should be static?
+
                 });
               }
             });
@@ -409,9 +422,11 @@ class VertxAppProtoStub {
     return 'context://' + _this._config.host + '/' + ID + '/' + stream.id;
   }
 
-  _setUpContextReporter(identity, data, resources, name, reuseURL) {
+  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL) {
     let _this = this;
     return new Promise(function (resolve, reject) {
+
+      /*
       _this._contextReporter.create(identity, data, resources, identity, identity, reuseURL).then(function (context) {
         console.log('[VertxAppProtoStub] CONTEXT RETURNED', context);
         context.onSubscription(function (event) {
@@ -422,7 +437,29 @@ class VertxAppProtoStub {
       }).catch(function (err) {
         console.error('[VertxAppProtoStub] err', err);
         resolve(false);
-      });
+      });*/
+
+      let input = {
+        resources: resources,
+        expires: 3600,
+        reporter: identityURL,
+        reuseURL: reuseURL
+      }
+
+      _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
+        .then((reporter) => {
+          console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
+          reporter.onSubscription(function (event) {
+            event.accept();
+            console.log('[VertxAppProtoStub] new subs', event);
+          });
+          resolve(true);
+
+        }).catch(function (err) {
+          console.error('[VertxAppProtoStub] err', err);
+          resolve(false);
+        });
+
     });
   }
 
