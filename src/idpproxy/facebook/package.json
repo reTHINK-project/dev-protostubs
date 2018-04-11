@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "atob": "^2.0.3",
-    "btoa": "^1.1.2"
+    "atob": "^2.1.0",
+    "btoa": "^1.2.1"
   }
 }

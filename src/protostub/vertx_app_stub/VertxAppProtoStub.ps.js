@@ -136,23 +136,23 @@ class VertxAppProtoStub {
         // TODO 2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
 
-/*
-        const messageToReporter = {
-          id: 1,
-          type: "create",
-          from: "hyperty://catalogue.localhost/<hyperty-instance-identifier>",
-          to: walletManagerAddress,
-          body: {
-            resource: '<ObjectURL>',
-            value: '<json object>',
-            schema: "hyperty-catalogue://<sp-domain>/dataObjectSchema/<schema-identifier>",
-            "p2p": true | false,
-            "store": true | false
-          }
-        };*/
+        /*
+                const messageToReporter = {
+                  id: 1,
+                  type: "create",
+                  from: "hyperty://catalogue.localhost/<hyperty-instance-identifier>",
+                  to: walletManagerAddress,
+                  body: {
+                    resource: '<ObjectURL>',
+                    value: '<json object>',
+                    schema: "hyperty-catalogue://<sp-domain>/dataObjectSchema/<schema-identifier>",
+                    "p2p": true | false,
+                    "store": true | false
+                  }
+                };*/
 
 
-        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: 0}, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function(result) {
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: 0 }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
 
           if (result != null) {
 
@@ -177,8 +177,9 @@ class VertxAppProtoStub {
                   reporter_url: result.url
                 }
               };
-
+              _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
               let addressChanges = reply2.body.wallet.address + '/changes';
+
 
               _this._eb.registerHandler(addressChanges, function (error, message) {
 
@@ -194,7 +195,7 @@ class VertxAppProtoStub {
 
           }
 
-        }).catch(function(result) {
+        }).catch(function (result) {
           debugger;
         });
 
@@ -442,7 +443,7 @@ class VertxAppProtoStub {
     let _this = this;
     return new Promise(function (resolve, reject) {
 
-      if (! createWallet) {
+      if (!createWallet) {
         let input = {
           resources: resources,
           expires: 3600,
@@ -464,7 +465,7 @@ class VertxAppProtoStub {
             resolve(null);
           });
       } else {
-        _this._walletReporter.create( data, resources, name, identityURL, reuseURL).then(function (wallet) {
+        _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
           console.log('[VertxAppProtoStub] Wallet RETURNED', wallet);
 
           _this._walletReporterDataObject = wallet;

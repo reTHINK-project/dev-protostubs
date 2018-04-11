@@ -20,8 +20,8 @@
   "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
   "dependencies": {
     "all": "0.0.0",
-    "atob": "^2.0.3",
-    "btoa": "^1.1.2"
+    "atob": "^2.1.0",
+    "btoa": "^1.2.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",
@@ -41,10 +41,10 @@
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.31",
-    "karma-webpack": "^2.0.4",
+    "karma-webpack": "^2.0.13",
     "mocha": "3.4.2",
     "sinon": "^2.4.1",
     "sinon-chai": "^2.14.0",
-    "webpack": "^3.6.0"
+    "webpack": "^3.11.0"
   }
 }
