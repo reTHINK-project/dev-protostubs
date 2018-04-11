@@ -21,7 +21,7 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
-import { ContextReporter } from 'service-framework/dist/ContextManager';
+import { WalletReporter } from 'service-framework/dist/WalletManager';
 import { Syncher } from 'service-framework/dist/Syncher';
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 
@@ -52,9 +52,10 @@ class VertxAppProtoStub {
 
     this._runtimeSessionURL = config.runtimeURL;
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
-    this._contextReporter = new ContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
+    this._walletReporter = new WalletReporter(runtimeProtoStubURL, bus, config, this._syncher);
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
+    this._walletReporterDataObject = null;
 
 
 
@@ -135,6 +136,7 @@ class VertxAppProtoStub {
         // TODO 2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
 
+/*
         const messageToReporter = {
           id: 1,
           type: "create",
@@ -147,43 +149,57 @@ class VertxAppProtoStub {
             "p2p": true | false,
             "store": true | false
           }
-        };
-
-        _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
+        };*/
 
 
-          // TODO 3 - send 200 OK to wallet manager
-          let responseMsg = {
-            from: hypertyURL,
-            to: walletManagerAddress,
-            id: msg.id,
-            type: 'create'
-          };
-          responseMsg.body = {};
-          responseMsg.body.value = _this._dataStreamData[msg.to];
-          responseMsg.body.code = 200;
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: 0}, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function(result) {
 
-          reply.reply(responseMsg, function (reply_err, reply2) {
+          if (result != null) {
 
-            debugger;
-            // 4 - send reply back to the JS wallet hyperty
-            let responseMsg = {
-              id: msg.id,
-              type: 'response',
-              from: msg.to,
-              to: hypertyURL,
-              body: {
-                wallet: reply.wallet,
-                code: 200
-              }
-            };
+            // TODO 3 - send 200 OK to wallet manager
+            let responseMsg = {};
+            responseMsg.body = {};
+            responseMsg.body.value = result.data;
+            responseMsg.body.code = 200;
 
-            console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+            reply.reply(responseMsg, function (reply_err, reply2) {
 
-            _this._bus.postMessage(responseMsg);
 
-          });
+              // 4 - send reply back to the JS wallet hyperty
+              let responseMsg = {
+                id: msg.id,
+                type: 'response',
+                from: msg.to,
+                to: hypertyURL,
+                body: {
+                  wallet: reply2.body.wallet,
+                  code: 200,
+                  reporter_url: result.url
+                }
+              };
+
+              let addressChanges = reply2.body.wallet.address + '/changes';
+
+              _this._eb.registerHandler(addressChanges, function (error, message) {
+
+                console.log('[VertxAppProtoStub]  new change', message);
+                _this._walletReporterDataObject.data.balance = message.body.body.value;
+              });
+
+              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+
+              _this._bus.postMessage(responseMsg);
+
+            });
+
+          }
+
+        }).catch(function(result) {
+          debugger;
         });
+
+
+
 
         // const reuseURL = _this._formCtxUrl(stream);
 
@@ -422,43 +438,50 @@ class VertxAppProtoStub {
     return 'context://' + _this._config.host + '/' + ID + '/' + stream.id;
   }
 
-  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL) {
+  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL, createWallet = false) {
     let _this = this;
     return new Promise(function (resolve, reject) {
 
-      /*
-      _this._contextReporter.create(identity, data, resources, identity, identity, reuseURL).then(function (context) {
-        console.log('[VertxAppProtoStub] CONTEXT RETURNED', context);
-        context.onSubscription(function (event) {
-          event.accept();
-          console.log('[VertxAppProtoStub] new subs', event);
-        });
-        resolve(true);
-      }).catch(function (err) {
-        console.error('[VertxAppProtoStub] err', err);
-        resolve(false);
-      });*/
+      if (! createWallet) {
+        let input = {
+          resources: resources,
+          expires: 3600,
+          reporter: identityURL,
+          reuseURL: reuseURL
+        }
 
-      let input = {
-        resources: resources,
-        expires: 3600,
-        reporter: identityURL,
-        reuseURL: reuseURL
-      }
+        _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
+          .then((reporter) => {
+            console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
+            reporter.onSubscription(function (event) {
+              event.accept();
+              console.log('[VertxAppProtoStub] new subs', event);
+            });
+            resolve(reporter);
 
-      _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
-        .then((reporter) => {
-          console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
-          reporter.onSubscription(function (event) {
+          }).catch(function (err) {
+            console.error('[VertxAppProtoStub] err', err);
+            resolve(null);
+          });
+      } else {
+        _this._walletReporter.create( data, resources, name, identityURL, reuseURL).then(function (wallet) {
+          console.log('[VertxAppProtoStub] Wallet RETURNED', wallet);
+
+          _this._walletReporterDataObject = wallet;
+
+
+          wallet.onSubscription(function (event) {
             event.accept();
             console.log('[VertxAppProtoStub] new subs', event);
           });
-          resolve(true);
-
+          resolve(wallet);
         }).catch(function (err) {
           console.error('[VertxAppProtoStub] err', err);
-          resolve(false);
+          resolve(null);
         });
+
+
+      }
 
     });
   }
@@ -484,9 +507,9 @@ class VertxAppProtoStub {
           /*
           if (event.field == 'values') {
             let filter_checkin = event.data.filter(function( obj ) { return obj.name == "checkin"; });
-   
+
             if (filter_checkin.length == 1) {
-   
+
               let shopID = filter_checkin[0].value;
               let latitude = event.data.filter(function( obj ) { return obj.name == "latitude"; })[0].value;
               let longitude = event.data.filter(function( obj ) { return obj.name == "longitude"; })[0].value;
@@ -501,12 +524,12 @@ class VertxAppProtoStub {
                 shopID : shopID
               }
               console.log('[VertxAppProtoStub] Do CheckIN', _this._eb, checkInMessage);
-   
-   
+
+
               _this._eb.send(checkInMessage.userID, checkInMessage, function (reply_err, reply) {
                 if (reply_err == null) {
                   console.log("[VertxAppProtoStub] Received reply ", reply, '   from msg', checkInMessage);
-   
+
                 }
               });
             }
