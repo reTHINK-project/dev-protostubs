@@ -136,7 +136,7 @@ class VertxAppProtoStub {
         //  2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
 
-        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: 0 }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: 0, transactions: [] }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
 
           if (result != null) {
 
@@ -160,14 +160,19 @@ class VertxAppProtoStub {
                   reporter_url: result.url
                 }
               };
+              console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
+
               _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
+              let transactions = JSON.stringify(reply2.body.wallet.transactions);
+              _this._walletReporterDataObject.data.transactions = JSON.parse(transactions);
               let addressChanges = reply2.body.wallet.address + '/changes';
 
 
               _this._eb.registerHandler(addressChanges, function (error, message) {
 
-                console.log('[VertxAppProtoStub]  new change', message);
-                _this._walletReporterDataObject.data.balance = message.body.body.value;
+                console.log('[VertxAppProtoStub]  new change on wallet', message);
+                _this._walletReporterDataObject.data.balance = message.body.body.balance;
+                _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
               });
 
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
