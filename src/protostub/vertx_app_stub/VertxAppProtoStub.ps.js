@@ -104,35 +104,28 @@ class VertxAppProtoStub {
         _this._eventBusUsage().then(function (result) {
           console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
           if (result) {
-            _this._handleNewMessage(msg);
+            _this._SubscriptionManager(msg);
           }
         });
       } else {
-        _this._handleNewMessage(msg);
+        _this._SubscriptionManager(msg);
       }
     });
   }
 
   createWallet(msg) {
-
-
     let _this = this;
-
     const walletManagerAddress = msg.to;
 
     // 1 - send to wallet manager (request to create wallet)
     let hypertyURL = msg.from;
     msg.type = msg.body.type;
     msg.from = hypertyURL;
-
     delete msg.body;
-
 
     _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
 
       if (reply_err == null) {
-
-
         //  2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
 
@@ -169,7 +162,6 @@ class VertxAppProtoStub {
 
 
               _this._eb.registerHandler(addressChanges, function (error, message) {
-
                 console.log('[VertxAppProtoStub]  new change on wallet', message);
                 _this._walletReporterDataObject.data.balance = message.body.body.balance;
                 _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
@@ -188,14 +180,8 @@ class VertxAppProtoStub {
     });
   }
 
-
-
-
-
-  _handleNewMessage(msg) {
-
-    console.log('[VertxAppProtoStub] handling messages');
-
+  _SubscriptionManager(msg) {
+    console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
     if (msg.body.hasOwnProperty('type')) {
 
@@ -215,7 +201,7 @@ class VertxAppProtoStub {
         _this._bus.postMessage(responseMsg);
       }
 
-      if (msg.type === 'forward' && msg.body.type === 'create') {
+      if (msg.body.type === 'create') {
         _this.createWallet(msg);
       }
 
