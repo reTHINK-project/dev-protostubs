@@ -1,0 +1,17 @@
+{
+  "name": "google.com",
+  "version": "0.2.0",
+  "description": "",
+  "main": "GoogleProtoStub.ps.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^3.0.4",
+    "service-framework": "github:rethink-project/dev-service-framework#develop",
+    "utf-8-validate": "^3.0.4",
+    "ws": "^3.3.3"
+  }
+}
