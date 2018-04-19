@@ -20,7 +20,7 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 **/
-import EventBus from 'vertx3-eventbus-client';
+
 import { WalletReporter } from 'service-framework/dist/WalletManager';
 import { Syncher } from 'service-framework/dist/Syncher';
 import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';

@@ -3,6 +3,7 @@
   "description": "Protostub of Google",
   "signature": "",
   "configuration": {
+    "url": "myurl"
   },
   "constraints": {
     "browser": true

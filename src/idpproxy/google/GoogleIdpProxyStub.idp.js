@@ -7,7 +7,7 @@ import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 * Google Identity Provider Proxy Protocol Stub
 */
 class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
-  
+
     /**
     * Constructor of the IdpProxy Stub
     * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
@@ -24,9 +24,9 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
      super(runtimeProtoStubURL, bus, config);
    }
   }
-  
+
   // export default IdpProxyProtoStub;
-  
+
   /**
    * To activate this protocol stub, using the same method for all protostub.
    * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
@@ -40,4 +40,3 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
       instance: new GoogleIdpProxyProtoStub(url, bus, config)
     };
   }
-  
