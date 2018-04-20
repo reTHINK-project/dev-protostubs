@@ -17,6 +17,7 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
     */
    constructor(runtimeProtoStubURL, bus, config) {
+     config.domain = 'google.com';     
      config.idpUrl = 'domain-idp://google.com';
      config.idpProxy = IdpProxy;
      config.idpInfo = googleInfo; 

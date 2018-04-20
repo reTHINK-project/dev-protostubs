@@ -7,6 +7,7 @@ let redirectURI = location.protocol + '//' + location.hostname + (location.port 
 let tokenEndpoint;
 let authorisationEndpoint;
 let accessTokenEndpoint;
+let domain;
 let accessTokenAuthorisationEndpoint;
 
 

@@ -29,7 +29,7 @@ export let googleInfo = {
 
 
 export let googleAPIInfo = {
-  "clientID": "407408718192.apps.googleusercontent.com",
+  "clientID": "808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com",
   "issuer": "https://accounts.google.com",
   "tokenEndpoint": "https://www.googleapis.com/oauth2/v4/token?",
   "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
@@ -41,7 +41,6 @@ export let googleAPIInfo = {
   "scope": "https://www.googleapis.com/auth/fitness.activity.read",
   "state": "state",
   "domain": "google.com",
-  'client_secret': 'secret',
   'grant_type': 'authorization_code'
 };
 
@@ -50,7 +49,7 @@ export let googleAPIInfo = {
 export function accessTokenEndpoint(code) {
 
   return googleAPIInfo.tokenEndpoint
-    + 'client_id=' + googleFitInfo.clientID
+    + 'client_id=' + googleAPIInfo.clientID
     + '&response_type=' + code
     + '&prompt=' + 'consent'
     + '&access_type=' + 'offline'
@@ -58,7 +57,6 @@ export function accessTokenEndpoint(code) {
 }
 
 export function accessTokenAuthorisationEndpoint() {
-  debugger;
   let url = googleAPIInfo.authorisationEndpoint
     + 'redirect_uri=' + redirectURI
     + '&response_type=' + googleAPIInfo.type
