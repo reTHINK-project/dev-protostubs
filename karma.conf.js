@@ -3,7 +3,8 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      './src/tests/*.spec.js'
+      // './src/tests/*.spec.js',
+      './src/tests/GoogleIdpProxy.spec.js',
     ],
     // to avoid DISCONNECTED messages
     browserDisconnectTimeout : 100000, // default 2000
@@ -75,7 +76,7 @@ module.exports = function(config) {
 
     customLaunchers: {
       ChromeTravis: {
-        base: 'ChromeHeadless',
+        base: 'Chrome',
         flags: [
           '--web-security=false',
           '--ignore-ssl-errors=true',

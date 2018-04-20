@@ -1,5 +1,5 @@
 import {IdpProxy} from "../OIDC"
-import { googleInfo, googleAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint} from "./GoogleInfo"
+import { googleInfo, googleAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput} from "./GoogleInfo"
 import {convertUserProfile} from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
@@ -24,9 +24,8 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
      config.apiInfo = googleAPIInfo;
      config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
      config.accessTokenEndpoint = accessTokenEndpoint;
+     config.accessTokenInput = accessTokenInput;
      config.authorisationEndpoint = authorisationEndpoint;
-     
-     
      config.convertUserProfile = convertUserProfile;
      super(runtimeProtoStubURL, bus, config);
    }

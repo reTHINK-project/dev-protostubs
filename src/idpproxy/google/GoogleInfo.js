@@ -81,6 +81,13 @@ export function authorisationEndpoint(nonce) {
   return url;
 }
 
+export function accessTokenInput(info) {
+
+  console.log('[GoogleFitness.getAccessTokenInput] from ', info);
+
+  return { };
+}
+
 
 
 
