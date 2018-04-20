@@ -1,0 +1,13 @@
+{
+  "language": "javascript",
+  "description": "Protostub of Google",
+  "signature": "",
+  "configuration": {
+    "url": "myurl"
+  },
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "google.com"
+}
