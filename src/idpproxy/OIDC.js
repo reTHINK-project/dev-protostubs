@@ -354,12 +354,13 @@ export let IdpProxy = {
     console.log('[OIDC.getAccessTokenAuthorisationEndpoint:resources]', resources);
 //    let i = idpInfo;
     accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
+    const mapping = config.mapping;
 
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
 
-        resolve( accessTokenAuthorisationEndpoint(resources));
+      resolve(accessTokenAuthorisationEndpoint(mapping(resources[0])));
 
     }, function (e) {
 

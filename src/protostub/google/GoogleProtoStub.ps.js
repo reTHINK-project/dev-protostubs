@@ -51,6 +51,8 @@ class GoogleProtoStub {
 
     this._runtimeSessionURL = config.runtimeURL;
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
+    // TODO
+    this._accessToken = 'ya29.GlujBfu0l0fyXXEojAyQ-8nHcj1llbCRawxlS3EyJcF-2_d0_Jmp64XCylsMmEWRprM628BaClSUirBXpvb-vJnM1OoD1zi6g-yYSXrkR4-xMPd9Mi4bKcLNQ3hO';
 
     _this._sendStatus('created');
 
@@ -58,6 +60,51 @@ class GoogleProtoStub {
       console.log('[GoogleProtoStub] new Message  : ', msg);
     });
   }
+
+
+  getWalkDistance() {
+
+
+    // total time
+    const durationMillis = 86400000;
+    const startTimeMillis = 1520812800000;
+    const endTimeMillis = 1521072000000;
+
+    const bodyData = {
+      "aggregateBy": [{
+        "dataTypeName": "com.google.distance.delta"
+      }],
+      "bucketByTime": {
+        "durationMillis": durationMillis
+      },
+      "startTimeMillis": startTimeMillis,
+      "endTimeMillis": endTimeMillis
+    };
+
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + accessToken,
+        "Cache-Control": "no-cache"
+      },
+      "processData": false,
+      "data": JSON.stringify(bodyData)
+    }
+
+    $.ajax(settings).done(function (response) {
+      console.log(response);
+    });
+
+  }
+
+  getBikeDistance() {
+
+  }
+
 
 
   /**
@@ -87,9 +134,16 @@ class GoogleProtoStub {
   }
 }
 
+
+
 export default function activate(url, bus, config) {
   return {
     name: 'GoogleProtoStub',
     instance: new GoogleProtoStub(url, bus, config)
   };
 }
+
+
+
+
+

@@ -38,6 +38,7 @@ export let googleAPIInfo = {
   "tokenInfo": "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=",
   "accessType": "online",
   "type": "token id_token",
+  // TODO - scope is read from message (support multiple Google APIs)
   "scope": "https://www.googleapis.com/auth/fitness.activity.read",
   "state": "state",
   "domain": "google.com",
@@ -56,12 +57,24 @@ export function accessTokenEndpoint(code) {
     + '&redirect_uri=' + redirectURI;
 }
 
-export function accessTokenAuthorisationEndpoint() {
+export function mapping(resource) {
+  switch (resource) {
+    case 'activity_context':
+      return 'fitness.activity.read';
+      break;
+
+    default:
+      // TODO - error message
+      break;
+  }
+}
+
+export function accessTokenAuthorisationEndpoint(API) {
   let url = googleAPIInfo.authorisationEndpoint
     + 'redirect_uri=' + redirectURI
     + '&response_type=' + googleAPIInfo.type
     + '&client_id=' + googleAPIInfo.clientID
-    + '&scope=' + googleAPIInfo.scope
+    + '&scope=' + 'https://www.googleapis.com/auth/' + API
     + '&access_type=' + googleAPIInfo.accessType
     + '&state=' + googleAPIInfo.state;
   console.log('[GoogleFitness.accessTokenAuthorisationEndpoint] ', url);
@@ -85,7 +98,7 @@ export function accessTokenInput(info) {
 
   console.log('[GoogleFitness.getAccessTokenInput] from ', info);
 
-  return { };
+  return {};
 }
 
 

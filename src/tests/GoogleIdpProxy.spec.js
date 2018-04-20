@@ -23,7 +23,7 @@ let idmURL = 'runtime://test.com/123/idm';
 let contents = 'BASE64_CONTENT';
 let origin = 'localhost:8080';
 let loginUrl;
-let resources = ['resource'];
+let resources = ['activity_context'];
 
 let generateAssertionMessage = {
   type: 'execute',
@@ -182,6 +182,15 @@ describe('IdP Proxy test', function() {
   it('get Access Token', function (done) {
     this.timeout(20000);
 
+    // replace window.open to get reference to opened windows
+    var windows = [];
+    var winOpen = window.open;
+    window.open = function () {
+      var win = winOpen.apply(this, arguments);
+      windows.push(win);
+      return win;
+    };
+
     login(loginUrl)
       .then(result => {
         console.log('IdpProxyTest.getAccessToken login result : ', result);
@@ -197,6 +206,39 @@ describe('IdP Proxy test', function() {
         })
 
       })
+
+      /*
+    // wait some time
+    setTimeout(function () {
+      if (windows.length > 0) {
+        // access window
+        var w = windows[0];
+        // email
+        const email = "openidtest10@gmail.com";
+        const pass = "testOpenID10";
+        // mail
+        $("#identifierId", w.document.body).val(email);
+        // next btn
+        $("#identifierNext", w.document.body).click();
+        setTimeout(function () {
+          if (windows.length > 0) {
+            // access window
+            var w = windows[0];
+            // email
+            const email = "openidtest10@gmail.com";
+            const pass = "testOpenID10";
+
+            // password
+            $("input[name='password']", w.document.body).val(pass);
+            // submit login
+            $("#passwordNext", w.document.body).click();
+          }
+
+        }, 2000);
+      }
+
+    }, 3000);
+    */
 
   });
 
