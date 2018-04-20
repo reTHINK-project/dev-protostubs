@@ -10,6 +10,8 @@
 	3º Add the URI  in the authorized redirect URI section.
   4º change the REDIRECT parameter bellow with the pretended URI
  */
+let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '');
+
 export let googleInfo = {
   "clientID": "808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com",
   "issuer": "https://accounts.google.com",
@@ -21,12 +23,12 @@ export let googleInfo = {
   "accessType": "online",
   "type": "token id_token",
   "scope": "openid%20email%20profile",
-  "state": "state", 
+  "state": "state",
   "domain": "google.com"
 };
 
 
-export let googleFitInfo = {
+export let googleAPIInfo = {
   "clientID": "407408718192.apps.googleusercontent.com",
   "issuer": "https://accounts.google.com",
   "tokenEndpoint": "https://www.googleapis.com/oauth2/v4/token?",
@@ -39,36 +41,45 @@ export let googleFitInfo = {
   "scope": "https://www.googleapis.com/auth/fitness.activity.read",
   "state": "state",
   "domain": "google.com",
-  "code": '4/AABndBmE-08YSzlueM0XajTHsv1FNZToHFvoWTfNXGGRRMOGSKunl58bRN1WeAisNqCoftPp4-xV401GT9b0FIM',
   'client_secret': 'secret',
   'grant_type': 'authorization_code'
 };
 
-const redirectURI = 'https://developers.google.com/oauthplayground';
+
 
 export function accessTokenEndpoint(code) {
 
-  return googleFitInfo.tokenEndpoint
+  return googleAPIInfo.tokenEndpoint
     + 'client_id=' + googleFitInfo.clientID
     + '&response_type=' + code
     + '&prompt=' + 'consent'
     + '&access_type=' + 'offline'
     + '&redirect_uri=' + redirectURI;
-
 }
 
-
+export function accessTokenAuthorisationEndpoint() {
+  debugger;
+  let url = googleAPIInfo.authorisationEndpoint
+    + 'redirect_uri=' + redirectURI
+    + '&response_type=' + googleAPIInfo.type
+    + '&client_id=' + googleAPIInfo.clientID
+    + '&scope=' + googleAPIInfo.scope
+    + '&access_type=' + googleAPIInfo.accessType
+    + '&state=' + googleAPIInfo.state;
+  console.log('[GoogleFitness.accessTokenAuthorisationEndpoint] ', url);
+  return url;
+}
 
 export function authorisationEndpoint(nonce) {
 
-  let url = googleFitInfo.authorisationEndpoint
+  let url = googleAPIInfo.authorisationEndpoint
     + 'redirect_uri=' + redirectURI
-    + '&response_type=' + slackIdAssertionInfo.type
-    + '&client_id=' + slackIdAssertionInfo.clientID
-    + '&scope=' + slackIdAssertionInfo.scope
-    + '&access_type=' + slackIdAssertionInfo.accessType
+    + '&response_type=' + googleAPIInfo.type
+    + '&client_id=' + googleAPIInfo.clientID
+    + '&scope=' + googleAPIInfo.scope
+    + '&access_type=' + googleAPIInfo.accessType
     + '&state=' + nonce;
-  console.log('[Slack.authorisationEndpoint] ', url);
+  console.log('[GoogleFitness.authorisationEndpoint] ', url);
   return url;
 }
 

@@ -324,7 +324,7 @@ export let IdpProxy = {
 
       }
     });
-  }
+  },
 
   /**
   * Function to get an Access Token endpoint
