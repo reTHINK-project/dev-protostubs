@@ -44,6 +44,24 @@ let validateAssertionMessage = {
     method: 'validateAssertion',
     params: { origin: origin }
   }
+  let getAccessTokenAuthorisationEndpointMessage = {
+    type: 'execute',
+    to: idpProxyUrl,
+    from: idmURL,
+    body: {
+      method: 'getAccessTokenAuthorisationEndpoint',
+      params: { resources: resources }
+    }
+  }
+
+  let getAccessTokenMessage = {
+    type: 'execute',
+    to: idpProxyUrl,
+    from: idmURL,
+    body: {
+      method: 'getAccessToken',
+      params: { resources: resources }
+  }
 }
 
 let bus = {
@@ -146,6 +164,36 @@ describe('IdP Proxy test', function() {
       done();
 
     })
+
+  });
+
+  it('get AccessToken authorisation url', function (done) {
+    bus.postMessage(getAccessTokenAuthorisationEndpointMessage, (reply) => {
+      console.log('IdpProxyTest.reply with AccessToken auth url: ', reply.body.value)
+      expect(reply.body.value).to.be.a('string');
+      loginUrl = reply.body.value;
+      done();
+    });
+  });
+
+  it.('get Access Token', function (done) {
+    this.timeout(10000);
+
+    login(loginUrl)
+      .then(result => {
+        console.log('IdpProxyTest.getAccessToken login result : ', result);
+
+        getAccessTokenMessage.body.params.login = result;
+
+        bus.postMessage(getAccessTokenMessage, (reply) => {
+          console.log('IdpProxyTest.reply with AccessToken : ', reply.body.value);
+          expect(reply.body.value).to.have.keys('domain', 'resources', 'accessToken', 'expires', 'input');
+
+          done();
+
+        })
+
+      })
 
   });
 
