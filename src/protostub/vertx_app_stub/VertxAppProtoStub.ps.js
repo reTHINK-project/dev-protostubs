@@ -48,11 +48,12 @@ class VertxAppProtoStub {
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._bus = bus;
     this._config = config;
+    this._domain = config.domain;
     this._streams = config.streams;
 
     this._runtimeSessionURL = config.runtimeURL;
-    this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
-    this._walletReporter = new WalletReporter(runtimeProtoStubURL, bus, config, this._syncher);
+    this._syncher = null;
+    this._walletReporter = null;
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
     this._walletReporterDataObject = null;
@@ -98,6 +99,7 @@ class VertxAppProtoStub {
 
     bus.addListener('*', (msg) => {
       console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
@@ -214,7 +216,7 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
           let messageToSubscribe = messageFROMsubscription.body;
           if (messageToSubscribe.to.includes('/subscription')) {
-            let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+            let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
             let contextUrl = messageToSubscribe.to.split("/subscription")[0];
 
             _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
@@ -252,6 +254,12 @@ class VertxAppProtoStub {
 
         _this._eb.send(stream.stream, msg, function (reply_err, reply) {
           if (reply_err == null) {
+
+            if (_this._syncher == null) {
+              _this._syncher = new Syncher(reply.body.identity.userProfile.userURL, _this._bus, _this._config);
+              _this._walletReporter = new WalletReporter(reply.body.identity.userProfile.userURL, _this._bus, _this._config, _this._syncher);
+            }
+
             count++;
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
 
@@ -263,18 +271,35 @@ class VertxAppProtoStub {
             }
 
             let reuseURL = _this._formCtxUrl(stream);
-            let schemaURL = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+            let schemaURL = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
             //_this._setUpReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL)
-            _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
-              if (result) {
 
-                _this._eb.registerHandler(reuseURL, function (error, message) {
-                  console.log('[VertxAppProtoStub] received a message on : ', result, JSON.stringify(message));
-                  //TODO new data on reporter,, to update? or not? should be static?
+            debugger;
+            _this._resumeReporters(stream.name, reply.body.identity.userProfile.userURL).then(function (reporter) {
+              debugger;
+              if (reporter == false) {
+                _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
+                  if (result) {
 
+                    _this._eb.registerHandler(reuseURL, function (error, message) {
+                      console.log('[VertxAppProtoStub] received a message on : ', result, JSON.stringify(message));
+                      //TODO new data on reporter,, to update? or not? should be static?
+
+                    });
+                  }
+                });
+              } else {
+                reporter.data.values = reply.body.data.values;
+                reporter.onSubscription(function (event) {
+                  event.accept();
+                  console.log('[VertxAppProtoStub] new subs', event);
                 });
               }
+
+            }).catch(function (error) {
+              debugger;
             });
+
           } else {
             console.log("[VertxAppProtoStub] No reply", reply_err);
           }
@@ -283,6 +308,39 @@ class VertxAppProtoStub {
 
     });
 
+  }
+
+  _resumeReporters(name, reporterURL) {
+    let _this = this;
+    //debugger;
+    return new Promise((resolve, reject) => {
+      _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
+        console.log('[VertxAppProtoStub] Reporters resumed', reporters);
+        debugger;
+        let reportersList = Object.keys(reporters);
+
+        if (reportersList.length  > 0) {
+
+          reportersList.forEach((dataObjectReporterURL) => {
+
+            console.log('[VertxAppProtoStub] ', dataObjectReporterURL);
+            console.log('[VertxAppProtoStub] ', reporters[dataObjectReporterURL]);
+
+            if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
+
+              return resolve(reporters[dataObjectReporterURL]);
+            } else {
+              return resolve(false);
+            }
+          });
+
+        } else {
+          return resolve(false);
+        }
+      }).catch((reason) => {
+        console.info('[LocationReporter] Reporters:', reason);
+      });
+    });
   }
 
   _sleep(milliseconds) {
@@ -308,10 +366,9 @@ class VertxAppProtoStub {
         let input = {
           resources: resources,
           expires: 3600,
-          reporter: identityURL,
+            reporter: identityURL,
           reuseURL: reuseURL
         }
-
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
           .then((reporter) => {
             console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
