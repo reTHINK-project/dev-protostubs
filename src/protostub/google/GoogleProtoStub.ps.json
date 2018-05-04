@@ -3,9 +3,7 @@
   "description": "Protostub of Google",
   "signature": "",
   "configuration": {
-    "url": "https://msg-node.localhost:9091/eventbus",
-    "vertxbus_ping_interval": 10000,
-    "sessions_query_interval": 3000
+    "url": "myurl"
   },
   "constraints": {
     "browser": true
