@@ -52,8 +52,9 @@ class VertxAppProtoStub {
     this._streams = config.streams;
 
     this._runtimeSessionURL = config.runtimeURL;
-    this._syncher = null;
-    this._walletReporter = null;
+
+    this._syncher = new Syncher(this._runtimeProtoStubURL, this._bus, this._config);
+    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, this._syncher);
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
     this._walletReporterDataObject = null;
@@ -276,11 +277,6 @@ class VertxAppProtoStub {
 
         _this._eb.send(stream.stream, msg, function (reply_err, reply) {
           if (reply_err == null) {
-
-            if (_this._syncher == null) {
-              _this._syncher = new Syncher(_this._runtimeProtoStubURL, _this._bus, _this._config);
-              _this._walletReporter = new WalletReporter(_this._runtimeProtoStubURL, _this._bus, _this._config, _this._syncher);
-            }
 
             count++;
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
