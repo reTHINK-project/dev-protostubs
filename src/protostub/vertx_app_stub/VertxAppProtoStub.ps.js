@@ -206,39 +206,48 @@ class VertxAppProtoStub {
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
-        console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
+      console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
 
-        // handle message subscribe before invite Vertx
-        _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
+      // handle message subscribe before invite Vertx
+      _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
 
-          console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
-          let messageToSubscribe = messageFROMsubscription.body;
-          if (messageToSubscribe.to.includes('/subscription')) {
-            let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
-            let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+        console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
+        let messageToSubscribe = messageFROMsubscription.body;
+        if (messageToSubscribe.to.includes('/subscription')) {
+          let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
+          let contextUrl = messageToSubscribe.to.split("/subscription")[0];
 
-            _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-              if (result) {
-                let response = { body: { code: 200 } };
-                messageFROMsubscription.reply(response);
-              } else {
-                let response = { body: { code: 406 } };
-                messageFROMsubscription.reply(response);
-              }
-            });
-          }
-        });
-
-        //Message to invite Vertx to Subscribe a Reporter
-        let inviteMessage = {
-          type: 'create',
-          from: msg.from,
-          to: msg.to,
-          identity: { userProfile: { userURL: msg.body.identity.userProfile.userURL } }
+          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+            if (result) {
+              let response = { body: { code: 200 } };
+              messageFROMsubscription.reply(response);
+            } else {
+              let response = { body: { code: 406 } };
+              messageFROMsubscription.reply(response);
+            }
+          });
         }
-        //Invite Vertx to subscribe...
-        _this._eb.publish(msg.to, inviteMessage);
+      });
+
+      // check if identity exists
+
+      //Message to invite Vertx to Subscribe a Reporter
+      let userURL;
+      if (msg.body.identity) {
+        userURL = msg.body.identity.userProfile.userURL;
       }
+      else {
+        userURL = msg.body.value.reporter;
+      }
+      let inviteMessage = {
+        type: 'create',
+        from: msg.from,
+        to: msg.to,
+        identity: { userProfile: { userURL: userURL } }
+      }
+      //Invite Vertx to subscribe...
+      _this._eb.publish(msg.to, inviteMessage);
+    }
   }
 
   _configAvailableStreams() {

@@ -58,13 +58,16 @@ export function accessTokenEndpoint(code) {
 }
 
 export function mapping(resource) {
+  if (!resource) {
+    return 'fitness.activity.read';
+  }
   switch (resource) {
     case 'activity_context':
       return 'fitness.activity.read';
       break;
 
     default:
-      // TODO - error message
+      return 'fitness.activity.read';
       break;
   }
 }

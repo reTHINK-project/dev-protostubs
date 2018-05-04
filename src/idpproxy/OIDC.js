@@ -16,8 +16,7 @@ export let getExpires = (function (url) {
 
   if (expires) expires = expires + Math.floor(Date.now() / 1000);
   else expires = 3153600000 + Math.floor(Date.now() / 1000);
-
-  debugger;
+  
   return Number(expires);
 
 });
@@ -356,11 +355,12 @@ export let IdpProxy = {
     accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
     const mapping = config.mapping;
 
+
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
-
-      resolve(accessTokenAuthorisationEndpoint(mapping(resources[0])));
+      // TODO replace by resources[0]
+      resolve(accessTokenAuthorisationEndpoint(mapping(resources)));
 
     }, function (e) {
 
