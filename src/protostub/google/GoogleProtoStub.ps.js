@@ -102,13 +102,14 @@ class GoogleProtoStub {
           if (_this._identity.userProfile && _this._accessToken) {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ['context'], 'user_walking', _this._userURL).then(function (reporter) {
               if (reporter) {
+                // store reporter
+                _this.reporter = reporter;
                 reporter.onSubscription((event) => event.accept());
                 console.log('[GoogleProtoStub] User activity DO created: ', reporter);
                 const startTime = reporter._created;
 
                 // invite observers
-                const observer = 'hyperty://sharing-cities-dsm/user-activity';
-                reporter.inviteObservers([observer]);
+                reporter.inviteObservers([_this._userActivityHypertyURL]);
 
                 setInterval(function () { _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime); }, config.sessions_query_interval);
               }
@@ -194,9 +195,6 @@ class GoogleProtoStub {
       }
     }
 
-
-
-
     $.ajax(settings).done(function (response) {
       console.log("[GoogleProtoStub] sessions: ", response);
 
@@ -224,26 +222,43 @@ class GoogleProtoStub {
           break;
       }
       // get distance for session
-      _this.getDistanceForActivity(start, end, activity).then((result) => {
-        // console.log(result);
-        // send message to vertx
-        let msg = {
-          type: 'create',
-          to: userURL,
-          from: "me",
-          identity: { userProfile: { userURL: userURL } },
-          activity: activity,
-          distance: result
+      _this.getDistanceForActivity(start, end, activity).then((distance) => {
+        const startISO = new Date(Number(start)).toISOString();
+        const endISO = new Date(Number(end)).toISOString();
+        switch (activityType) {
+          case 7:
+            // walking
+            _this.reporter.data.values = [
+              {
+                "type": "user_walking_context",
+                "name": "walking distance in meters",
+                "unit": "meter",
+                "value": distance,
+                "startTime": startISO,
+                "endTime": endISO
+              },
+              _this.reporter.data.values[1]
+            ];
+            break;
+          case 1:
+            // walking
+            _this.reporter.data.values = [
+              _this.reporter.data.values[0],
+              {
+                "type": "user_biking_context",
+                "name": "biking distance in meters",
+                "unit": "meter",
+                "value": distance,
+                "startTime": startISO,
+                "endTime": endISO
+              }
+            ];
+            break;
+          default:
+            break;
         }
-        _this._eb.send(userURL, msg, function (reply_err, reply) {
-
-
-        });
       });
-
-
     });
-
   }
 
   getDistanceForActivity(start, end, activity) {
@@ -280,15 +295,12 @@ class GoogleProtoStub {
 
       $.ajax(settings).done(function (response) {
         console.log("[GoogleProtoStub] distance for activity: ", response);
-
         return resolve(response.bucket[0].dataset[0].point[0].value[0].fpVal);
       });
 
     });
 
   }
-
-
 
 
   /**
