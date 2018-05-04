@@ -217,49 +217,36 @@ class VertxAppProtoStub {
         console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
         let messageToSubscribe = messageFROMsubscription.body;
         if (messageToSubscribe.to.includes('/subscription')) {
-          let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
+          let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
           let contextUrl = messageToSubscribe.to.split("/subscription")[0];
 
-          // should resume observers, if dont have go to _setUpObserver
-
-
-          _this._resumeObservers(contextUrl).then(function (result) {
-
-            if (result == false) {
-              _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-                if (result) {
-                  let response = { body: { code: 200 } };
-                  messageFROMsubscription.reply(response);
-                } else {
-                  let response = { body: { code: 406 } };
-                  messageFROMsubscription.reply(response);
-                }
-              });
+          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+            if (result) {
+              let response = { body: { code: 200 } };
+              messageFROMsubscription.reply(response);
             } else {
-              let changesAddress = result.url + "/changes";
-              _this._bus.addListener(changesAddress, (event) => {
-                _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
-                  if (reply_err == null) {
-                    console.log("[VertxAppProtoStub] Received reply from change ", reply);
-                  }
-                });
-
-              });
+              let response = { body: { code: 406 } };
+              messageFROMsubscription.reply(response);
             }
-          }).catch(function (error) {
-            //debugger;
           });
-
-
         }
       });
 
+      // check if identity exists
+
       //Message to invite Vertx to Subscribe a Reporter
+      let userURL;
+      if (msg.body.identity) {
+        userURL = msg.body.identity.userProfile.userURL;
+      }
+      else {
+        userURL = msg.body.value.reporter;
+      }
       let inviteMessage = {
         type: 'create',
         from: msg.from,
         to: msg.to,
-        identity: { userProfile: { userURL: msg.body.identity.userProfile.userURL } }
+        identity: { userProfile: { userURL: userURL } }
       }
       //Invite Vertx to subscribe...
       _this._eb.publish(msg.to, inviteMessage);
@@ -332,12 +319,12 @@ class VertxAppProtoStub {
     let _this = this;
     //debugger;
     return new Promise((resolve, reject) => {
-      _this._syncher.resumeReporters({ store: true, reporter: reporterURL }).then((reporters) => {
+      _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
         console.log('[VertxAppProtoStub] Reporters resumed', reporters);
         //debugger;
         let reportersList = Object.keys(reporters);
 
-        if (reportersList.length > 0) {
+        if (reportersList.length  > 0) {
 
           reportersList.forEach((dataObjectReporterURL) => {
 
@@ -366,19 +353,19 @@ class VertxAppProtoStub {
 
     return new Promise((resolve, reject) => {
       //debugger;
-      _this._syncher.resumeObservers({ store: true }).then((observers) => {
+      _this._syncher.resumeObservers({store: true}).then((observers) => {
         //debugger;
         console.log('[VertxAppProtoStub] Resuming observer : ', observers, _this, _this._onResume);
 
         let observersList = Object.keys(observers);
-        if (observersList.length > 0) {
+        if (observersList.length  > 0) {
           //debugger;
-          observersList.forEach((dataObjectObserverURL) => {
-            console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
-            if (contextUrl == dataObjectObserverURL) {
-              resolve(observers[dataObjectObserverURL]);
-            }
-          });
+            observersList.forEach((dataObjectObserverURL) => {
+              console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
+              if (contextUrl == dataObjectObserverURL) {
+                resolve(observers[dataObjectObserverURL]);
+              }
+            });
         } else {
           resolve(false);
         }
@@ -413,7 +400,7 @@ class VertxAppProtoStub {
         let input = {
           resources: resources,
           expires: 3600,
-          reporter: identityURL,
+            reporter: identityURL,
           reuseURL: reuseURL
         }
         //debugger;
