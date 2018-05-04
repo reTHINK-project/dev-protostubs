@@ -461,6 +461,17 @@ class VertxAppProtoStub {
       _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function (obj) {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
+
+        let changesAddress = obj.url + "/changes";
+        _this._bus.addListener(changesAddress, (event) => {
+          _this._eb.publish(event.to, event.body.value, function (reply_err, reply) {
+            if (reply_err == null) {
+              console.log("[VertxAppProtoStub] Received reply from change ", reply);
+            }
+          });
+
+        });
+        /*
         obj.onChange('*', (event) => {
           console.log('[VertxAppProtoStub] onChange :', event);
           //debugger;
@@ -470,7 +481,7 @@ class VertxAppProtoStub {
               console.log("[VertxAppProtoStub] Received reply from change ", reply);
             }
           });
-        });
+        });*/
       }).catch(function (error) {
         resolve(false);
         console.log('[VertxAppProtoStub] error', error);
