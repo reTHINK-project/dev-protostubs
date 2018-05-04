@@ -176,7 +176,7 @@ class VertxAppProtoStub {
             });
           }
         }).catch(function (result) {
-          debugger;
+          //debugger;
         });
       }
     });
@@ -219,15 +219,37 @@ class VertxAppProtoStub {
             let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
             let contextUrl = messageToSubscribe.to.split("/subscription")[0];
 
-            _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-              if (result) {
-                let response = { body: { code: 200 } };
-                messageFROMsubscription.reply(response);
+            // should resume observers, if dont have go to _setUpObserver
+
+
+            _this._resumeObservers(contextUrl).then(function (result) {
+
+              if (result == false) {
+                _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+                  if (result) {
+                    let response = { body: { code: 200 } };
+                    messageFROMsubscription.reply(response);
+                  } else {
+                    let response = { body: { code: 406 } };
+                    messageFROMsubscription.reply(response);
+                  }
+                });
               } else {
-                let response = { body: { code: 406 } };
-                messageFROMsubscription.reply(response);
+                let changesAddress = result.url + "/changes";
+                _this._bus.addListener(changesAddress, (event) => {
+                  _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
+                    if (reply_err == null) {
+                      console.log("[VertxAppProtoStub] Received reply from change ", reply);
+                    }
+                  });
+
+                });
               }
+            }).catch(function (error) {
+              //debugger;
             });
+
+
           }
         });
 
@@ -256,8 +278,8 @@ class VertxAppProtoStub {
           if (reply_err == null) {
 
             if (_this._syncher == null) {
-              _this._syncher = new Syncher(reply.body.identity.userProfile.userURL, _this._bus, _this._config);
-              _this._walletReporter = new WalletReporter(reply.body.identity.userProfile.userURL, _this._bus, _this._config, _this._syncher);
+              _this._syncher = new Syncher(_this._runtimeProtoStubURL, _this._bus, _this._config);
+              _this._walletReporter = new WalletReporter(_this._runtimeProtoStubURL, _this._bus, _this._config, _this._syncher);
             }
 
             count++;
@@ -274,9 +296,9 @@ class VertxAppProtoStub {
             let schemaURL = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
             //_this._setUpReporter(reply.body.identity.userProfile.userURL, reply.body.data, stream.resources, stream.name, reuseURL)
 
-            debugger;
+
             _this._resumeReporters(stream.name, reply.body.identity.userProfile.userURL).then(function (reporter) {
-              debugger;
+              console.log('VertxAppProtoStub]._resumeReporters (result)  ', reporter);
               if (reporter == false) {
                 _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
                   if (result) {
@@ -297,7 +319,7 @@ class VertxAppProtoStub {
               }
 
             }).catch(function (error) {
-              debugger;
+              //debugger;
             });
 
           } else {
@@ -316,7 +338,7 @@ class VertxAppProtoStub {
     return new Promise((resolve, reject) => {
       _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
         console.log('[VertxAppProtoStub] Reporters resumed', reporters);
-        debugger;
+        //debugger;
         let reportersList = Object.keys(reporters);
 
         if (reportersList.length  > 0) {
@@ -338,7 +360,36 @@ class VertxAppProtoStub {
           return resolve(false);
         }
       }).catch((reason) => {
-        console.info('[LocationReporter] Reporters:', reason);
+        console.info('[VertxAppProtoStub] Reporters:', reason);
+      });
+    });
+  }
+
+  _resumeObservers(contextUrl) {
+    let _this = this;
+
+    return new Promise((resolve, reject) => {
+      //debugger;
+      _this._syncher.resumeObservers({store: true}).then((observers) => {
+        //debugger;
+        console.log('[VertxAppProtoStub] Resuming observer : ', observers, _this, _this._onResume);
+
+        let observersList = Object.keys(observers);
+        if (observersList.length  > 0) {
+          //debugger;
+            observersList.forEach((dataObjectObserverURL) => {
+              console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
+              if (contextUrl == dataObjectObserverURL) {
+                resolve(observers[dataObjectObserverURL]);
+              }
+            });
+        } else {
+          resolve(false);
+        }
+        resolve(false);
+
+      }).catch((reason) => {
+        console.info('[GroupChatManager] Resume Observer | ', reason);
       });
     });
   }
@@ -369,6 +420,7 @@ class VertxAppProtoStub {
             reporter: identityURL,
           reuseURL: reuseURL
         }
+        //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
           .then((reporter) => {
             console.log('[VertxAppProtoStub] REPORTER RETURNED', reporter);
@@ -417,7 +469,7 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub] onChange :', event);
           //debugger;
           let changesAddress = obj.url + "/changes";
-          _this._eb.send(changesAddress, event.data, function (reply_err, reply) {
+          _this._eb.publish(changesAddress, event.data, function (reply_err, reply) {
             if (reply_err == null) {
               console.log("[VertxAppProtoStub] Received reply from change ", reply);
             }

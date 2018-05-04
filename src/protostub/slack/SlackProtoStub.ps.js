@@ -303,6 +303,7 @@ class SlackProtoStub {
                   if (!reporterResumed) {
                     let objPresence = _this._createNewObjPresence(data.presence);
                     console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser);
+                    //debugger;
                     _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function(context) {
                       console.log('[SlackProtostub] CONTEXT RETURNED', context);
                       context.onSubscription(function(event) {
