@@ -359,8 +359,8 @@ export let IdpProxy = {
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
-
-      resolve(accessTokenAuthorisationEndpoint(mapping(resources[0])));
+      // TODO replace by resources[0]
+      resolve(accessTokenAuthorisationEndpoint(mapping(resources)));
 
     }, function (e) {
 
