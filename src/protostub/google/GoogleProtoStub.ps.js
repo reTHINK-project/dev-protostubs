@@ -54,7 +54,7 @@ class GoogleProtoStub {
     this._runtimeSessionURL = config.runtimeURL;
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
 
-    this._userActivityHypertyURL = "hyperty://sharing-cities-dsm/user-activity";
+    this._userActivityVertxHypertyURL = "hyperty://sharing-cities-dsm/user-activity";
 
     _this._sendStatus("created");
     this._eb = null;
@@ -70,6 +70,8 @@ class GoogleProtoStub {
         if (msg.body.identity.accessToken) {
           _this._accessToken = msg.body.identity.accessToken;
         }
+        // get JS hyperty
+        _this.hypertyJSUrl = msg.from;
       }
 
       if (_this._eb === null) {
@@ -78,9 +80,8 @@ class GoogleProtoStub {
         });
         console.log("[GoogleProtoStub] Eventbus", _this._eb);
 
-        _this._eventBusUsage().then(function(result) {
-          const objectSchema =
-            "hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context";
+        _this._eventBusUsage().then(function (result) {
+          const objectSchema = "hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context";
           const initialData = {
             id: "1276020076",
             values: [
@@ -104,30 +105,22 @@ class GoogleProtoStub {
           };
 
           if (_this._identity.userProfile && _this._accessToken) {
-            _this
-              ._setUpReporter(
-                _this._identity,
-                objectSchema,
-                initialData,
-                ["context"],
-                "user_walking",
-                _this._userURL
-              )
-              .then(function(reporter) {
+            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], "user_walking", _this._userURL)
+              .then(function (reporter) {
                 if (reporter) {
                   // store reporter
                   _this.reporter = reporter;
                   reporter.onSubscription(event => event.accept());
-                  console.log(
-                    "[GoogleProtoStub] User activity DO created: ",
-                    reporter
+                  console.log("[GoogleProtoStub] User activity DO created: ", reporter
                   );
                   const startTime = reporter._created;
 
-                  // invite observers
-                  reporter.inviteObservers([_this._userActivityHypertyURL]);
+                  // TODO - invite JS hyperty
 
-                  setInterval(function() {
+                  // invite Vertx hyperty
+                  reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
+
+                  setInterval(function () {
                     _this.querySessions(
                       _this._accessToken,
                       _this._identity.userProfile.userURL,
@@ -144,7 +137,7 @@ class GoogleProtoStub {
 
   _setUpReporter(identity, objectDescURL, data, resources, name, reuseURL) {
     let _this = this;
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       let input = {
         resources: resources,
         expires: 3600,
@@ -155,13 +148,13 @@ class GoogleProtoStub {
         .create(objectDescURL, [], data, true, false, name, identity, input)
         .then(reporter => {
           console.log("[GoogleProtoStub] REPORTER RETURNED", reporter);
-          reporter.onSubscription(function(event) {
+          reporter.onSubscription(function (event) {
             event.accept();
             console.log("[GoogleProtoStub] new subs", event);
           });
           resolve(reporter);
         })
-        .catch(function(err) {
+        .catch(function (err) {
           console.error("[GoogleProtoStub] err", err);
           resolve(null);
         });
@@ -171,7 +164,7 @@ class GoogleProtoStub {
   _eventBusUsage() {
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       console.log("[GoogleProtoStub] waiting for eb Open", _this._eb);
 
       _this._eb.onopen = () => {
@@ -193,7 +186,7 @@ class GoogleProtoStub {
           }
         }
       };
-      _this._eb.onerror = function(e) {
+      _this._eb.onerror = function (e) {
         console.log("[GoogleProtoStub] General error: ", e); // this does happen
       };
     });
@@ -209,18 +202,14 @@ class GoogleProtoStub {
     var settings = {
       async: true,
       crossDomain: true,
-      url:
-        "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" +
-        startTime +
-        "&endTime=" +
-        endTime,
+      url: "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime,
       method: "GET",
       headers: {
         Authorization: "Bearer " + token
       }
     };
 
-    $.ajax(settings).done(function(response) {
+    $.ajax(settings).done(function (response) {
       console.log("[GoogleProtoStub] sessions: ", response);
 
       // TODO - check if new session (last timestamp more recent than the one stored)
@@ -317,7 +306,7 @@ class GoogleProtoStub {
         data: JSON.stringify(bodyData)
       };
 
-      $.ajax(settings).done(function(response) {
+      $.ajax(settings).done(function (response) {
         console.log("[GoogleProtoStub] distance for activity: ", response);
         return resolve(response.bucket[0].dataset[0].point[0].value[0].fpVal);
       });
