@@ -190,7 +190,7 @@ class VertxAppProtoStub {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
-
+        //debugger;
         console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
         let responseMsg = {
           from: msg.to,
@@ -464,6 +464,7 @@ class VertxAppProtoStub {
 
         let changesAddress = obj.url + "/changes";
         _this._bus.addListener(changesAddress, (event) => {
+          console.log('[VertxAppProtoStub] new change ', event);
           _this._eb.publish(event.to, event.body.value, function (reply_err, reply) {
             if (reply_err == null) {
               console.log("[VertxAppProtoStub] Received reply from change ", reply);
