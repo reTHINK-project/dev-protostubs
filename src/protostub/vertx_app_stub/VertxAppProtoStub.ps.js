@@ -436,7 +436,7 @@ class VertxAppProtoStub {
 
         console.log('[VertxAppProtoStub] Wallet RESUME/CREATE');
         _this._resumeReporters(name, name).then(function (wallet) {
-          debugger;
+          //debugger;
           if (wallet != false) {
             console.log('[VertxAppProtoStub] Wallet resumed', wallet);
             _this._walletReporterDataObject = wallet;
