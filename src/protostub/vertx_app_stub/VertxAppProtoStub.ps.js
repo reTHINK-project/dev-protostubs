@@ -331,34 +331,34 @@ class VertxAppProtoStub {
   }
 
   _resumeReporters(name, reporterURL) {
+    console.log('[VertxAppProtoStub._resumeReporters] Resuming reporter out', name, reporterURL);
     let _this = this;
     //debugger;
     return new Promise((resolve, reject) => {
       _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
-        console.log('[VertxAppProtoStub] Reporters resumed', reporters);
+        console.log('[VertxAppProtoStub._resumeReporters] Resuming reporter in', name, reporterURL);
+        console.log('[VertxAppProtoStub._resumeReporters] Reporters resumed', reporters);
         //debugger;
+
         let reportersList = Object.keys(reporters);
 
         if (reportersList.length  > 0) {
 
           reportersList.forEach((dataObjectReporterURL) => {
 
-            console.log('[VertxAppProtoStub] ', dataObjectReporterURL);
-            console.log('[VertxAppProtoStub] ', reporters[dataObjectReporterURL]);
+            console.log('[VertxAppProtoStub._resumeReporters] ', name, dataObjectReporterURL);
+            console.log('[VertxAppProtoStub._resumeReporters] ', name, reporters[dataObjectReporterURL]);
 
             if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
-
               return resolve(reporters[dataObjectReporterURL]);
-            } else {
-              return resolve(false);
             }
           });
-
+          return resolve(false);
         } else {
           return resolve(false);
         }
       }).catch((reason) => {
-        console.info('[VertxAppProtoStub] Reporters:', reason);
+        console.info('[VertxAppProtoStub._resumeReporters] Reporters:', reason);
       });
     });
   }
@@ -434,28 +434,28 @@ class VertxAppProtoStub {
           });
       } else {
 
-        console.log('[VertxAppProtoStub] Wallet RESUME/CREATE');
+        console.log('[VertxAppProtoStub._setUpReporter] Wallet RESUME/CREATE');
         _this._resumeReporters(name, name).then(function (wallet) {
           //debugger;
+          console.log('[VertxAppProtoStub._setUpReporter] Wallet resumed', wallet);
           if (wallet != false) {
-            console.log('[VertxAppProtoStub] Wallet resumed', wallet);
             _this._walletReporterDataObject = wallet;
             wallet.onSubscription(function (event) {
               event.accept();
-              console.log('[VertxAppProtoStub] new subs', event);
+              console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
             });
             resolve(wallet);
 
           } else {
             _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
-              console.log('[VertxAppProtoStub] Wallet created', wallet);
+              console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               _this._walletReporterDataObject = wallet;
 
 
               wallet.onSubscription(function (event) {
                 event.accept();
-                console.log('[VertxAppProtoStub] new subs', event);
+                console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
               });
               resolve(wallet);
             }).catch(function (err) {
