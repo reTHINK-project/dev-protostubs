@@ -41,6 +41,8 @@ class VertxAppProtoStub {
     if (!config.url) throw new Error('The config.url is a needed parameter');
     if (!config.runtimeURL) throw new Error('The config.runtimeURL is a needed parameter');
 
+    //https://vertx-runtime.hysmart.rethink.ptinovacao.pt/eventbus
+
     let _this = this;
     console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB", _this);
     this._id = 0;
@@ -431,22 +433,39 @@ class VertxAppProtoStub {
             resolve(null);
           });
       } else {
-        _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
-          console.log('[VertxAppProtoStub] Wallet RETURNED', wallet);
 
-          _this._walletReporterDataObject = wallet;
+        console.log('[VertxAppProtoStub] Wallet RESUME/CREATE');
+        _this._resumeReporters(name, name).then(function (wallet) {
+          debugger;
+          if (wallet != false) {
+            console.log('[VertxAppProtoStub] Wallet resumed', wallet);
+            _this._walletReporterDataObject = wallet;
+            wallet.onSubscription(function (event) {
+              event.accept();
+              console.log('[VertxAppProtoStub] new subs', event);
+            });
+            resolve(wallet);
+
+          } else {
+            _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
+              console.log('[VertxAppProtoStub] Wallet created', wallet);
+
+              _this._walletReporterDataObject = wallet;
 
 
-          wallet.onSubscription(function (event) {
-            event.accept();
-            console.log('[VertxAppProtoStub] new subs', event);
-          });
-          resolve(wallet);
-        }).catch(function (err) {
-          console.error('[VertxAppProtoStub] err', err);
-          resolve(null);
+              wallet.onSubscription(function (event) {
+                event.accept();
+                console.log('[VertxAppProtoStub] new subs', event);
+              });
+              resolve(wallet);
+            }).catch(function (err) {
+              console.error('[VertxAppProtoStub] err', err);
+              resolve(null);
+            });
+        }
+        }).catch(function(error) {
+
         });
-
 
       }
 
