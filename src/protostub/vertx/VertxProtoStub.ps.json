@@ -3,7 +3,7 @@
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "wss://msg-node.hysmart.rethink.ptinovacao.pt/ws"
+    "url": "wss://msg-node.hysmart.rethink.ptinovacao.pt/localhost/ws"
   },
   "constraints": {
     "browser": true

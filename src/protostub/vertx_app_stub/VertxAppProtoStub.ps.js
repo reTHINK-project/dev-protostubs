@@ -245,8 +245,9 @@ class VertxAppProtoStub {
                       console.log("[VertxAppProtoStub] Received reply from change ", reply);
                     }
                   });
-
                 });
+                let response = { body: { code: 200 } };
+                messageFROMsubscription.reply(response);
               }
             }).catch(function (error) {
               //debugger;
