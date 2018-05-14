@@ -41,6 +41,8 @@ class VertxAppProtoStub {
     if (!config.url) throw new Error('The config.url is a needed parameter');
     if (!config.runtimeURL) throw new Error('The config.runtimeURL is a needed parameter');
 
+    //https://vertx-runtime.hysmart.rethink.ptinovacao.pt/eventbus
+
     let _this = this;
     console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB", _this);
     this._id = 0;
@@ -190,7 +192,7 @@ class VertxAppProtoStub {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
-
+        //debugger;
         console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
         let responseMsg = {
           from: msg.to,
@@ -214,11 +216,42 @@ class VertxAppProtoStub {
       // handle message subscribe before invite Vertx
       _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
 
-        console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
-        let messageToSubscribe = messageFROMsubscription.body;
-        if (messageToSubscribe.to.includes('/subscription')) {
-          let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
-          let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+          console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
+          let messageToSubscribe = messageFROMsubscription.body;
+          if (messageToSubscribe.to.includes('/subscription')) {
+            let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
+            let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+
+            // should resume observers, if dont have go to _setUpObserver
+
+
+            _this._resumeObservers(contextUrl).then(function (result) {
+
+              if (result == false) {
+                _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+                  if (result) {
+                    let response = { body: { code: 200 } };
+                    messageFROMsubscription.reply(response);
+                  } else {
+                    let response = { body: { code: 406 } };
+                    messageFROMsubscription.reply(response);
+                  }
+                });
+              } else {
+                let changesAddress = result.url + "/changes";
+                _this._bus.addListener(changesAddress, (event) => {
+                  _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
+                    if (reply_err == null) {
+                      console.log("[VertxAppProtoStub] Received reply from change ", reply);
+                    }
+                  });
+                });
+                let response = { body: { code: 200 } };
+                messageFROMsubscription.reply(response);
+              }
+            }).catch(function (error) {
+              //debugger;
+            });
 
           _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
             if (result) {
@@ -316,34 +349,34 @@ class VertxAppProtoStub {
   }
 
   _resumeReporters(name, reporterURL) {
+    console.log('[VertxAppProtoStub._resumeReporters] Resuming reporter out', name, reporterURL);
     let _this = this;
     //debugger;
     return new Promise((resolve, reject) => {
       _this._syncher.resumeReporters({store: true, reporter: reporterURL}).then((reporters) => {
-        console.log('[VertxAppProtoStub] Reporters resumed', reporters);
+        console.log('[VertxAppProtoStub._resumeReporters] Resuming reporter in', name, reporterURL);
+        console.log('[VertxAppProtoStub._resumeReporters] Reporters resumed', reporters);
         //debugger;
+
         let reportersList = Object.keys(reporters);
 
         if (reportersList.length  > 0) {
 
           reportersList.forEach((dataObjectReporterURL) => {
 
-            console.log('[VertxAppProtoStub] ', dataObjectReporterURL);
-            console.log('[VertxAppProtoStub] ', reporters[dataObjectReporterURL]);
+            console.log('[VertxAppProtoStub._resumeReporters] ', name, dataObjectReporterURL);
+            console.log('[VertxAppProtoStub._resumeReporters] ', name, reporters[dataObjectReporterURL]);
 
             if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
-
               return resolve(reporters[dataObjectReporterURL]);
-            } else {
-              return resolve(false);
             }
           });
-
+          return resolve(false);
         } else {
           return resolve(false);
         }
       }).catch((reason) => {
-        console.info('[VertxAppProtoStub] Reporters:', reason);
+        console.info('[VertxAppProtoStub._resumeReporters] Reporters:', reason);
       });
     });
   }
@@ -418,22 +451,39 @@ class VertxAppProtoStub {
             resolve(null);
           });
       } else {
-        _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
-          console.log('[VertxAppProtoStub] Wallet RETURNED', wallet);
 
-          _this._walletReporterDataObject = wallet;
+        console.log('[VertxAppProtoStub._setUpReporter] Wallet RESUME/CREATE');
+        _this._resumeReporters(name, name).then(function (wallet) {
+          //debugger;
+          console.log('[VertxAppProtoStub._setUpReporter] Wallet resumed', wallet);
+          if (wallet != false) {
+            _this._walletReporterDataObject = wallet;
+            wallet.onSubscription(function (event) {
+              event.accept();
+              console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
+            });
+            resolve(wallet);
+
+          } else {
+            _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
+              console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
+
+              _this._walletReporterDataObject = wallet;
 
 
-          wallet.onSubscription(function (event) {
-            event.accept();
-            console.log('[VertxAppProtoStub] new subs', event);
-          });
-          resolve(wallet);
-        }).catch(function (err) {
-          console.error('[VertxAppProtoStub] err', err);
-          resolve(null);
+              wallet.onSubscription(function (event) {
+                event.accept();
+                console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
+              });
+              resolve(wallet);
+            }).catch(function (err) {
+              console.error('[VertxAppProtoStub] err', err);
+              resolve(null);
+            });
+        }
+        }).catch(function(error) {
+
         });
-
 
       }
 
@@ -451,6 +501,7 @@ class VertxAppProtoStub {
 
         let changesAddress = obj.url + "/changes";
         _this._bus.addListener(changesAddress, (event) => {
+          console.log('[VertxAppProtoStub] new change ', event);
           _this._eb.publish(event.to, event.body.value, function (reply_err, reply) {
             if (reply_err == null) {
               console.log("[VertxAppProtoStub] Received reply from change ", reply);
