@@ -17,7 +17,6 @@ export let getExpires = (function (url) {
   if (expires) expires = expires + Math.floor(Date.now() / 1000);
   else expires = 3153600000 + Math.floor(Date.now() / 1000);
 
-  debugger;
   return Number(expires);
 
 });

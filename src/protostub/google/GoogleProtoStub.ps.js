@@ -59,6 +59,8 @@ class GoogleProtoStub {
     _this._sendStatus("created");
     this._eb = null;
 
+    const dataObjectName = "user_activity";
+
     bus.addListener("*", msg => {
       console.log("[GoogleProtoStub] new Message  : ", msg);
 
@@ -105,30 +107,44 @@ class GoogleProtoStub {
           };
 
           if (_this._identity.userProfile && _this._accessToken) {
-            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], "user_walking", _this._userURL)
-              .then(function (reporter) {
-                if (reporter) {
-                  // store reporter
-                  _this.reporter = reporter;
-                  reporter.onSubscription(event => event.accept());
-                  console.log("[GoogleProtoStub] User activity DO created: ", reporter
-                  );
-                  const startTime = reporter._created;
+            _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
+              console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
+              if (reporter == false) {
+                _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
+                  .then(function (reporter) {
+                    if (reporter) {
+                      // store reporter
+                      _this.reporter = reporter;
+                      reporter.onSubscription(event => event.accept());
+                      console.log("[GoogleProtoStub] User activity DO created: ", reporter
+                      );
+                      const startTime = reporter.metadata.created;
 
-                  // TODO - invite JS hyperty
+                      // TODO - invite JS hyperty
 
-                  // invite Vertx hyperty
-                  reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
+                      // invite Vertx hyperty
+                      reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
 
-                  setInterval(function () {
-                    _this.querySessions(
-                      _this._accessToken,
-                      _this._identity.userProfile.userURL,
-                      startTime
-                    );
-                  }, config.sessions_query_interval);
-                }
-              });
+                      setInterval(function () {
+                        let lastModified = reporter.metadata.lastModified;
+                        _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
+                      }, config.sessions_query_interval);
+                    }
+                  });
+              } else {
+                reporter.data.values = reply.body.data.values;
+                reporter.onSubscription(function (event) {
+                  event.accept();
+                  console.log('[GoogleProtoStub] new subs', event);
+                });
+              }
+
+            }).catch(function (error) {
+              //debugger;
+            });
+
+
+
           }
         });
       }
@@ -158,6 +174,39 @@ class GoogleProtoStub {
           console.error("[GoogleProtoStub] err", err);
           resolve(null);
         });
+    });
+  }
+
+  _resumeReporters(name, reporterURL) {
+    let _this = this;
+    //debugger;
+    return new Promise((resolve, reject) => {
+      _this._syncher.resumeReporters({ store: true, reporter: reporterURL }).then((reporters) => {
+        console.log('[GoogleProtoStub] Reporters resumed', reporters);
+        //debugger;
+        let reportersList = Object.keys(reporters);
+
+        if (reportersList.length > 0) {
+
+          reportersList.forEach((dataObjectReporterURL) => {
+
+            console.log('[GoogleProtoStub] ', dataObjectReporterURL);
+            console.log('[GoogleProtoStub] ', reporters[dataObjectReporterURL]);
+
+            if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
+
+              return resolve(reporters[dataObjectReporterURL]);
+            } else {
+              return resolve(false);
+            }
+          });
+
+        } else {
+          return resolve(false);
+        }
+      }).catch((reason) => {
+        console.info('[GoogleProtoStub] Reporters:', reason);
+      });
     });
   }
 
@@ -192,12 +241,17 @@ class GoogleProtoStub {
     });
   }
 
-  querySessions(token, userURL, startTimeEpoch) {
+  querySessions(token, userURL, startTime, lastModified) {
     let _this = this;
 
-    // TODO - start and end time
-    const startTime = "2018-04-01T00:00:00.00Z";
-    const endTime = "2018-04-21T23:59:59.99Z";
+    if (startTime !== lastModified) {
+      startTime = lastModified;
+    }
+    // current date
+    const endDate = new Date();
+    const endTime = endDate.toISOString();
+    const endTimeMillis = endDate.getTime();
+
 
     var settings = {
       async: true,
@@ -211,70 +265,63 @@ class GoogleProtoStub {
 
     $.ajax(settings).done(function (response) {
       console.log("[GoogleProtoStub] sessions: ", response);
+      debugger;
+      for (let index = 0; index < response.session.length; index++) {
+        const currentSession = response.session[index];
+        const activityType = currentSession["activityType"];
+        const start = currentSession["startTimeMillis"];
+        const end = currentSession["endTimeMillis"];
+        const modified = currentSession["modifiedTimeMillis"];
 
-      // TODO - check if new session (last timestamp more recent than the one stored)
-      const lastSession = response.session[0];
-      const activityType = lastSession["activityType"];
-      const start = lastSession["startTimeMillis"];
-      const end = lastSession["endTimeMillis"];
-      const modified = lastSession["modifiedTimeMillis"];
-
-      let activity;
-
-      switch (activityType) {
-        case 7:
-          activity = "walking";
-          break;
-        case 8:
-          activity = "running";
-          break;
-        case 1:
-          activity = "biking";
-          break;
-        default:
-          break;
-      }
-      // get distance for session
-      _this.getDistanceForActivity(start, end, activity).then(distance => {
-        const startISO = new Date(Number(start)).toISOString();
-        const endISO = new Date(Number(end)).toISOString();
-        switch (activityType) {
-          case 7:
-            // walking
-            _this.reporter.data.values = [
-              {
-                type: "user_walking_context",
-                name: "walking distance in meters",
-                unit: "meter",
-                value: distance,
-                startTime: startISO,
-                endTime: endISO
-              },
-              _this.reporter.data.values[1]
-            ];
-            break;
-          case 1:
-            // biking
-            _this.reporter.data.values = [
-              _this.reporter.data.values[0],
-              {
-                type: "user_biking_context",
-                name: "biking distance in meters",
-                unit: "meter",
-                value: distance,
-                startTime: startISO,
-                endTime: endISO
-              }
-            ];
-            break;
-          default:
-            break;
+        if (end > endTimeMillis) {
+          // get distance for session
+          _this.getDistanceForActivity(start, end).then(distance => {
+            const startISO = new Date(Number(start)).toISOString();
+            const endISO = new Date(Number(end)).toISOString();
+            switch (activityType) {
+              case 7:
+              case 8:
+                // walking/running
+                _this.reporter.data.values = [
+                  {
+                    type: "user_walking_context",
+                    name: "walking distance in meters",
+                    unit: "meter",
+                    value: distance,
+                    startTime: startISO,
+                    endTime: endISO
+                  }
+                  //_this.reporter.data.values[1]
+                ];
+                break;
+              case 1:
+                // biking
+                _this.reporter.data.values = [
+                  //_this.reporter.data.values[0],
+                  {
+                    type: "user_biking_context",
+                    name: "biking distance in meters",
+                    unit: "meter",
+                    value: distance,
+                    startTime: startISO,
+                    endTime: endISO
+                  }
+                ];
+                break;
+              default:
+                break;
+            }
+          });
         }
-      });
+
+
+      }
+
+
     });
   }
 
-  getDistanceForActivity(start, end, activity) {
+  getDistanceForActivity(start, end) {
     return new Promise((resolve, reject) => {
       // total time
       const durationMillis = end - start;
