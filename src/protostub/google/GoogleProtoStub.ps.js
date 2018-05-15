@@ -20,8 +20,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-import EventBus from "vertx3-eventbus-client";
-import { WalletReporter } from "service-framework/dist/WalletManager";
 import { Syncher } from "service-framework/dist/Syncher";
 import MessageBodyIdentity from "service-framework/dist/IdentityFactory";
 
@@ -50,6 +48,7 @@ class GoogleProtoStub {
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._bus = bus;
     this._config = config;
+    this._domain = config.domain;
 
     this._runtimeSessionURL = config.runtimeURL;
     this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
@@ -57,7 +56,7 @@ class GoogleProtoStub {
     this._userActivityVertxHypertyURL = "hyperty://sharing-cities-dsm/user-activity";
 
     _this._sendStatus("created");
-    this._eb = null;
+
 
     const dataObjectName = "user_activity";
 
@@ -76,76 +75,64 @@ class GoogleProtoStub {
         _this.hypertyJSUrl = msg.from;
       }
 
-      if (_this._eb === null) {
-        _this._eb = new EventBus(config.url, {
-          vertxbus_ping_interval: config.vertxbus_ping_interval
-        });
-        console.log("[GoogleProtoStub] Eventbus", _this._eb);
-
-        _this._eventBusUsage().then(function (result) {
-          const objectSchema = "hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context";
-          const initialData = {
-            id: "1276020076",
-            values: [
-              {
-                type: "user_walking_context",
-                name: "walking distance in meters",
-                unit: "meter",
-                value: 1500,
-                startTime: "2018-03-25T12:00:00Z",
-                endTime: "2018-03-25T12:10:00Z"
-              },
-              {
-                type: "user_biking_context",
-                name: "biking distance in meters",
-                unit: "meter",
-                value: 5000,
-                startTime: "2018-03-26T12:00:00Z",
-                endTime: "2018-03-26T12:10:00Z"
-              }
-            ]
-          };
-
-          if (_this._identity.userProfile && _this._accessToken) {
-            _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
-              console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
-              if (reporter == false) {
-                _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
-                  .then(function (reporter) {
-                    if (reporter) {
-                      // store reporter
-                      _this.reporter = reporter;
-                      reporter.onSubscription(event => event.accept());
-                      console.log("[GoogleProtoStub] User activity DO created: ", reporter
-                      );
-                      const startTime = reporter.metadata.created;
-
-                      // TODO - invite JS hyperty
-
-                      // invite Vertx hyperty
-                      reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
-
-                      setInterval(function () {
-                        let lastModified = reporter.metadata.lastModified;
-                        _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
-                      }, config.sessions_query_interval);
-                    }
-                  });
-              } else {
-                reporter.data.values = reply.body.data.values;
-                reporter.onSubscription(function (event) {
-                  event.accept();
-                  console.log('[GoogleProtoStub] new subs', event);
-                });
-              }
-
-            }).catch(function (error) {
-              //debugger;
-            });
-
-
-
+      const objectSchema = "hyperty-catalogue://catalogue." + _this._domain + "/.well-known/dataschema/Context";
+      const initialData = {
+        id: "1276020076",
+        values: [
+          {
+            type: "user_walking_context",
+            name: "walking distance in meters",
+            unit: "meter",
+            value: 1500,
+            startTime: "2018-03-25T12:00:00Z",
+            endTime: "2018-03-25T12:10:00Z"
+          },
+          {
+            type: "user_biking_context",
+            name: "biking distance in meters",
+            unit: "meter",
+            value: 5000,
+            startTime: "2018-03-26T12:00:00Z",
+            endTime: "2018-03-26T12:10:00Z"
           }
+        ]
+      };
+
+      if (_this._identity.userProfile && _this._accessToken) {
+        _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
+          console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
+          if (reporter == false) {
+            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
+              .then(function (reporter) {
+                if (reporter) {
+                  // store reporter
+                  _this.reporter = reporter;
+                  reporter.onSubscription(event => event.accept());
+                  console.log("[GoogleProtoStub] User activity DO created: ", reporter
+                  );
+                  const startTime = reporter.metadata.created;
+
+                  // TODO - invite JS hyperty
+
+                  // invite Vertx hyperty
+                  reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
+
+                  setInterval(function () {
+                    let lastModified = reporter.metadata.lastModified;
+                    _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
+                  }, config.sessions_query_interval);
+                }
+              });
+          } else {
+            reporter.data.values = reply.body.data.values;
+            reporter.onSubscription(function (event) {
+              event.accept();
+              console.log('[GoogleProtoStub] new subs', event);
+            });
+          }
+
+        }).catch(function (error) {
+          //debugger;
         });
       }
     });
@@ -207,37 +194,6 @@ class GoogleProtoStub {
       }).catch((reason) => {
         console.info('[GoogleProtoStub] Reporters:', reason);
       });
-    });
-  }
-
-  _eventBusUsage() {
-    let _this = this;
-
-    return new Promise(function (resolve, reject) {
-      console.log("[GoogleProtoStub] waiting for eb Open", _this._eb);
-
-      _this._eb.onopen = () => {
-        console.log("[GoogleProtoStub] _this._eb-> open");
-        let done = false;
-        while (!done) {
-          console.log(
-            "[GoogleProtoStub] Waiting for SockJS readyState",
-            _this._eb.sockJSConn.readyState,
-            "(",
-            WebSocket.OPEN,
-            ")"
-          );
-          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-            done = true;
-            resolve(true);
-          } else {
-            _this._sleep(1000);
-          }
-        }
-      };
-      _this._eb.onerror = function (e) {
-        console.log("[GoogleProtoStub] General error: ", e); // this does happen
-      };
     });
   }
 
