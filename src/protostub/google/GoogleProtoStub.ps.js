@@ -37,7 +37,7 @@ class GoogleProtoStub {
     if (!bus) throw new Error("The bus is a needed parameter");
     if (!config) throw new Error("The config is a needed parameter");
 
-    if (!config.url) throw new Error("The config.url is a needed parameter");
+
     if (!config.runtimeURL)
       throw new Error("The config.runtimeURL is a needed parameter");
 
@@ -62,7 +62,7 @@ class GoogleProtoStub {
 
     bus.addListener("*", msg => {
       console.log("[GoogleProtoStub] new Message  : ", msg);
-
+      //debugger;
       if (msg.identity) {
         _this._identity = msg.identity;
       }
@@ -199,7 +199,7 @@ class GoogleProtoStub {
 
   querySessions(token, userURL, startTime, lastModified) {
     let _this = this;
-
+    //debugger;
     if (startTime !== lastModified) {
       startTime = lastModified;
     }
