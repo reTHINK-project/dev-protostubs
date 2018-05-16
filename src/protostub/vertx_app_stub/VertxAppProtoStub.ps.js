@@ -113,7 +113,22 @@ class VertxAppProtoStub {
           }
         });
       } else {
-        _this._SubscriptionManager(msg);
+        /*if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+          _this._SubscriptionManager(msg);
+        } else {*/
+
+        while (true) {
+          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
+          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+            _this._SubscriptionManager(msg);
+            break;
+          } else {
+            _this._sleep(1000);
+          }
+        }
+        //}
+
+
       }
     });
   }
@@ -224,9 +239,9 @@ class VertxAppProtoStub {
 
             // should resume observers, if dont have go to _setUpObserver
 
-
+            debugger;
             _this._resumeObservers(contextUrl).then(function (result) {
-
+            debugger;
               if (result == false) {
                 _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
                   if (result) {
