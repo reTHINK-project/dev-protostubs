@@ -62,7 +62,6 @@ class GoogleProtoStub {
 
     bus.addListener("*", msg => {
       console.log("[GoogleProtoStub] new Message  : ", msg);
-      //debugger;
       if (msg.identity) {
         _this._identity = msg.identity;
       }
@@ -132,7 +131,6 @@ class GoogleProtoStub {
           }
 
         }).catch(function (error) {
-          //debugger;
         });
       }
     });
@@ -166,11 +164,9 @@ class GoogleProtoStub {
 
   _resumeReporters(name, reporterURL) {
     let _this = this;
-    //debugger;
     return new Promise((resolve, reject) => {
       _this._syncher.resumeReporters({ store: true, reporter: reporterURL }).then((reporters) => {
         console.log('[GoogleProtoStub] Reporters resumed', reporters);
-        //debugger;
         let reportersList = Object.keys(reporters);
 
         if (reportersList.length > 0) {
@@ -199,7 +195,6 @@ class GoogleProtoStub {
 
   querySessions(token, userURL, startTime, lastModified) {
     let _this = this;
-    //debugger;
     if (startTime !== lastModified) {
       startTime = lastModified;
     }
@@ -208,73 +203,75 @@ class GoogleProtoStub {
     const endTime = endDate.toISOString();
     const endTimeMillis = endDate.getTime();
 
+    // make request
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
 
-    var settings = {
-      async: true,
-      crossDomain: true,
-      url: "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime,
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    };
+    // xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime);
+    xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=2018-05-13T14:00:15.835Z&endTime=2018-05-15T16:38:17.362Z");
+    xhr.setRequestHeader("Authorization", "Bearer " + token);
+    xhr.setRequestHeader("Cache-Control", "no-cache");
+    xhr.send(null);
 
-    $.ajax(settings).done(function (response) {
-      console.log("[GoogleProtoStub] sessions: ", response);
-      debugger;
-      for (let index = 0; index < response.session.length; index++) {
-        const currentSession = response.session[index];
-        const activityType = currentSession["activityType"];
-        const start = currentSession["startTimeMillis"];
-        const end = currentSession["endTimeMillis"];
-        const modified = currentSession["modifiedTimeMillis"];
+    xhr.addEventListener("readystatechange", function () {
 
-        if (end > endTimeMillis) {
-          // get distance for session
-          _this.getDistanceForActivity(start, end).then(distance => {
-            const startISO = new Date(Number(start)).toISOString();
-            const endISO = new Date(Number(end)).toISOString();
-            switch (activityType) {
-              case 7:
-              case 8:
-                // walking/running
-                _this.reporter.data.values = [
-                  {
-                    type: "user_walking_context",
-                    name: "walking distance in meters",
-                    unit: "meter",
-                    value: distance,
-                    startTime: startISO,
-                    endTime: endISO
-                  }
-                  //_this.reporter.data.values[1]
-                ];
-                break;
-              case 1:
-                // biking
-                _this.reporter.data.values = [
-                  //_this.reporter.data.values[0],
-                  {
-                    type: "user_biking_context",
-                    name: "biking distance in meters",
-                    unit: "meter",
-                    value: distance,
-                    startTime: startISO,
-                    endTime: endISO
-                  }
-                ];
-                break;
-              default:
-                break;
-            }
-          });
+      if (this.readyState === 4) {
+        const response = JSON.parse(this.responseText);
+        console.log("[GoogleProtoStub] sessions: ", response);
+        for (let index = 0; index < response.session.length; index++) {
+          const currentSession = response.session[index];
+          const activityType = currentSession["activityType"];
+          const start = currentSession["startTimeMillis"];
+          const end = currentSession["endTimeMillis"];
+          const modified = currentSession["modifiedTimeMillis"];
+
+          //if (end > endTimeMillis) {
+          if (true) {
+            // get distance for session
+            _this.getDistanceForActivity(start, end).then(distance => {
+              const startISO = new Date(Number(start)).toISOString();
+              const endISO = new Date(Number(end)).toISOString();
+              switch (activityType) {
+                case 7:
+                case 8:
+                  // walking/running
+                  _this.reporter.data.values = [
+                    {
+                      type: "user_walking_context",
+                      name: "walking distance in meters",
+                      unit: "meter",
+                      value: distance,
+                      startTime: startISO,
+                      endTime: endISO
+                    }
+                    //_this.reporter.data.values[1]
+                  ];
+                  break;
+                case 1:
+                  // biking
+                  _this.reporter.data.values = [
+                    //_this.reporter.data.values[0],
+                    {
+                      type: "user_biking_context",
+                      name: "biking distance in meters",
+                      unit: "meter",
+                      value: distance,
+                      startTime: startISO,
+                      endTime: endISO
+                    }
+                  ];
+                  break;
+                default:
+                  break;
+              }
+            });
+          }
         }
-
-
       }
-
-
     });
+
+
+
   }
 
   getDistanceForActivity(start, end) {
@@ -283,36 +280,36 @@ class GoogleProtoStub {
       const durationMillis = end - start;
 
       const bodyData = {
-        aggregateBy: [
+        "aggregateBy": [
           {
-            dataTypeName: "com.google.distance.delta"
+            "dataTypeName": "com.google.distance.delta"
           }
         ],
-        bucketByTime: {
-          durationMillis: durationMillis
+        "bucketByTime": {
+          "durationMillis": durationMillis
         },
-        startTimeMillis: start,
-        endTimeMillis: end
+        "startTimeMillis": start,
+        "endTimeMillis": end
       };
 
-      var settings = {
-        async: true,
-        crossDomain: true,
-        url: "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + this._accessToken,
-          "Cache-Control": "no-cache"
-        },
-        processData: false,
-        data: JSON.stringify(bodyData)
-      };
 
-      $.ajax(settings).done(function (response) {
-        console.log("[GoogleProtoStub] distance for activity: ", response);
-        return resolve(response.bucket[0].dataset[0].point[0].value[0].fpVal);
+      // make request
+      var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+      xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+          const response = JSON.parse(this.responseText);
+          console.log("[GoogleProtoStub] distance for activity: ", response);
+          return resolve(response.bucket[0].dataset[0].point[0].value[0].fpVal);
+        }
       });
+      xhr.open("POST", "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.setRequestHeader("Authorization", "Bearer " + this._accessToken);
+      xhr.setRequestHeader("Cache-Control", "no-cache");
+      xhr.send(JSON.stringify(bodyData));
+
+
     });
   }
 
