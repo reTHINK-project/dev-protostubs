@@ -293,6 +293,18 @@ class VertxAppProtoStub {
       }
       //Invite Vertx to subscribe...
       _this._eb.publish(msg.to, inviteMessage);
+
+      let msgResponse = {
+        id: msg.id,
+        type: 'response',
+        from: msg.to,
+        to: msg.from,
+        body: {
+          code: 200
+        }
+      };
+      _this._bus.postMessage(msgResponse);
+
     }
   }
 
