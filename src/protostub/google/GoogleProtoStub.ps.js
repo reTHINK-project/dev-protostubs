@@ -57,6 +57,8 @@ class GoogleProtoStub {
 
     _this._sendStatus("created");
 
+    _this.started = false;
+
 
     const dataObjectName = "user_activity";
 
@@ -97,45 +99,40 @@ class GoogleProtoStub {
         ]
       };
 
-      if (_this._identity.userProfile && _this._accessToken) {
+
+
+      if (_this._identity.userProfile && _this._accessToken && !_this.started) {
         _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
           if (reporter == false) {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
               .then(function (reporter) {
                 if (reporter) {
-                  // store reporter
-                  _this.reporter = reporter;
-                  reporter.onSubscription(event => event.accept());
-                  console.log("[GoogleProtoStub] User activity DO created: ", reporter
-                  );
-                  const startTime = reporter.metadata.created;
-
-
-
-                  // invite Vertx hyperty
-                  reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
-
-                  
-                  setInterval(function () {
-                    let lastModified = reporter.metadata.lastModified;
-                    _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
-                  }, config.sessions_query_interval);
-                  
+                  _this.startWorking(reporter);
                 }
               });
           } else {
-            reporter.data.values = reply.body.data.values;
-            reporter.onSubscription(function (event) {
-              event.accept();
-              console.log('[GoogleProtoStub] new subs', event);
-            });
+            _this.startWorking(reporter);
           }
-
         }).catch(function (error) {
         });
       }
     });
+  }
+
+  startWorking(reporter) {
+    let _this = this;
+    _this.reporter = reporter;
+    reporter.onSubscription(event => event.accept());
+    console.log("[GoogleProtoStub] User activity DO created: ", reporter);
+    const startTime = reporter.metadata.created;
+    reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
+    setInterval(function () {
+      let lastModified = reporter.metadata.lastModified;
+      _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
+    }, _this.config.sessions_query_interval);
+
+    _this.started = true;
   }
 
   _setUpReporter(identity, objectDescURL, data, resources, name, reuseURL) {
