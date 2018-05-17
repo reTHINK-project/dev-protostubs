@@ -3,7 +3,7 @@
   "description": "Protostub of Google",
   "signature": "",
   "configuration": {
-    "sessions_query_interval": 10000,
+    "sessions_query_interval": 60000,
     "domain": "localhost"
   },
   "constraints": {

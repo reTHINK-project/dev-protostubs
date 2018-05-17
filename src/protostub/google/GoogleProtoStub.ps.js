@@ -111,15 +111,17 @@ class GoogleProtoStub {
                   );
                   const startTime = reporter.metadata.created;
 
-                  // TODO - invite JS hyperty
+
 
                   // invite Vertx hyperty
-                  reporter.inviteObservers([_this._userActivityVertxHypertyURL, _this.hypertyJSUrl]);
+                  reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
 
+                  
                   setInterval(function () {
                     let lastModified = reporter.metadata.lastModified;
                     _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
                   }, config.sessions_query_interval);
+                  
                 }
               });
           } else {
@@ -207,8 +209,7 @@ class GoogleProtoStub {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
 
-    // xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime);
-    xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=2018-05-13T14:00:15.835Z&endTime=2018-05-15T16:38:17.362Z");
+    xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime);
     xhr.setRequestHeader("Authorization", "Bearer " + token);
     xhr.setRequestHeader("Cache-Control", "no-cache");
     xhr.send(null);
@@ -225,8 +226,7 @@ class GoogleProtoStub {
           const end = currentSession["endTimeMillis"];
           const modified = currentSession["modifiedTimeMillis"];
 
-          //if (end > endTimeMillis) {
-          if (true) {
+          if (end > endTimeMillis) {
             // get distance for session
             _this.getDistanceForActivity(start, end).then(distance => {
               const startISO = new Date(Number(start)).toISOString();
