@@ -71,10 +71,23 @@ class GoogleProtoStub {
       if (msg.body.identity) {
         if (msg.body.identity.accessToken) {
           _this._accessToken = msg.body.identity.accessToken;
+          // reply to hyperty
+          let msgResponse = {
+            id: msg.id,
+            type: 'response',
+            from: msg.to,
+            to: msg.from,
+            body: {
+              code: 200
+            }
+          };
+          _this._bus.postMessage(msgResponse);
         }
         // get JS hyperty
         _this.hypertyJSUrl = msg.from;
       }
+
+
 
       const objectSchema = "hyperty-catalogue://catalogue." + _this._domain + "/.well-known/dataschema/Context";
       const initialData = {
