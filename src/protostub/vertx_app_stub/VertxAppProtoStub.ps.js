@@ -279,8 +279,10 @@ class VertxAppProtoStub {
 
       //Message to invite Vertx to Subscribe a Reporter
       let userURL;
+      let guid;
       if (msg.body.identity) {
         userURL = msg.body.identity.userProfile.userURL;
+        guid = msg.body.identity.userProfile.guid;
       }
       else {
         userURL = msg.body.value.reporter;
@@ -289,7 +291,7 @@ class VertxAppProtoStub {
         type: 'create',
         from: msg.from,
         to: msg.to,
-        identity: { userProfile: { userURL: userURL } }
+        identity: { userProfile: { userURL: userURL, guid: guid } }
       }
       //Invite Vertx to subscribe...
       _this._eb.publish(msg.to, inviteMessage);
