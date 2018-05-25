@@ -62,7 +62,7 @@ export function mapping(resource) {
     return "fitness.activity.read";
   }
   switch (resource) {
-    case "activity_context":
+    case "user_activity_context":
       return "fitness.activity.read";
       break;
 
