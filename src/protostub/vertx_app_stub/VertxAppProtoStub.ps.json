@@ -13,6 +13,12 @@
         "resources": ["resources"],
         "id": "shops-data",
         "name": "shops-data DSM"
+      },
+      {
+        "stream": "data://sharing-cities-dsm/elearning",
+        "resources": ["resources"],
+        "id": "elearning-data",
+        "name": "elearning-data DSM"
       }
 
     ]
