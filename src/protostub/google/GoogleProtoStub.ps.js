@@ -68,7 +68,7 @@ class GoogleProtoStub {
         _this._identity = msg.identity;
       }
 
-      if (msg.body.identity) {
+      if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
         if (msg.body.identity.accessToken) {
           _this._accessToken = msg.body.identity.accessToken;
           // reply to hyperty
@@ -112,13 +112,11 @@ class GoogleProtoStub {
         ]
       };
 
-
-
-      if (_this._identity.userProfile && _this._accessToken && !_this.started) {
-        _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
+      if (_this._accessToken && !_this.started) {
+        _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
           if (reporter == false) {
-            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
+            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
                 if (reporter) {
                   _this.startWorking(reporter);
@@ -142,19 +140,20 @@ class GoogleProtoStub {
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
     setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
-      _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
+      _this.querySessions(_this._accessToken, startTime, lastModified);
     }, _this.config.sessions_query_interval);
 
     _this.started = true;
   }
 
-  _setUpReporter(identity, objectDescURL, data, resources, name, reuseURL) {
+  _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
+
     let _this = this;
     return new Promise(function (resolve, reject) {
       let input = {
         resources: resources,
         expires: 3600,
-        reporter: identity.userProfile.userURL
+        reporter: reporterURL
       };
 
       _this._syncher
@@ -205,7 +204,7 @@ class GoogleProtoStub {
     });
   }
 
-  querySessions(token, userURL, startTime, lastModified) {
+  querySessions(token, startTime, lastModified) {
     let _this = this;
     if (startTime !== lastModified) {
       startTime = lastModified;
