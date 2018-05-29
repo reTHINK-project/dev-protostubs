@@ -307,6 +307,13 @@ class VertxAppProtoStub {
       };
       _this._bus.postMessage(msgResponse);
 
+    } else if (msg.to.includes('/changes')) {
+      console.log('[VertxAppProtoStub] new change ', msg);
+      _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
+        if (reply_err == null) {
+          console.log("[VertxAppProtoStub] Received reply from change ", reply);
+        }
+      });
     }
   }
 
@@ -514,16 +521,6 @@ class VertxAppProtoStub {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
 
-        let changesAddress = obj.url + "/changes";
-        _this._bus.addListener(changesAddress, (event) => {
-          console.log('[VertxAppProtoStub] new change ', event);
-          _this._eb.publish(event.to, event.body.value, function (reply_err, reply) {
-            if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply from change ", reply);
-            }
-          });
-
-        });
         /*
         obj.onChange('*', (event) => {
           console.log('[VertxAppProtoStub] onChange :', event);
