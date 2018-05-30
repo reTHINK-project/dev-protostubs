@@ -60,6 +60,7 @@ class VertxAppProtoStub {
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
     this._walletReporterDataObject = null;
+    this._alreadyListening = [];
 
 
 
@@ -249,6 +250,7 @@ class VertxAppProtoStub {
               });
             } else {
               let changesAddress = result.url + "/changes";
+              _this._alreadyListening.push(changesAddress);
               _this._bus.addListener(changesAddress, (event) => {
                 _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
                   if (reply_err == null) {
@@ -307,7 +309,7 @@ class VertxAppProtoStub {
       };
       _this._bus.postMessage(msgResponse);
 
-    } else if (msg.to.includes('/changes')) {
+    } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
       console.log('[VertxAppProtoStub] new change ', msg);
       _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
         if (reply_err == null) {
@@ -528,7 +530,7 @@ class VertxAppProtoStub {
           let changesAddress = obj.url + "/changes";
           _this._eb.publish(changesAddress, event.data, function (reply_err, reply) {
             if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply from change ", reply);
+              console.log("[VertxAppProtoStub] Received reply from change ",c reply);
             }
           });
         });*/
