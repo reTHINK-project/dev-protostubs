@@ -206,7 +206,7 @@ class VertxAppProtoStub {
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
         //debugger;
-        console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
+        console.log('[VertxAppProtoStub]  New Read Message', _this._dataStreamData, JSON.stringify(_this._dataStreamData[msg.to]));
         let responseMsg = {
           from: msg.to,
           to: msg.from,
@@ -214,6 +214,7 @@ class VertxAppProtoStub {
           type: 'response'
         };
         responseMsg.body = {};
+
         responseMsg.body.value = _this._dataStreamData[msg.to];
         responseMsg.body.code = 200;
         _this._bus.postMessage(responseMsg);
