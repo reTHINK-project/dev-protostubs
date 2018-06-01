@@ -215,8 +215,8 @@ class VertxAppProtoStub {
         };
         responseMsg.body = {};
 
-        //responseMsg.body.value = JSON.parse(JSON.stringify(_this._dataStreamData[msg.to]));
-        responseMsg.body.value = _this._dataStreamData[msg.to];
+        responseMsg.body.value = JSON.parse(JSON.stringify(_this._dataStreamData[msg.to]));
+        //responseMsg.body.value = _this._dataStreamData[msg.to];
         responseMsg.body.code = 200;
         _this._bus.postMessage(responseMsg);
       }
