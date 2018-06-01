@@ -201,7 +201,7 @@ class VertxAppProtoStub {
   _SubscriptionManager(msg) {
     console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
-    if (msg.body.hasOwnProperty('type')) {
+    if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('type')) {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
