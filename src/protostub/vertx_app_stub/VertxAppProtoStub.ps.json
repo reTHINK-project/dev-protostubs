@@ -9,6 +9,12 @@
     "domain": "localhost",
     "streams": [
       {
+        "stream": "data://sharing-cities-dsm/bonus",
+        "resources": ["resources"],
+        "id": "bonus-data",
+        "name": "bonus-data DSM"
+      },
+      {
         "stream": "data://sharing-cities-dsm/shops",
         "resources": ["resources"],
         "id": "shops-data",
