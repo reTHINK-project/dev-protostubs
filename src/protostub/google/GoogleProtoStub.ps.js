@@ -213,6 +213,7 @@ class GoogleProtoStub {
     const endDate = new Date();
     const endTime = endDate.toISOString();
     const endTimeMillis = endDate.getTime();
+    const startTimeMillis = new Date(startTime).getTime();
 
     // make request
     var xhr = new XMLHttpRequest();
@@ -232,10 +233,10 @@ class GoogleProtoStub {
           const currentSession = response.session[index];
           const activityType = currentSession["activityType"];
           const start = currentSession["startTimeMillis"];
-          const end = currentSession["endTimeMillis"];
-          const modified = currentSession["modifiedTimeMillis"];
+          const end = Number(currentSession["endTimeMillis"]);
+          // const modified = currentSession["modifiedTimeMillis"];
 
-          if (end > endTimeMillis) {
+          if (end < endTimeMillis && end > startTimeMillis) {
             // get distance for session
             _this.getDistanceForActivity(start, end).then(distance => {
               const startISO = new Date(Number(start)).toISOString();
