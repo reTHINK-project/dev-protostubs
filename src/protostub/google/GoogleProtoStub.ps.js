@@ -68,13 +68,26 @@ class GoogleProtoStub {
         _this._identity = msg.identity;
       }
 
-      if (msg.body.identity) {
+      if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
         if (msg.body.identity.accessToken) {
           _this._accessToken = msg.body.identity.accessToken;
+          // reply to hyperty
+          let msgResponse = {
+            id: msg.id,
+            type: 'response',
+            from: msg.to,
+            to: msg.from,
+            body: {
+              code: 200
+            }
+          };
+          _this._bus.postMessage(msgResponse);
         }
         // get JS hyperty
         _this.hypertyJSUrl = msg.from;
       }
+
+
 
       const objectSchema = "hyperty-catalogue://catalogue." + _this._domain + "/.well-known/dataschema/Context";
       const initialData = {
@@ -99,13 +112,11 @@ class GoogleProtoStub {
         ]
       };
 
-
-
-      if (_this._identity.userProfile && _this._accessToken && !_this.started) {
-        _this._resumeReporters(dataObjectName, _this._identity.userProfile.userURL).then(function (reporter) {
+      if (_this._accessToken && !_this.started) {
+        _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
           if (reporter == false) {
-            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, _this._userURL)
+            _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
                 if (reporter) {
                   _this.startWorking(reporter);
@@ -129,19 +140,20 @@ class GoogleProtoStub {
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
     setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
-      _this.querySessions(_this._accessToken, _this._identity.userProfile.userURL, startTime, lastModified);
+      _this.querySessions(_this._accessToken, startTime, lastModified);
     }, _this.config.sessions_query_interval);
 
     _this.started = true;
   }
 
-  _setUpReporter(identity, objectDescURL, data, resources, name, reuseURL) {
+  _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
+
     let _this = this;
     return new Promise(function (resolve, reject) {
       let input = {
         resources: resources,
         expires: 3600,
-        reporter: identity.userProfile.userURL
+        reporter: reporterURL
       };
 
       _this._syncher
@@ -192,7 +204,7 @@ class GoogleProtoStub {
     });
   }
 
-  querySessions(token, userURL, startTime, lastModified) {
+  querySessions(token, startTime, lastModified) {
     let _this = this;
     if (startTime !== lastModified) {
       startTime = lastModified;
@@ -201,6 +213,7 @@ class GoogleProtoStub {
     const endDate = new Date();
     const endTime = endDate.toISOString();
     const endTimeMillis = endDate.getTime();
+    const startTimeMillis = new Date(startTime).getTime();
 
     // make request
     var xhr = new XMLHttpRequest();
@@ -220,10 +233,10 @@ class GoogleProtoStub {
           const currentSession = response.session[index];
           const activityType = currentSession["activityType"];
           const start = currentSession["startTimeMillis"];
-          const end = currentSession["endTimeMillis"];
-          const modified = currentSession["modifiedTimeMillis"];
+          const end = Number(currentSession["endTimeMillis"]);
+          // const modified = currentSession["modifiedTimeMillis"];
 
-          if (end > endTimeMillis) {
+          if (end < endTimeMillis && end > startTimeMillis) {
             // get distance for session
             _this.getDistanceForActivity(start, end).then(distance => {
               const startISO = new Date(Number(start)).toISOString();

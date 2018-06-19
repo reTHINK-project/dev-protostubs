@@ -60,6 +60,7 @@ class VertxAppProtoStub {
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
     this._walletReporterDataObject = null;
+    this._alreadyListening = [];
 
 
 
@@ -200,12 +201,12 @@ class VertxAppProtoStub {
   _SubscriptionManager(msg) {
     console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
-    if (msg.body.hasOwnProperty('type')) {
+    if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('type')) {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
         //debugger;
-        console.log('[VertxAppProtoStub]  New Read Message', msg.body.type);
+        console.log('[VertxAppProtoStub]  New Read Message', _this._dataStreamData, JSON.stringify(_this._dataStreamData[msg.to]));
         let responseMsg = {
           from: msg.to,
           to: msg.from,
@@ -213,7 +214,9 @@ class VertxAppProtoStub {
           type: 'response'
         };
         responseMsg.body = {};
-        responseMsg.body.value = _this._dataStreamData[msg.to];
+
+        responseMsg.body.value = JSON.parse(JSON.stringify(_this._dataStreamData[msg.to]));
+        //responseMsg.body.value = _this._dataStreamData[msg.to];
         responseMsg.body.code = 200;
         _this._bus.postMessage(responseMsg);
       }
@@ -249,6 +252,7 @@ class VertxAppProtoStub {
               });
             } else {
               let changesAddress = result.url + "/changes";
+              _this._alreadyListening.push(changesAddress);
               _this._bus.addListener(changesAddress, (event) => {
                 _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
                   if (reply_err == null) {
@@ -279,8 +283,10 @@ class VertxAppProtoStub {
 
       //Message to invite Vertx to Subscribe a Reporter
       let userURL;
+      let guid;
       if (msg.body.identity) {
         userURL = msg.body.identity.userProfile.userURL;
+        guid = msg.body.identity.userProfile.guid;
       }
       else {
         userURL = msg.body.value.reporter;
@@ -289,7 +295,7 @@ class VertxAppProtoStub {
         type: 'create',
         from: msg.from,
         to: msg.to,
-        identity: { userProfile: { userURL: userURL } }
+        identity: { userProfile: { userURL: userURL, guid: guid } }
       }
       //Invite Vertx to subscribe...
       _this._eb.publish(msg.to, inviteMessage);
@@ -305,6 +311,13 @@ class VertxAppProtoStub {
       };
       _this._bus.postMessage(msgResponse);
 
+    } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
+      console.log('[VertxAppProtoStub] new change ', msg);
+      _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
+        if (reply_err == null) {
+          console.log("[VertxAppProtoStub] Received reply from change ", reply);
+        }
+      });
     }
   }
 
@@ -512,16 +525,6 @@ class VertxAppProtoStub {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
 
-        let changesAddress = obj.url + "/changes";
-        _this._bus.addListener(changesAddress, (event) => {
-          console.log('[VertxAppProtoStub] new change ', event);
-          _this._eb.publish(event.to, event.body.value, function (reply_err, reply) {
-            if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply from change ", reply);
-            }
-          });
-
-        });
         /*
         obj.onChange('*', (event) => {
           console.log('[VertxAppProtoStub] onChange :', event);
@@ -529,7 +532,7 @@ class VertxAppProtoStub {
           let changesAddress = obj.url + "/changes";
           _this._eb.publish(changesAddress, event.data, function (reply_err, reply) {
             if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply from change ", reply);
+              console.log("[VertxAppProtoStub] Received reply from change ",c reply);
             }
           });
         });*/
