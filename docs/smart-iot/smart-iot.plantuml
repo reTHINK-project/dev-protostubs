@@ -1,8 +1,8 @@
 @startuml
-
+autonumber 
 participant App
 participant VertxHyperty
-participant JavaVertxProtostub
+participant SmartIotProtostub
 participant SmartIot
 participant Gateway
 participant Device
@@ -10,55 +10,61 @@ participant Stream
 
 == Setup ==
 
-SmartIot <- JavaVertxProtostub : Authentication
+SmartIot <- SmartIotProtostub : Authentication
 
-SmartIot --> JavaVertxProtostub : Access Token
+SmartIot --> SmartIotProtostub : Access Token
 
-SmartIot <- JavaVertxProtostub : Register App
+SmartIot <- SmartIotProtostub : Register App
 
-SmartIot --> JavaVertxProtostub : App Secret
+SmartIot --> SmartIotProtostub : App Secret
 
 == new device created representing new user ==
 
-App -> JavaVertxProtostub : create newUser(userId, token)
+App -> SmartIotProtostub : create newUser(CGUID)
 
-SmartIot <- JavaVertxProtostub : newDevice( userId@3ptyID)
+SmartIot <- SmartIotProtostub : POST /api/devices {name: <CGUID>}
 
 create Device
 SmartIot -> Device : new
 
-SmartIot --> JavaVertxProtostub : newDeviceID
+SmartIot --> SmartIotProtostub : POST RESPONSE 200 OK (newDeviceID)
+
+App <-- SmartIotProtostub : response 200 OK
 
 == new stream created when user authorises access to data from new 3rd party platform ==
 
-App -> JavaVertxProtostub : create newStrean(3ptyID, userId, token)
+App -> SmartIotProtostub : create newStream(CGUID, 3ptyPlataformID, 3ptyUserId)
 
-SmartIot <- JavaVertxProtostub : newStream( userId, newDeviceID)
-
-
+SmartIot <- SmartIotProtostub : PUT /api/devices/:<newDeviceID>/streams/:<3ptyUserId> 
 
 create Stream
 SmartIot -> Stream : new
 
-SmartIot --> JavaVertxProtostub : newStreamID
+SmartIot --> SmartIotProtostub : PUT RESPONSE 204 OK
 
-VertxHyperty <- JavaVertxProtostub : invite
+VertxHyperty <- SmartIotProtostub : invite "context://<3pty-platform-domain>/<3ptyUserId>"
 
-VertxHyperty -> JavaVertxProtostub : subscribe
+VertxHyperty -> SmartIotProtostub : subscribe "context://edpdistribuicao.pt/<3ptyUserId>"
+
+App <-- SmartIotProtostub : response 200 OK
+
 
 == Ask GW to publish to new stream ==
 
-JavaVertxProtostub -> SmartIot : subscribe newStreamID (protostubEndPoint)
+SmartIotProtostub -> SmartIot : POST /api/subscriptions {device-id: <newDeviceID>, stream: <3ptyUserId>, point_of_contact = <protostubEndPoint>}
 
-JavaVertxProtostub -> Gateway : publishUserStream(newDeviceId, newStreamId, userId)
+SmartIotProtostub <-- SmartIot : POST 200 OK RESPONSE
 
+SmartIotProtostub -> Gateway : publishUserStream(newDeviceId, 3ptyUserId)
+
+SmartIotProtostub <-- Gateway : ok
 
 == Data publish ==
 
 Gateway -> Stream : write 3rd party data values
 
-Stream -> JavaVertxProtostub : post 3rd party data values
+Stream -> SmartIotProtostub : post 3rd party data values
 
-VertxHyperty <-- JavaVertxProtostub : stream 3rd party data values
+VertxHyperty <-- SmartIotProtostub : stream 3rd party data values
 
 @enduml
