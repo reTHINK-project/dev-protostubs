@@ -6,6 +6,6 @@
   "constraints": {
     "browser": true
   },
-  "interworking": false,
+  "interworking": true,
   "objectName": "google.com"
 }

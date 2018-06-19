@@ -1,3 +1,4 @@
+// import {getExpires} from './OAUTH';
 
 let identities = {};
 let nIdentity = 0;
@@ -10,7 +11,17 @@ let accessTokenEndpoint;
 let domain;
 let accessTokenAuthorisationEndpoint;
 
+export let getExpires = (function (url) {
+  let expires = urlParser(url, 'expires_in');
 
+  if (expires) expires = expires + Math.floor(Date.now() / 1000);
+  else expires = 3153600000 + Math.floor(Date.now() / 1000);
+
+  return Number(expires);
+
+});
+
+ 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
   name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]');
@@ -342,12 +353,13 @@ export let IdpProxy = {
     console.log('[OIDC.getAccessTokenAuthorisationEndpoint:resources]', resources);
 //    let i = idpInfo;
     accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
+    const mapping = config.mapping;
 
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
-
-        resolve( accessTokenAuthorisationEndpoint(resources));
+      // TODO replace by resources[0]
+      resolve(accessTokenAuthorisationEndpoint(mapping(resources)));
 
     }, function (e) {
 

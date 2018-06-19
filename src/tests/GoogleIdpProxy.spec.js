@@ -23,6 +23,7 @@ let idmURL = 'runtime://test.com/123/idm';
 let contents = 'BASE64_CONTENT';
 let origin = 'localhost:8080';
 let loginUrl;
+let resources = ['activity_context'];
 
 let generateAssertionMessage = {
   type: 'execute',
@@ -44,6 +45,8 @@ let validateAssertionMessage = {
     method: 'validateAssertion',
     params: { origin: origin }
   }
+}
+
   let getAccessTokenAuthorisationEndpointMessage = {
     type: 'execute',
     to: idpProxyUrl,
@@ -82,7 +85,7 @@ let idpProxy = new GoogleIdpProxyProtoStub(idpProxyUrl, bus, {});
 
 describe('IdP Proxy test', function() {
 
-  it('get login url', function(done) {
+  it.skip('get login url', function(done) {
     bus.postMessage( generateAssertionMessage, (reply)=> {
       console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
       expect(reply.body.value).to.have.keys('name', 'loginUrl');
@@ -94,7 +97,7 @@ describe('IdP Proxy test', function() {
   });
 
 
-  it('generate Assertion', function(done) {
+  it.skip('generate Assertion', function(done) {
     this.timeout(10000);
 
     // replace window.open to get reference to opened windows
@@ -155,7 +158,7 @@ describe('IdP Proxy test', function() {
 
   });
 
-  it('validate Assertion', function(done) {
+  it.skip('validate Assertion', function(done) {
     validateAssertionMessage.body.params.assertion = assertion;
 
     bus.postMessage( validateAssertionMessage, (reply)=> {
@@ -176,8 +179,17 @@ describe('IdP Proxy test', function() {
     });
   });
 
-  it.('get Access Token', function (done) {
-    this.timeout(10000);
+  it('get Access Token', function (done) {
+    this.timeout(20000);
+
+    // replace window.open to get reference to opened windows
+    var windows = [];
+    var winOpen = window.open;
+    window.open = function () {
+      var win = winOpen.apply(this, arguments);
+      windows.push(win);
+      return win;
+    };
 
     login(loginUrl)
       .then(result => {
@@ -194,6 +206,39 @@ describe('IdP Proxy test', function() {
         })
 
       })
+
+      /*
+    // wait some time
+    setTimeout(function () {
+      if (windows.length > 0) {
+        // access window
+        var w = windows[0];
+        // email
+        const email = "openidtest10@gmail.com";
+        const pass = "testOpenID10";
+        // mail
+        $("#identifierId", w.document.body).val(email);
+        // next btn
+        $("#identifierNext", w.document.body).click();
+        setTimeout(function () {
+          if (windows.length > 0) {
+            // access window
+            var w = windows[0];
+            // email
+            const email = "openidtest10@gmail.com";
+            const pass = "testOpenID10";
+
+            // password
+            $("input[name='password']", w.document.body).val(pass);
+            // submit login
+            $("#passwordNext", w.document.body).click();
+          }
+
+        }, 2000);
+      }
+
+    }, 3000);
+    */
 
   });
 

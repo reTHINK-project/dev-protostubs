@@ -3,11 +3,12 @@
   "description": "Protostub of Google",
   "signature": "",
   "configuration": {
-    "url": "myurl"
+    "sessions_query_interval": 60000,
+    "domain": "localhost"
   },
   "constraints": {
     "browser": true
   },
   "interworking": true,
-  "objectName": "google.com"
+  "objectName": "fitness.google.com"
 }
