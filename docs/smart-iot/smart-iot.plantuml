@@ -1,0 +1,64 @@
+@startuml
+
+participant App
+participant VertxHyperty
+participant JavaVertxProtostub
+participant SmartIot
+participant Gateway
+participant Device
+participant Stream
+
+== Setup ==
+
+SmartIot <- JavaVertxProtostub : Authentication
+
+SmartIot --> JavaVertxProtostub : Access Token
+
+SmartIot <- JavaVertxProtostub : Register App
+
+SmartIot --> JavaVertxProtostub : App Secret
+
+== new device created representing new user ==
+
+App -> JavaVertxProtostub : create newUser(userId, token)
+
+SmartIot <- JavaVertxProtostub : newDevice( userId@3ptyID)
+
+create Device
+SmartIot -> Device : new
+
+SmartIot --> JavaVertxProtostub : newDeviceID
+
+== new stream created when user authorises access to data from new 3rd party platform ==
+
+App -> JavaVertxProtostub : create newStrean(3ptyID, userId, token)
+
+SmartIot <- JavaVertxProtostub : newStream( userId, newDeviceID)
+
+
+
+create Stream
+SmartIot -> Stream : new
+
+SmartIot --> JavaVertxProtostub : newStreamID
+
+VertxHyperty <- JavaVertxProtostub : invite
+
+VertxHyperty -> JavaVertxProtostub : subscribe
+
+== Ask GW to publish to new stream ==
+
+JavaVertxProtostub -> SmartIot : subscribe newStreamID (protostubEndPoint)
+
+JavaVertxProtostub -> Gateway : publishUserStream(newDeviceId, newStreamId, userId)
+
+
+== Data publish ==
+
+Gateway -> Stream : write 3rd party data values
+
+Stream -> JavaVertxProtostub : post 3rd party data values
+
+VertxHyperty <-- JavaVertxProtostub : stream 3rd party data values
+
+@enduml
