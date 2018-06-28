@@ -23,7 +23,7 @@
 import EventBus from 'vertx3-eventbus-client';
 import { WalletReporter } from 'service-framework/dist/WalletManager';
 import { Syncher } from 'service-framework/dist/Syncher';
-import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
+
 
 class VertxAppProtoStub {
   /**
@@ -222,7 +222,11 @@ class VertxAppProtoStub {
       }
 
       if (msg.body.type === 'create') {
-        _this.createWallet(msg);
+        if (msg.body.resource == 'wallet') {
+          _this.createWallet(msg);
+        } else {
+          _this.smartIotIntegration(msg);
+        }
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
@@ -319,6 +323,79 @@ class VertxAppProtoStub {
         }
       });
     }
+  }
+
+  smartIotIntegration(msg){
+
+    let _this = this;
+    const smartIotStubAddress = msg.to;
+
+    msg.type = msg.body.type;
+    delete msg.body.from;
+    delete msg.body.type;
+
+
+    _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] smartIot Integration', reply,reply_err);
+      if (reply_err == null) {
+
+        if (msg.body.resource == 'device') {
+          let responseMsg = {
+            id: msg.id,
+            type: 'response',
+            from: msg.to,
+            to: msg.from,
+            body: reply.body.body
+          };
+          console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+          _this._bus.postMessage(responseMsg);
+        } else if (msg.body.resource == 'stream') {
+
+          if (reply.body.body.code == 200) {
+            let objUrl = 'context://sharing-cities-dsm/' + msg.body.platformID + '/' + msg.body.platformUID;
+            let schemaURL = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
+            let onChangesObjURL = objUrl + '/changes';
+
+            //TODO: we should save reporter->url? to associate it??!
+            _this._eb.registerHandler(onChangesObjURL, function (error, message) {
+              debugger;
+              console.log('[VertxAppProtoStub] received a new change: ', JSON.stringify(message));
+              //TODO new data on reporter,, to update?
+            });
+
+
+          _this._resumeReporters(objUrl, msg.identity.userProfile.userURL).then(function (reporterResumed) {
+
+            if (reporterResumed != false) {
+              reporterResumed.onSubscription(function (event) {
+                event.accept();
+                console.log('[VertxAppProtoStub] new subs', event);
+              });
+            } else {
+              _this._setUpReporter(msg.identity.userProfile.userURL, schemaURL, {}, ['smartiot_context'], objUrl, objUrl, false).then(function (result) {
+                result.onSubscription(function (event) {
+                  event.accept();
+                  console.log('[VertxAppProtoStub] new subs', event);
+                });
+
+              }).catch(function (result) {
+                debugger;
+              });
+            }
+
+          }).catch(function (error) {
+            debugger;
+          });
+
+          }
+        }
+      } else {
+      console.log('[VertxAppProtoStub] no reply', msg);
+
+    }
+    });
+
+
   }
 
   _configAvailableStreams() {
@@ -524,18 +601,6 @@ class VertxAppProtoStub {
       _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function (obj) {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
-
-        /*
-        obj.onChange('*', (event) => {
-          console.log('[VertxAppProtoStub] onChange :', event);
-          //debugger;
-          let changesAddress = obj.url + "/changes";
-          _this._eb.publish(changesAddress, event.data, function (reply_err, reply) {
-            if (reply_err == null) {
-              console.log("[VertxAppProtoStub] Received reply from change ",c reply);
-            }
-          });
-        });*/
       }).catch(function (error) {
         resolve(false);
         console.log('[VertxAppProtoStub] error', error);

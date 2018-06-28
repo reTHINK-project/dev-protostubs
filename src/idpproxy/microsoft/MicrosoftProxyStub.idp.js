@@ -1,9 +1,9 @@
 let microsoftInfo = {
-  clientID:              '7e2f3589-4b38-4b1c-a321-c9251de00ef2',
+  clientID:              '000000004C18391F',
   redirectURI:           location.origin,
-  tokenEndpoint:         'https://login.windows.net/common/oauth2/authorize?',
-  type:                  'id_token',
-  scope:                 'openid',
+  tokenEndpoint:         'https://login.live.com/oauth20_authorize.srf?',
+  type:                  'token',
+  scope:                 'wl.signin,wl.basic',
   mode:                  'fragment'
 };
 
