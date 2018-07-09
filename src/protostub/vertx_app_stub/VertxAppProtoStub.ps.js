@@ -241,7 +241,7 @@ class VertxAppProtoStub {
                 _this._publicWalletsReporterDataObject.data.wallets = reply2.body.wallet.wallets;
                 _this._eb.registerHandler('wallet://public-wallets/changes', function (error, message) {
                   console.log('[VertxAppProtoStub]  new change on wallet', message);
-
+                  _this._publicWalletsReporterDataObject.data.wallets = message.body.body.wallets;
                 });
 
                 console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
