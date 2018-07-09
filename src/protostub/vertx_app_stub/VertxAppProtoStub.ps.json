@@ -27,7 +27,15 @@
         "name": "elearning-data DSM"
       }
 
-    ]
+    ],
+    "publicWallets" : {
+        "identity": {
+          "userProfile": {
+            "guid": "user-guid://public-wallets",
+            "userURL": "user://public-wallets"
+          }
+        }
+      }
   },
   "constraints": {
     "browser": true

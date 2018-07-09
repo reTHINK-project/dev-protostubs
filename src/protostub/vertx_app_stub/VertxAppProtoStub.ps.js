@@ -52,6 +52,7 @@ class VertxAppProtoStub {
     this._config = config;
     this._domain = config.domain;
     this._streams = config.streams;
+    this._publicWallets = config.publicWallets;
 
     this._runtimeSessionURL = config.runtimeURL;
 
@@ -60,7 +61,9 @@ class VertxAppProtoStub {
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
     this._eb = null;
     this._walletReporterDataObject = null;
+    this._publicWalletsReporterDataObject = null;
     this._alreadyListening = [];
+    this._dataObjectsURL = {};
 
 
 
@@ -160,6 +163,7 @@ class VertxAppProtoStub {
             reply.reply(responseMsg, function (reply_err, reply2) {
 
               // 4 - send reply back to the JS wallet hyperty
+              console.log
               let responseMsg = {
                 id: msg.id,
                 type: 'response',
@@ -168,7 +172,8 @@ class VertxAppProtoStub {
                 body: {
                   wallet: reply2.body.wallet,
                   code: 200,
-                  reporter_url: result.url
+                  reporter_url: result.url,
+                  publics_url: _this._publicWalletsReporterDataObject.url
                 }
               };
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
@@ -197,6 +202,63 @@ class VertxAppProtoStub {
       }
     });
   }
+
+
+  createWalletPub(msg) {
+    let _this = this;
+
+    return new Promise(function (resolve) {
+
+      const walletManagerAddress = msg.to;
+      // 1 - send to wallet manager (request to create wallet)
+      let hypertyURL = msg.from;
+      msg.type = msg.body.type;
+      msg.from = hypertyURL;
+      delete msg.body;
+
+      _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
+
+        if (reply_err == null) {
+          //  2 - call create() method on reporter (send as reply)
+          console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
+
+          _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { wallets: [] }, ['wallet'], reply.body.identity.userProfile.userURL, null, true, true).then(function (result) {
+
+            if (result != null) {
+
+              // TODO 3 - send 200 OK to wallet manager
+              let responseMsg = {};
+              responseMsg.body = {};
+              responseMsg.body.value = result.data;
+              responseMsg.body.code = 200;
+
+              reply.reply(responseMsg, function (reply_err, reply2) {
+
+                // 4 - send reply back to the JS wallet hyperty
+
+                console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
+
+                _this._publicWalletsReporterDataObject.data.wallets = reply2.body.wallet.wallets;
+                _this._eb.registerHandler('wallet://public-wallets/changes', function (error, message) {
+                  console.log('[VertxAppProtoStub]  new change on wallet', message);
+
+                });
+
+                console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+                resolve(true);
+
+              });
+            }
+          }).catch(function (result) {
+            //debugger;
+          });
+        }
+      });
+
+    });
+
+  }
+
 
   _SubscriptionManager(msg) {
     console.log('[VertxAppProtoStub] handling messages', msg);
@@ -227,6 +289,8 @@ class VertxAppProtoStub {
         } else {
           _this.smartIotIntegration(msg);
         }
+      } else if(msg.body.type === 'delete') {
+        _this.smartIotIntegration(msg);
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
@@ -334,21 +398,15 @@ class VertxAppProtoStub {
     delete msg.body.from;
     delete msg.body.type;
 
-
     _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
       console.log('[VertxAppProtoStub] smartIot Integration', reply,reply_err);
       if (reply_err == null) {
 
+
+        _this._sendReplyMsg(msg,reply.body.body);
+        /*
         if (msg.body.resource == 'device') {
-          let responseMsg = {
-            id: msg.id,
-            type: 'response',
-            from: msg.to,
-            to: msg.from,
-            body: reply.body.body
-          };
-          console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
-          _this._bus.postMessage(responseMsg);
+          _this._sendReplyMsg(msg,reply.body.body);
         } else if (msg.body.resource == 'stream') {
 
           if (reply.body.body.code == 200) {
@@ -358,30 +416,39 @@ class VertxAppProtoStub {
 
             //TODO: we should save reporter->url? to associate it??!
             _this._eb.registerHandler(onChangesObjURL, function (error, message) {
-              debugger;
-              console.log('[VertxAppProtoStub] received a new change: ', JSON.stringify(message));
+              console.log('[VertxAppProtoStub] received a new change: ', JSON.stringify(message), _this._dataObjectsURL);
               //TODO new data on reporter,, to update?
             });
 
 
           _this._resumeReporters(objUrl, msg.identity.userProfile.userURL).then(function (reporterResumed) {
-
+            console.log('[VertxAppProtoStub] reporter resumed', reporterResumed );
             if (reporterResumed != false) {
+
+              _this._dataObjectsURL[reporterResumed.url] = reporterResumed;
+
+
+
               reporterResumed.onSubscription(function (event) {
                 event.accept();
                 console.log('[VertxAppProtoStub] new subs', event);
               });
+              _this._sendReplyMsg(msg,reply.body.body);
             } else {
               _this._setUpReporter(msg.identity.userProfile.userURL, schemaURL, {}, ['smartiot_context'], objUrl, objUrl, false).then(function (result) {
+                _this._dataObjectsURL[result.url] = result;
                 result.onSubscription(function (event) {
                   event.accept();
                   console.log('[VertxAppProtoStub] new subs', event);
                 });
+                _this._sendReplyMsg(msg,reply.body.body);
 
               }).catch(function (result) {
                 debugger;
               });
             }
+
+
 
           }).catch(function (error) {
             debugger;
@@ -389,6 +456,7 @@ class VertxAppProtoStub {
 
           }
         }
+        */
       } else {
       console.log('[VertxAppProtoStub] no reply', msg);
 
@@ -396,6 +464,19 @@ class VertxAppProtoStub {
     });
 
 
+  }
+  _sendReplyMsg(msg,body) {
+    let _this = this;
+
+    let responseMsg = {
+      id: msg.id,
+      type: 'response',
+      from: msg.to,
+      to: msg.from,
+      body: body
+    };
+    console.log('[VertxAppProtoStub] sending reply back to Device Manager', responseMsg);
+    _this._bus.postMessage(responseMsg);
   }
 
   _configAvailableStreams() {
@@ -458,6 +539,39 @@ class VertxAppProtoStub {
 
     });
 
+  }
+
+  _setUpPublicWallets() {
+    let _this = this;
+    return new Promise(function (resolve) {
+
+      let createPub = {
+	       type: 'create',
+         to: 'hyperty://sharing-cities-dsm/wallet-manager',
+         from: _this._runtimeSessionURL,
+         identity: _this._publicWallets
+       }
+
+       _this._eb.send('hyperty://sharing-cities-dsm/wallet-manager', createPub, function (reply_err, reply) {
+         if (reply_err == null) {
+
+           console.log("[VertxAppProtoStub] Received reply public wallets", reply);
+
+           let responseMsg = {};
+           responseMsg.body = {};
+           responseMsg.body.value = {};
+           responseMsg.body.code = 200;
+
+           reply.reply(responseMsg, function (reply_err, reply2) {
+
+             console.log("[VertxAppProtoStub] Received reply2 public wallets", reply);
+
+           });
+           resolve();
+         }
+       });
+
+    });
   }
 
   _resumeReporters(name, reporterURL) {
@@ -528,7 +642,7 @@ class VertxAppProtoStub {
     return 'context://' + _this._config.host + '/' + ID + '/' + stream.id;
   }
 
-  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL, createWallet = false) {
+  _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL, createWallet = false, isPubWallet = false) {
     let _this = this;
     return new Promise(function (resolve, reject) {
 
@@ -560,7 +674,14 @@ class VertxAppProtoStub {
           //debugger;
           console.log('[VertxAppProtoStub._setUpReporter] Wallet resumed', wallet);
           if (wallet != false) {
-            _this._walletReporterDataObject = wallet;
+
+            if (isPubWallet) {
+              _this._publicWalletsReporterDataObject = wallet;
+            } else {
+              _this._walletReporterDataObject = wallet;
+            }
+
+
             wallet.onSubscription(function (event) {
               event.accept();
               console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
@@ -571,7 +692,11 @@ class VertxAppProtoStub {
             _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
-              _this._walletReporterDataObject = wallet;
+              if (isPubWallet) {
+                _this._publicWalletsReporterDataObject = wallet;
+              } else {
+                _this._walletReporterDataObject = wallet;
+              }
 
 
               wallet.onSubscription(function (event) {
@@ -621,8 +746,26 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
-              clearTimeout(timer1);
-              resolve(true);
+
+              let toCreatePub = {
+              	       type: 'create',
+                       to: 'hyperty://sharing-cities-dsm/wallet-manager',
+                       from: _this._runtimeSessionURL,
+                       identity: _this._publicWallets.identity,
+                       body: {type: 'create'}
+                     }
+              _this.createWalletPub(toCreatePub).then(function () {
+                clearTimeout(timer1);
+                resolve(true);
+              });
+              /*
+              _this._setUpPublicWallets().then(function (result) {
+
+              }).catch(function (error) {
+
+              });*/
+
+
             });
           }
         }
