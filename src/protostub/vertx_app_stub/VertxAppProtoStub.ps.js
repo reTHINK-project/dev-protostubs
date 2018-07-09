@@ -178,17 +178,34 @@ class VertxAppProtoStub {
               };
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
-              _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
-              let transactions = JSON.stringify(reply2.body.wallet.transactions);
-              _this._walletReporterDataObject.data.transactions = JSON.parse(transactions);
-              let addressChanges = reply2.body.wallet.address + '/changes';
+              // handle public wallets
+              if (reply2.body.wallet.address === 'public-wallets')
+              {
+                console.log('[VertxAppProtoStub]  setting up reporter for public wallets');
+                let wallets = JSON.stringify(reply2.body.wallet.wallets);
+                _this._walletReporterDataObject.data.wallets = JSON.parse(wallets);
+                let addressChanges = reply2.body.wallet.address + '/changes';
+
+                console.log('[VertxAppProtoStub] public wallets: listening to ', addressChanges);
+
+                _this._eb.registerHandler(addressChanges, function (error, message) {
+                  console.log('[VertxAppProtoStub]  new change on public wallets', message);
+                  _this._walletReporterDataObject.data.wallets = message.body.body.wallets;
+                });
+              }
+              else{
+                _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
+                let transactions = JSON.stringify(reply2.body.wallet.transactions);
+                _this._walletReporterDataObject.data.transactions = JSON.parse(transactions);
+                let addressChanges = reply2.body.wallet.address + '/changes';
 
 
-              _this._eb.registerHandler(addressChanges, function (error, message) {
-                console.log('[VertxAppProtoStub]  new change on wallet', message);
-                _this._walletReporterDataObject.data.balance = message.body.body.balance;
-                _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
-              });
+                _this._eb.registerHandler(addressChanges, function (error, message) {
+                  console.log('[VertxAppProtoStub]  new change on wallet', message);
+                  _this._walletReporterDataObject.data.balance = message.body.body.balance;
+                  _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
+                });
+              }
 
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
 
