@@ -44,7 +44,10 @@ class VertxAppProtoStub {
     //https://vertx-runtime.hysmart.rethink.ptinovacao.pt/eventbus
 
     let _this = this;
-    console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB", _this);
+    console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB", _this, EventBus);
+
+    console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB eb", EventBus);
+
     this._id = 0;
 
     this._runtimeProtoStubURL = runtimeProtoStubURL;
@@ -110,6 +113,8 @@ class VertxAppProtoStub {
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
+        let test = _this._eb.enableReconnect(true);
+        console.log('[VertxAppProtoStub]',  test);
         _this._eventBusUsage().then(function (result) {
           console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
           if (result) {
@@ -132,6 +137,7 @@ class VertxAppProtoStub {
       }
 
     });
+
   }
 
   createWallet(msg) {
@@ -738,7 +744,7 @@ class VertxAppProtoStub {
     let _this = this;
 
     return new Promise(function (resolve, reject) {
-      console.log('[VertxAppProtoStub] waiting for eb Open', _this._eb);
+      console.log('[VertxAppProtoStub] waiting for eb Open state(',_this._eb.sockJSConn.readyState, ')', _this._eb);
 
       _this._eb.onopen = () => {
         console.log('[VertxAppProtoStub] _this._eb-> open');
