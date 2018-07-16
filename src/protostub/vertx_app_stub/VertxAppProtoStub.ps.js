@@ -651,7 +651,8 @@ class VertxAppProtoStub {
           resources: resources,
           expires: 3600,
           reporter: identityURL,
-          reuseURL: reuseURL
+          reuseURL: reuseURL,
+          domain_registration: false
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
@@ -689,7 +690,7 @@ class VertxAppProtoStub {
             resolve(wallet);
 
           } else {
-            _this._walletReporter.create(data, resources, name, identityURL, reuseURL).then(function (wallet) {
+            _this._walletReporter.create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
