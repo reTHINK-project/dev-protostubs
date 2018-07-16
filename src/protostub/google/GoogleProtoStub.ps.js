@@ -153,7 +153,8 @@ class GoogleProtoStub {
       let input = {
         resources: resources,
         expires: 3600,
-        reporter: reporterURL
+        reporter: reporterURL,
+        domain_registration: false
       };
 
       _this._syncher
