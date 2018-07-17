@@ -36,13 +36,14 @@ export let googleAPIInfo = {
   "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
   "userinfo": "https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
   "tokenInfo": "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=",
-  "accessType": "online",
-  "type": "token id_token",
+  "accessType": "offline",
+  "type": "code",
   // TODO - scope is read from message (support multiple Google APIs)
   "scope": "https://www.googleapis.com/auth/fitness.activity.read",
   "state": "state",
   "domain": "google.com",
-  'grant_type': 'authorization_code'
+  'grant_type': 'authorization_code',
+  'secret': "Xx4rKucb5ZYTaXlcZX9HLfZW"
 };
 
 
@@ -51,9 +52,10 @@ export function accessTokenEndpoint(code) {
 
   return googleAPIInfo.tokenEndpoint
     + 'client_id=' + googleAPIInfo.clientID
-    + '&response_type=' + code
-    + '&prompt=' + 'consent'
+    + '&code=' + code
+    + '&grant_type=authorization_code'
     + '&access_type=' + 'offline'
+    + '&client_secret=' + googleAPIInfo.secret
     + '&redirect_uri=' + redirectURI;
 }
 

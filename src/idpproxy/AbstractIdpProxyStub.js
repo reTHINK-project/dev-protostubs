@@ -91,6 +91,7 @@ class AbstractIdpProxyProtoStub {
         //     console.info('getAccessToken');
         IdpProxy.getAccessToken(_this.config, params.resources, params.login).then(
           function (value) {
+            console.info('OIDC.getAccessToken result: ', value);
             value.input = accessTokenInput(value.input);
             _this.replyMessage(msg, value);
           },

@@ -78,7 +78,8 @@ let getAccessTokenWithCodeToken = (function (resources, url) {
 
         if (info.hasOwnProperty('access_token')) {
           let expires = getExpires(info);
-          resolve (accessTokenResult(resources, info.access_token, expires, info));
+          let refresh = urlParser(info, 'refresh_token');
+          resolve (accessTokenResult(resources, info.access_token, expires, info, refresh));
         } else reject('[OIDC.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ', info);
       }, function (error) {
         reject(error);
@@ -370,9 +371,6 @@ export let IdpProxy = {
   /**
   * Function to get an Access Token
   *
-  * @param  {idpInfo}      Object information about IdP endpoints
-  * @param  {contents} The contents includes information about the identity received
-  * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
   * @param  {login} optional login result
   * @return {Promise} returns a promise with an identity assertion
   */
