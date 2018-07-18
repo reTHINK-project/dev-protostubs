@@ -183,10 +183,14 @@ class VertxAppProtoStub {
                 }
               };
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
+              if (reply2.body.wallet.balance != 0) {
+                let balance1 = JSON.parse(JSON.stringify(reply2.body.wallet.balance));
+                _this._walletReporterDataObject.data.balance = balance1;
+              }
 
-              _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
-              let transactions = JSON.stringify(reply2.body.wallet.transactions);
-              _this._walletReporterDataObject.data.transactions = JSON.parse(transactions);
+
+              let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
+                _this._walletReporterDataObject.data.transactions = transactions;
               let addressChanges = reply2.body.wallet.address + '/changes';
 
 
