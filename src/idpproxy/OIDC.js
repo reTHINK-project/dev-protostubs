@@ -76,7 +76,10 @@ let getAccessTokenWithCodeToken = (function (resources, url) {
 
       sendHTTPRequest('POST', accessTokenEndpoint(code)).then(function (info) {
 
+        console.info('[OIDC.getAccessTokenWithCodeToken] response: ', info);
+
         if (info.hasOwnProperty('access_token')) {
+
           let expires = getExpires(info);
           let refresh = urlParser(info, 'refresh_token');
           resolve (accessTokenResult(resources, info.access_token, expires, info, refresh));

@@ -42,7 +42,7 @@ export let googleAPIInfo = {
   "scope": "https://www.googleapis.com/auth/fitness.activity.read",
   "state": "state",
   "domain": "google.com",
-  'grant_type': 'authorization_code',
+  'grant_type': "authorization_code",
   'secret': "Xx4rKucb5ZYTaXlcZX9HLfZW"
 };
 
@@ -81,6 +81,8 @@ export function accessTokenAuthorisationEndpoint(API) {
     + '&client_id=' + googleAPIInfo.clientID
     + '&scope=' + 'https://www.googleapis.com/auth/' + API
     + '&access_type=' + googleAPIInfo.accessType
+//    + '&include_granted_scopes=true'
+//    + '&prompt=none'
     + '&state=' + googleAPIInfo.state;
   console.log('[GoogleFitness.accessTokenAuthorisationEndpoint] ', url);
   return url;
