@@ -99,6 +99,18 @@ class AbstractIdpProxyProtoStub {
           function (error) { _this.replyMessage(msg, error); }
         );
         break;
+      case 'refreshAccessToken':
+        //     console.info('getAccessToken');
+        IdpProxy.refreshAccessToken(_this.config, params.token).then(
+          function (value) {
+            console.info('OIDC.refreshAccessToken result: ', value);
+//            value.input = accessTokenInput(value.input);
+            _this.replyMessage(msg, value);
+          },
+
+          function (error) { _this.replyMessage(msg, error); }
+        );
+        break;
       default:
         break;
     }

@@ -59,6 +59,15 @@ export function accessTokenEndpoint(code) {
     + '&redirect_uri=' + redirectURI;
 }
 
+export function refreshAccessTokenEndpoint(refresh) {
+
+  return googleAPIInfo.tokenEndpoint
+    + 'client_id=' + googleAPIInfo.clientID
+    + '&refresh_token=' + refresh
+    + '&grant_type=refresh_token'
+    + '&client_secret=' + googleAPIInfo.secret
+}
+
 export function mapping(resource) {
   if (!resource) {
     return "fitness.activity.read";
@@ -105,7 +114,7 @@ export function accessTokenInput(info) {
 
   console.log('[GoogleFitness.getAccessTokenInput] from ', info);
 
-  return {};
+  return {info};
 }
 
 
