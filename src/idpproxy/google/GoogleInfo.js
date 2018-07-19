@@ -93,7 +93,7 @@ export function accessTokenAuthorisationEndpoint(API) {
 //    + '&include_granted_scopes=true'
 //    + '&prompt=none'
     + '&state=' + googleAPIInfo.state;
-  console.log('[GoogleFitness.accessTokenAuthorisationEndpoint] ', url);
+  console.log('[GoogleInfo.accessTokenAuthorisationEndpoint] ', url);
   return url;
 }
 
@@ -106,13 +106,11 @@ export function authorisationEndpoint(nonce) {
     + '&scope=' + googleAPIInfo.scope
     + '&access_type=' + googleAPIInfo.accessType
     + '&state=' + nonce;
-  console.log('[GoogleFitness.authorisationEndpoint] ', url);
+  console.log('[GoogleInfo.authorisationEndpoint] ', url);
   return url;
 }
 
 export function accessTokenInput(info) {
-
-  console.log('[GoogleFitness.getAccessTokenInput] from ', info);
 
   return {info};
 }
