@@ -5,11 +5,22 @@ let nIdentity = 0;
 let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' );
 
 
-let tokenEndpoint;
-let authorisationEndpoint;
+//let tokenEndpoint;
+//let authorisationEndpoint;
 let accessTokenEndpoint;
+let refreshAccessTokenEndpoint;
 let domain;
 let accessTokenAuthorisationEndpoint;
+
+export let getExpiresAtJSON = (function (json) {
+  let expires = json.hasOwnProperty('expires_in') ? json.expires_in : false
+
+  if (expires) expires = expires + Math.floor(Date.now() / 1000);
+  else expires = 3153600000 + Math.floor(Date.now() / 1000);
+
+  return Number(expires);
+
+});
 
 export let getExpires = (function (url) {
   let expires = urlParser(url, 'expires_in');
@@ -20,7 +31,6 @@ export let getExpires = (function (url) {
   return Number(expires);
 
 });
-
  
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -29,7 +39,7 @@ function urlParser(url, name) {
   let regex = new RegExp(regexS);
   let results = regex.exec(url);
   if (results === null)
-  return '';
+  return false;
   else
   return results[1];
 }
@@ -76,9 +86,13 @@ let getAccessTokenWithCodeToken = (function (resources, url) {
 
       sendHTTPRequest('POST', accessTokenEndpoint(code)).then(function (info) {
 
+        console.info('[OIDC.getAccessTokenWithCodeToken] response: ', info);
+
         if (info.hasOwnProperty('access_token')) {
-          let expires = getExpires(info);
-          resolve (accessTokenResult(resources, info.access_token, expires, info));
+
+          let expires = getExpiresAtJSON(info);
+          let refresh = info.hasOwnProperty('refresh_token') ? info.refresh_token : false;
+          resolve (accessTokenResult(resources, info.access_token, expires, info, refresh));
         } else reject('[OIDC.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ', info);
       }, function (error) {
         reject(error);
@@ -370,9 +384,6 @@ export let IdpProxy = {
   /**
   * Function to get an Access Token
   *
-  * @param  {idpInfo}      Object information about IdP endpoints
-  * @param  {contents} The contents includes information about the identity received
-  * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
   * @param  {login} optional login result
   * @return {Promise} returns a promise with an identity assertion
   */
@@ -400,6 +411,51 @@ export let IdpProxy = {
 
       reject(e);
     });
-  }
+  },
 
+/**
+  * Function to get an Access Token
+  *
+  * @param  {login} optional login result
+  * @return {Promise} returns a promise with an identity assertion
+  */
+
+ refreshAccessToken: (config, token) => {
+    console.log('[OIDC.refreshAccessToken:config]', config);
+  //    console.log('[OIDC.generateAssertion:contents]', contents);
+  //    console.log('[OIDC.generateAssertion:origin]', origin);
+    console.log('[OIDC.refreshAccessToken:outdated token]', token);
+  //    let i = idpInfo;
+  refreshAccessTokenEndpoint = config.refreshAccessTokenEndpoint;
+    domain = config.domain;
+
+    let _this = this;
+    //start the login phase
+    return new Promise(function (resolve, reject) {
+        // the user is loggedin, try to extract the Access Token and its expires
+
+        let refresh = token.refresh;
+
+        if (!refresh) reject('[OIDC.refreshAccessToken] refresh token not available in the access token', token);
+    
+          sendHTTPRequest('POST', refreshAccessTokenEndpoint(refresh)).then(function (info) {
+    
+            console.info('[OIDC.refreshAccessToken] response: ', info);
+    
+            if (info.hasOwnProperty('access_token')) {
+    
+              let expires = getExpiresAtJSON(info);
+              resolve (accessTokenResult(token.resources, info.access_token, expires, info, refresh));
+            } else reject('[OIDC.refreshAccessToken] new access token not returned in the response: ', info);
+          }, function (error) {
+            reject(error);
+          });
+    
+//      });
+    
+    }, function (e) {
+
+      reject(e);
+    });
+  }  
 };

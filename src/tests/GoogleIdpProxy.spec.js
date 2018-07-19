@@ -24,6 +24,8 @@ let contents = 'BASE64_CONTENT';
 let origin = 'localhost:8080';
 let loginUrl;
 let resources = ['activity_context'];
+let accessToken;
+let refreshToken;
 
 let generateAssertionMessage = {
   type: 'execute',
@@ -64,6 +66,16 @@ let validateAssertionMessage = {
     body: {
       method: 'getAccessToken',
       params: { resources: resources }
+    }
+  }
+
+  let refreshAccessTokenMessage = {
+    type: 'execute',
+    to: idpProxyUrl,
+    from: idmURL,
+    body: {
+      method: 'refreshAccessToken',
+      params: { token: { resources: resources } }
   }
 }
 
@@ -199,7 +211,10 @@ describe('IdP Proxy test', function() {
 
         bus.postMessage(getAccessTokenMessage, (reply) => {
           console.log('IdpProxyTest.reply with AccessToken : ', reply.body.value);
-          expect(reply.body.value).to.have.keys('domain', 'resources', 'accessToken', 'expires', 'input');
+          expect(reply.body.value).to.have.keys('domain', 'resources', 'accessToken', 'expires', 'input', 'refresh');
+
+          accessToken = reply.body.value.accessToken;
+          refreshToken = reply.body.value.refresh;
 
           done();
 
@@ -240,6 +255,20 @@ describe('IdP Proxy test', function() {
     }, 3000);
     */
 
+  });
+
+  it('refresh access token', function (done) {
+
+    refreshAccessTokenMessage.body.params.token.accessToken = accessToken;
+    refreshAccessTokenMessage.body.params.token.refresh = refreshToken;
+
+    console.log('IdpProxyTest refresh access token, message request: ', refreshAccessTokenMessage)
+
+    bus.postMessage(refreshAccessTokenMessage, (reply) => {
+      console.log('IdpProxyTest refresh access token reply with new AccessToken: ', reply.body.value)
+      expect(reply.body.value).to.have.keys('resources', 'accessToken', 'expires', 'domain', 'input', 'refresh');
+      done();
+    });
   });
 
 });
