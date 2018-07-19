@@ -436,7 +436,7 @@ export let IdpProxy = {
 
         let refresh = token.refresh;
 
-        if (!refresh) reject('[OIDC.refreshAccessToken] refresh code not available in the access token', token);
+        if (!refresh) reject('[OIDC.refreshAccessToken] refresh token not available in the access token', token);
     
           sendHTTPRequest('POST', refreshAccessTokenEndpoint(refresh)).then(function (info) {
     

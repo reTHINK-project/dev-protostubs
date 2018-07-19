@@ -32,6 +32,7 @@ export let googleAPIInfo = {
   "clientID": "808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com",
   "issuer": "https://accounts.google.com",
   "tokenEndpoint": "https://www.googleapis.com/oauth2/v4/token?",
+  "revokeEndpoint": "https://accounts.google.com/o/oauth2/revoke?",
   "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
   "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
   "userinfo": "https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
@@ -66,6 +67,12 @@ export function refreshAccessTokenEndpoint(refresh) {
     + '&refresh_token=' + refresh
     + '&grant_type=refresh_token'
     + '&client_secret=' + googleAPIInfo.secret
+}
+
+export function revokeAccessTokenEndpoint(token) {
+
+  return googleAPIInfo.revokeEndpoint
+    + '&token=' + token
 }
 
 export function mapping(resource) {
