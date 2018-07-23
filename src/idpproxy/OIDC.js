@@ -193,13 +193,13 @@ export let IdpProxy = {
       });
     });
   },
-/*
+
   refreshAssertion: (identity) => {
     //console.log('PROXY:refreshAssertion:oldIdentity', identity);
-    let i = googleInfo;
+//    let i = googleInfo;
 
     return new Promise(function(resolve, reject) {
-      if (identity.info.refreshToken) {
+/*      if (identity.info.refreshToken) {
         exchangeRefreshToken(identity.info.refreshToken).then(function(value) {
           let infoTokenURL = i.userinfo + value.access_token;
           sendHTTPRequest('GET', infoTokenURL).then(function(infoToken) {
@@ -239,9 +239,12 @@ export let IdpProxy = {
             });
           });
         });
-      }
+      }*/
+      resolve( identity );
     });
-  },*/
+
+
+  },
 
   /**
   * Function to generate an identity Assertion
@@ -327,7 +330,8 @@ export let IdpProxy = {
               let idpBundle = {domain: i.domain, protocol: 'OIDC'};
 
               //TODO delete later the field infoToken, and delete the need in the example
-              let returnValue = {assertion: assertion, idp: idpBundle, expires: idTokenJSON.exp, userProfile: infoToken};
+              // TODO replace "refresh: true" by the real refresh token
+              let returnValue = {assertion: assertion, idp: idpBundle, expires: idTokenJSON.exp, userProfile: infoToken, refresh: true};
 
               identities[nIdentity] = returnValue;
               ++nIdentity;
