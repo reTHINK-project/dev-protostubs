@@ -59,13 +59,17 @@ class GoogleProtoStub {
 
     _this.started = false;
 
-
     const dataObjectName = "user_activity";
 
     bus.addListener("*", msg => {
       console.log("[GoogleProtoStub] new Message  : ", msg);
       if (msg.identity) {
         _this._identity = msg.identity;
+      }
+
+      if (msg.type === 'delete') {
+        _this.stopWorking();
+        return;
       }
 
       if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
@@ -112,7 +116,7 @@ class GoogleProtoStub {
         ]
       };
 
-      if (_this._accessToken && !_this.started) {
+      if (_this._accessToken && !_this.started && msg.type === 'create') {
         _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
           if (reporter == false) {
@@ -138,13 +142,20 @@ class GoogleProtoStub {
     console.log("[GoogleProtoStub] User activity DO created: ", reporter);
     const startTime = reporter.metadata.created;
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
-    setInterval(function () {
+    this.startInterval = setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
       _this.querySessions(_this._accessToken, startTime, lastModified);
     }, _this.config.sessions_query_interval);
 
     _this.started = true;
   }
+
+  stopWorking() {
+    let _this = this;
+    clearInterval(this.startInterval);
+    _this.started = false;
+  }
+
 
   _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
 
