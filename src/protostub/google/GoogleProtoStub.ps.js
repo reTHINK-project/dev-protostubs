@@ -21,7 +21,6 @@
  * limitations under the License.
  **/
 import { Syncher } from "service-framework/dist/Syncher";
-import MessageBodyIdentity from "service-framework/dist/IdentityFactory";
 
 class GoogleProtoStub {
   /**
@@ -101,7 +100,7 @@ class GoogleProtoStub {
             type: "user_walking_context",
             name: "walking distance in meters",
             unit: "meter",
-            value: 1500,
+            value: 0,
             startTime: "2018-03-25T12:00:00Z",
             endTime: "2018-03-25T12:10:00Z"
           },
@@ -109,7 +108,7 @@ class GoogleProtoStub {
             type: "user_biking_context",
             name: "biking distance in meters",
             unit: "meter",
-            value: 5000,
+            value: 0,
             startTime: "2018-03-26T12:00:00Z",
             endTime: "2018-03-26T12:10:00Z"
           }
@@ -144,7 +143,7 @@ class GoogleProtoStub {
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
     this.startInterval = setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
-      _this.querySessions(_this._accessToken, startTime, lastModified);
+      _this.querySessions(startTime, lastModified);
     }, _this.config.sessions_query_interval);
 
     _this.started = true;
@@ -216,7 +215,7 @@ class GoogleProtoStub {
     });
   }
 
-  querySessions(token, startTime, lastModified) {
+  querySessions(startTime, lastModified) {
     let _this = this;
     if (startTime !== lastModified) {
       startTime = lastModified;
@@ -231,6 +230,51 @@ class GoogleProtoStub {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
 
+    _this.getDistanceForActivities(startTimeMillis, endTimeMillis).then(buckets => {
+      for (let i = 0; i < buckets.length; i += 1) {
+        const bucket = buckets[i];
+        const activityType = bucket.activity;
+        const distance = bucket.dataset[0].point[0].value[0].fpVal;
+        const startISO = new Date(startTimeMillis).toISOString();
+        switch (activityType) {
+          case 7:
+          case 8:
+            // walking/running
+            console.log("[GoogleProtoStub] walking/running distance (m): ", distance);
+            _this.reporter.data.values = [
+              {
+                type: "user_walking_context",
+                name: "walking distance in meters",
+                unit: "meter",
+                value: distance,
+                startTime: startISO,
+                endTime: endTime
+              }
+              //_this.reporter.data.values[1]
+            ];
+            break;
+          case 1:
+            // biking
+            console.log("[GoogleProtoStub] biking distance (m): ", distance);
+            _this.reporter.data.values = [
+              //_this.reporter.data.values[0],
+              {
+                type: "user_biking_context",
+                name: "biking distance in meters",
+                unit: "meter",
+                value: distance,
+                startTime: startISO,
+                endTime: endTime
+              }
+            ];
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    /*
     xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime);
     xhr.setRequestHeader("Authorization", "Bearer " + token);
     xhr.setRequestHeader("Cache-Control", "no-cache");
@@ -242,6 +286,8 @@ class GoogleProtoStub {
         const response = JSON.parse(this.responseText);
         console.log("[GoogleProtoStub] sessions: ", response);
         for (let index = 0; index < response.session.length; index++) {
+
+
           const currentSession = response.session[index];
           const activityType = currentSession["activityType"];
           const start = currentSession["startTimeMillis"];
@@ -292,24 +338,18 @@ class GoogleProtoStub {
       }
     });
 
+    */
+
 
 
   }
 
-  getDistanceForActivity(start, end) {
+  getDistanceForActivities(start, end) {
     return new Promise((resolve, reject) => {
-      // total time
-      const durationMillis = end - start;
 
       const bodyData = {
-        "aggregateBy": [
-          {
-            "dataTypeName": "com.google.distance.delta"
-          }
-        ],
-        "bucketByTime": {
-          "durationMillis": durationMillis
-        },
+        "aggregateBy": [{ "dataTypeName": "com.google.distance.delta" }],
+        "bucketByActivityType": { "minDurationMillis": 0 },
         "startTimeMillis": start,
         "endTimeMillis": end
       };
@@ -321,8 +361,8 @@ class GoogleProtoStub {
       xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
           const response = JSON.parse(this.responseText);
-          console.log("[GoogleProtoStub] distance for activity: ", response);
-          return resolve(response.bucket[0].dataset[0].point[0].value[0].fpVal);
+          console.log("[GoogleProtoStub] distance for activities: ", response);
+          return resolve(response.bucket);
         }
       });
       xhr.open("POST", "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate");
@@ -330,8 +370,6 @@ class GoogleProtoStub {
       xhr.setRequestHeader("Authorization", "Bearer " + this._accessToken);
       xhr.setRequestHeader("Cache-Control", "no-cache");
       xhr.send(JSON.stringify(bodyData));
-
-
     });
   }
 
