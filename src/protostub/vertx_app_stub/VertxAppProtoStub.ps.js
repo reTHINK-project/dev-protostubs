@@ -194,11 +194,11 @@ class VertxAppProtoStub {
                 let balance1 = JSON.parse(JSON.stringify(reply2.body.wallet.balance));
                 _this._walletReporterDataObject.data.balance = balance1;
               }
-
+              */
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
-                _this._walletReporterDataObject.data.transactions = transactions;
-              */
+              _this._walletReporterDataObject.data.transactions = transactions;
+
 
               let addressChanges = reply2.body.wallet.address + '/changes';
 
