@@ -146,7 +146,7 @@ class GoogleProtoStub {
 
     console.log("[GoogleProtoStub] User activity DO created: ", reporter);
     const startTime = reporter.metadata.created;
-    debugger;
+    //debugger;
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
     this.startInterval = setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
@@ -161,6 +161,7 @@ class GoogleProtoStub {
     clearInterval(this.startInterval);
     _this.started = false;
   }
+
 
   _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
 
