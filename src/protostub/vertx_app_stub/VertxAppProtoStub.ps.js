@@ -56,6 +56,7 @@ class VertxAppProtoStub {
     this._domain = config.domain;
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
+    this._identity = null;
 
     this._runtimeSessionURL = config.runtimeURL;
 
@@ -73,7 +74,7 @@ class VertxAppProtoStub {
 
     _this._sendStatus('created');
 
-    // used to save data of each observer saving data and timestamp to publish to vertx
+    // used to save data of eachF observer saving data and timestamp to publish to vertx
     _this._dataObservers = {};
 
     //used to save identity of each stream url
@@ -109,7 +110,9 @@ class VertxAppProtoStub {
 
     bus.addListener('*', (msg) => {
       console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
-
+      if (_this.identity == null && msg.hasOwnProperty('identity')) {
+        _this.identity = msg.identity;
+      }
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
@@ -315,6 +318,9 @@ class VertxAppProtoStub {
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
       console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
 
+      if (msg.body.identity == null && msg.to == 'hyperty://sharing-cities-dsm/user-activity') {
+        msg.body.identity = _this.identity;
+      }
       // handle message subscribe before invite Vertx
       _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
 
@@ -367,7 +373,6 @@ class VertxAppProtoStub {
       });
 
       // check if identity exists
-
       //Message to invite Vertx to Subscribe a Reporter
       let userURL;
       let guid;
