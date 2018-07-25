@@ -118,6 +118,7 @@ class GoogleProtoStub {
       if (_this._accessToken && !_this.started && msg.type === 'create') {
         _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
+          //debugger;
           if (reporter == false) {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
@@ -137,9 +138,15 @@ class GoogleProtoStub {
   startWorking(reporter) {
     let _this = this;
     _this.reporter = reporter;
-    reporter.onSubscription(event => event.accept());
+
+    reporter.onSubscription(function (event) {
+        event.accept();
+        console.log("[GoogleProtoStub] new subs", event);
+    });
+
     console.log("[GoogleProtoStub] User activity DO created: ", reporter);
     const startTime = reporter.metadata.created;
+    debugger;
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
     this.startInterval = setInterval(function () {
       let lastModified = reporter.metadata.lastModified;
@@ -154,7 +161,6 @@ class GoogleProtoStub {
     clearInterval(this.startInterval);
     _this.started = false;
   }
-
 
   _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
 
@@ -171,10 +177,7 @@ class GoogleProtoStub {
         .create(objectDescURL, [], data, true, false, name, identity, input)
         .then(reporter => {
           console.log("[GoogleProtoStub] REPORTER RETURNED", reporter);
-          reporter.onSubscription(function (event) {
-            event.accept();
-            console.log("[GoogleProtoStub] new subs", event);
-          });
+
           resolve(reporter);
         })
         .catch(function (err) {
