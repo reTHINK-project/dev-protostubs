@@ -667,7 +667,7 @@ class VertxAppProtoStub {
   }
 
   _setUpReporter(identityURL, objectDescURL, data, resources, name, reuseURL, createWallet = false, isPubWallet = false) {
-    let _this = this;b
+    let _this = this;
     return new Promise(function (resolve, reject) {
 
       if (!createWallet) {
