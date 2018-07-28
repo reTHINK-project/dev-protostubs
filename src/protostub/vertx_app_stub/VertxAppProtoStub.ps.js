@@ -748,7 +748,7 @@ class VertxAppProtoStub {
     let _this = this;
     //MessageBodyIdentity Constructor
     return new Promise(function (resolve) {
-      _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, identityToUse).then(function (obj) {
+      _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, false, identityToUse).then(function (obj) {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
       }).catch(function (error) {
