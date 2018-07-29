@@ -276,6 +276,11 @@ class GoogleProtoStub {
             break;
         }
       }
+    }).catch(onError => {
+      console.info("[GoogleProtoStub] error: ", onError, " requesting new access token ");
+
+     return _this.refreshAccessToken(startTime, lastModified);
+
     });
 
     /*
@@ -376,6 +381,36 @@ class GoogleProtoStub {
       xhr.send(JSON.stringify(bodyData));
     });
   }
+
+  refreshAccessToken(startTime, lastModified) {
+    let _this = this;
+    return new Promise((resolve, reject) => {
+
+    let msg = {
+      type: 'execute',
+      from: _this._runtimeProtoStubURL,
+      to: _this._runtimeSessionURL + '/idm',
+      body: {
+
+        method: 'refreshAccessToken',
+
+        params: {
+          resources: ['user_activity_context'],
+          domain: 'google.com'
+        }
+      }
+    }
+
+    _this._bus.postMessage(msg, (reply)=> {
+      console.log('[GoogleProtoStub.refreshAccessToken] reply ', reply);
+      if (reply.body.hasOwnProperty('value')) {
+        _this._accessToken = reply.body.value;
+        _this.querySessions(startTime, lastModified);
+        resolve();
+      } else reject(reply.body);
+    });
+  });
+}
 
   /**
    * Get the configuration for this ProtoStub
