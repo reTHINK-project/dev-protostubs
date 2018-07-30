@@ -118,7 +118,6 @@ class GoogleProtoStub {
       if (_this._accessToken && !_this.started && msg.type === 'create') {
         _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
-          //debugger;
           if (reporter == false) {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
@@ -138,22 +137,33 @@ class GoogleProtoStub {
   startWorking(reporter) {
     let _this = this;
     _this.reporter = reporter;
+    _this.hasStartedQuerying = false;
+
+    function startQuerying() {
+      const startTime = reporter.metadata.created;
+      let lastModified = reporter.metadata.lastModified;
+      // query when starting
+      _this.querySessions(startTime, lastModified);
+      _this.startInterval = setInterval(function () {
+        lastModified = reporter.metadata.lastModified;
+        _this.querySessions(startTime, lastModified);
+      }, _this.config.sessions_query_interval);
+
+      _this.started = true;
+    }
 
     reporter.onSubscription(function (event) {
-        event.accept();
-        console.log("[GoogleProtoStub] new subs", event);
+      event.accept();
+      console.log("[GoogleProtoStub] new subs", event);
+      if (!_this.hasStartedQuerying) {
+        _this.hasStartedQuerying = true;
+        startQuerying();
+      }
     });
 
     console.log("[GoogleProtoStub] User activity DO created: ", reporter);
-    const startTime = reporter.metadata.created;
-    //debugger;
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
-    this.startInterval = setInterval(function () {
-      let lastModified = reporter.metadata.lastModified;
-      _this.querySessions(startTime, lastModified);
-    }, _this.config.sessions_query_interval);
 
-    _this.started = true;
   }
 
   stopWorking() {
@@ -279,7 +289,7 @@ class GoogleProtoStub {
     }).catch(onError => {
       console.info("[GoogleProtoStub] error: ", onError, " requesting new access token ");
 
-     return _this.refreshAccessToken(startTime, lastModified);
+      return _this.refreshAccessToken(startTime, lastModified);
 
     });
 
@@ -386,31 +396,31 @@ class GoogleProtoStub {
     let _this = this;
     return new Promise((resolve, reject) => {
 
-    let msg = {
-      type: 'execute',
-      from: _this._runtimeProtoStubURL,
-      to: _this._runtimeSessionURL + '/idm',
-      body: {
+      let msg = {
+        type: 'execute',
+        from: _this._runtimeProtoStubURL,
+        to: _this._runtimeSessionURL + '/idm',
+        body: {
 
-        method: 'refreshAccessToken',
+          method: 'refreshAccessToken',
 
-        params: {
-          resources: ['user_activity_context'],
-          domain: 'google.com'
+          params: {
+            resources: ['user_activity_context'],
+            domain: 'google.com'
+          }
         }
       }
-    }
 
-    _this._bus.postMessage(msg, (reply)=> {
-      console.log('[GoogleProtoStub.refreshAccessToken] reply ', reply);
-      if (reply.body.hasOwnProperty('value')) {
-        _this._accessToken = reply.body.value;
-        _this.querySessions(startTime, lastModified);
-        resolve();
-      } else reject(reply.body);
+      _this._bus.postMessage(msg, (reply) => {
+        console.log('[GoogleProtoStub.refreshAccessToken] reply ', reply);
+        if (reply.body.hasOwnProperty('value')) {
+          _this._accessToken = reply.body.value;
+          _this.querySessions(startTime, lastModified);
+          resolve();
+        } else reject(reply.body);
+      });
     });
-  });
-}
+  }
 
   /**
    * Get the configuration for this ProtoStub
