@@ -286,10 +286,13 @@ class GoogleProtoStub {
             break;
         }
       }
-    }).catch(onError => {
-      console.info("[GoogleProtoStub] error: ", onError, " requesting new access token ");
+    }, (error) => {
+      if (error.hasOwnProperty('errorCode') && error.errorCode === 401) 
+        return _this.refreshAccessToken(startTime, lastModified);
+      else throw error;
 
-      return _this.refreshAccessToken(startTime, lastModified);
+    }).catch(onError => {
+      console.error("[GoogleProtoStub.querySessions] error: ", onError);
 
     });
 
@@ -380,8 +383,11 @@ class GoogleProtoStub {
       xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
           const response = JSON.parse(this.responseText);
-          console.log("[GoogleProtoStub] distance for activities: ", response);
-          return resolve(response.bucket);
+          console.log("[GoogleProtoStub.getDistanceForActivities] response: ", response);
+          if (response.hasOwnProperty('bucket')) resolve(response.bucket);
+          else if (response.hasOwnProperty('code') && response.code > 299) reject({errorCode: response.code});
+          else reject(response);
+
         }
       });
       xhr.open("POST", "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate");
