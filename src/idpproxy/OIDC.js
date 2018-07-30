@@ -195,7 +195,7 @@ export let IdpProxy = {
   },
 
   refreshAssertion: (identity) => {
-    //console.log('PROXY:refreshAssertion:oldIdentity', identity);
+    console.log('PROXY:refreshAssertion:oldIdentity', identity);
 //    let i = googleInfo;
 
     return new Promise(function(resolve, reject) {

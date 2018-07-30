@@ -202,12 +202,12 @@ class VertxAppProtoStub {
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
 
-
               let addressChanges = reply2.body.wallet.address + '/changes';
 
+              console.log('[VertxAppProtoStub.createWallet] Vertx event bus address', addressChanges);
 
               _this._eb.registerHandler(addressChanges, function (error, message) {
-                console.log('[VertxAppProtoStub]  new change on wallet', message);
+                console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 _this._walletReporterDataObject.data.balance = message.body.body.balance;
                 _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
               });
