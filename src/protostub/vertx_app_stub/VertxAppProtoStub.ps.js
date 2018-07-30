@@ -289,20 +289,33 @@ class VertxAppProtoStub {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
-        //debugger;
-        console.log('[VertxAppProtoStub]  New Read Message', _this._dataStreamData, JSON.stringify(_this._dataStreamData[msg.to]));
-        let responseMsg = {
-          from: msg.to,
-          to: msg.from,
-          id: msg.id,
-          type: 'response'
-        };
-        responseMsg.body = {};
 
-        responseMsg.body.value = JSON.parse(JSON.stringify(_this._dataStreamData[msg.to]));
-        //responseMsg.body.value = _this._dataStreamData[msg.to];
-        responseMsg.body.code = 200;
-        _this._bus.postMessage(responseMsg);
+
+        let toRead = { type: 'read' };
+
+        _this._eb.send(msg.to, toRead, function (reply_err, reply) {
+          if (reply_err == null) {
+            console.log("[VertxAppProtoStub] Received reply ", reply.body);
+
+            let responseMsg = {
+              from: msg.to,
+              to: msg.from,
+              id: msg.id,
+              type: 'response'
+            };
+            responseMsg.body = {};
+            //debugger;
+            responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            //responseMsg.body.value = _this._dataStreamData[msg.to];
+            responseMsg.body.code = 200;
+            _this._bus.postMessage(responseMsg);
+          }
+
+
+        });
+
+
+
       }
 
       if (msg.body.type === 'create') {
@@ -560,6 +573,7 @@ class VertxAppProtoStub {
           }
         });
       });
+      resolve();
 
     });
 
