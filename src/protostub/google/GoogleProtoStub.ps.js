@@ -142,6 +142,9 @@ class GoogleProtoStub {
     function startQuerying() {
       const startTime = reporter.metadata.created;
       let lastModified = reporter.metadata.lastModified;
+      if (!lastModified) {
+        lastModified = startTime;
+      }
       // query when starting
       _this.querySessions(startTime, lastModified);
       _this.startInterval = setInterval(function () {
@@ -287,7 +290,7 @@ class GoogleProtoStub {
         }
       }
     }, (error) => {
-      if (error.hasOwnProperty('errorCode') && error.errorCode === 401) 
+      if (error.hasOwnProperty('errorCode') && error.errorCode === 401)
         return _this.refreshAccessToken(startTime, lastModified);
       else throw error;
 
@@ -385,7 +388,7 @@ class GoogleProtoStub {
           const response = JSON.parse(this.responseText);
           console.log("[GoogleProtoStub.getDistanceForActivities] response: ", response);
           if (response.hasOwnProperty('bucket')) resolve(response.bucket);
-          else if (response.hasOwnProperty('code') && response.code > 299) reject({errorCode: response.code});
+          else if (response.hasOwnProperty('code') && response.code > 299) reject({ errorCode: response.code });
           else reject(response);
 
         }
