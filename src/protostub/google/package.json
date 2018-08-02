@@ -1,6 +1,6 @@
 {
   "name": "fitness.google.com",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "main": "GoogleProtoStub.ps.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bufferutil": "^3.0.5",
-    "service-framework": "github:rethink-project/dev-service-framework#v0.9.0",
+    "service-framework": "github:rethink-project/dev-service-framework#develop",
     "utf-8-validate": "^3.0.4",
     "ws": "^3.3.3"
   }
