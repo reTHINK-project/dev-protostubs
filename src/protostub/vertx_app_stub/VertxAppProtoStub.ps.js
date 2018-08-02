@@ -61,7 +61,7 @@ class VertxAppProtoStub {
     this._runtimeSessionURL = config.runtimeURL;
 
     this._syncher = factory.createSyncher(this._runtimeProtoStubURL, this._bus, this._config);
-    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory);
+    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory, this._syncher);
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter, factory);
     this._eb = null;
     this._walletReporterDataObject = null;
