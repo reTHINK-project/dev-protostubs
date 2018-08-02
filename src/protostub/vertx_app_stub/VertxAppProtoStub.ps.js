@@ -22,7 +22,7 @@
 **/
 import EventBus from 'vertx3-eventbus-client';
 import { WalletReporter } from 'service-framework/dist/WalletManager';
-import { Syncher } from 'service-framework/dist/Syncher';
+//import { Syncher } from 'service-framework/dist/Syncher';
 
 
 class VertxAppProtoStub {
@@ -33,7 +33,7 @@ class VertxAppProtoStub {
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
    * @return {VertxAppProtoStub}
    */
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor(runtimeProtoStubURL, bus, config, factory) {
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
     if (!bus) throw new Error('The bus is a needed parameter');
     if (!config) throw new Error('The config is a needed parameter');
@@ -60,9 +60,9 @@ class VertxAppProtoStub {
 
     this._runtimeSessionURL = config.runtimeURL;
 
-    this._syncher = new Syncher(this._runtimeProtoStubURL, this._bus, this._config);
-    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, this._syncher);
-    console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
+    this._syncher = factory.createSyncher(this._runtimeProtoStubURL, this._bus, this._config);
+    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory, this._syncher);
+    console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter, factory);
     this._eb = null;
     this._walletReporterDataObject = null;
     this._publicWalletsReporterDataObject = null;
@@ -845,9 +845,9 @@ class VertxAppProtoStub {
   }
 }
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
   return {
     name: 'VertxAppProtoStub',
-    instance: new VertxAppProtoStub(url, bus, config)
+    instance: new VertxAppProtoStub(url, bus, config, factory)
   };
 }
