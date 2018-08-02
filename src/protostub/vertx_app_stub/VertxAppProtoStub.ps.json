@@ -8,25 +8,6 @@
     "host": "sharing-cities-dsm",
     "domain": "hybroker.rethink.ptinovacao.pt",
     "streams": [
-      {
-        "stream": "data://sharing-cities-dsm/bonus",
-        "resources": ["resources"],
-        "id": "bonus-data",
-        "name": "bonus-data DSM"
-      },
-      {
-        "stream": "data://sharing-cities-dsm/shops",
-        "resources": ["resources"],
-        "id": "shops-data",
-        "name": "shops-data DSM"
-      },
-      {
-        "stream": "data://sharing-cities-dsm/elearning",
-        "resources": ["resources"],
-        "id": "elearning-data",
-        "name": "elearning-data DSM"
-      }
-
     ],
     "publicWallets" : {
         "identity": {

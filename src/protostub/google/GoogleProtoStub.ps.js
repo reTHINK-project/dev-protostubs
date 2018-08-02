@@ -118,7 +118,6 @@ class GoogleProtoStub {
       if (_this._accessToken && !_this.started && msg.type === 'create') {
         _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
           console.log('GoogleProtoStub]._resumeReporters (result)  ', reporter);
-          //debugger;
           if (reporter == false) {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
@@ -138,22 +137,36 @@ class GoogleProtoStub {
   startWorking(reporter) {
     let _this = this;
     _this.reporter = reporter;
+    _this.hasStartedQuerying = false;
+
+    function startQuerying() {
+      const startTime = reporter.metadata.created;
+      let lastModified = reporter.metadata.lastModified;
+      if (!lastModified) {
+        lastModified = startTime;
+      }
+      // query when starting
+      _this.querySessions(startTime, lastModified);
+      _this.startInterval = setInterval(function () {
+        lastModified = reporter.metadata.lastModified;
+        _this.querySessions(startTime, lastModified);
+      }, _this.config.sessions_query_interval);
+
+      _this.started = true;
+    }
 
     reporter.onSubscription(function (event) {
-        event.accept();
-        console.log("[GoogleProtoStub] new subs", event);
+      event.accept();
+      console.log("[GoogleProtoStub] new subs", event);
+      if (!_this.hasStartedQuerying) {
+        _this.hasStartedQuerying = true;
+        startQuerying();
+      }
     });
 
     console.log("[GoogleProtoStub] User activity DO created: ", reporter);
-    const startTime = reporter.metadata.created;
-    //debugger;
     reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
-    this.startInterval = setInterval(function () {
-      let lastModified = reporter.metadata.lastModified;
-      _this.querySessions(startTime, lastModified);
-    }, _this.config.sessions_query_interval);
 
-    _this.started = true;
   }
 
   stopWorking() {
@@ -276,6 +289,14 @@ class GoogleProtoStub {
             break;
         }
       }
+    }, (error) => {
+      if (error.hasOwnProperty('errorCode') && error.errorCode === 401)
+        return _this.refreshAccessToken(startTime, lastModified);
+      else throw error;
+
+    }).catch(onError => {
+      console.error("[GoogleProtoStub.querySessions] error: ", onError);
+
     });
 
     /*
@@ -365,8 +386,11 @@ class GoogleProtoStub {
       xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
           const response = JSON.parse(this.responseText);
-          console.log("[GoogleProtoStub] distance for activities: ", response);
-          return resolve(response.bucket);
+          console.log("[GoogleProtoStub.getDistanceForActivities] response: ", response);
+          if (response.hasOwnProperty('bucket')) resolve(response.bucket);
+          else if (response.hasOwnProperty('code') && response.code > 299) reject({ errorCode: response.code });
+          else reject(response);
+
         }
       });
       xhr.open("POST", "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate");
@@ -374,6 +398,36 @@ class GoogleProtoStub {
       xhr.setRequestHeader("Authorization", "Bearer " + this._accessToken);
       xhr.setRequestHeader("Cache-Control", "no-cache");
       xhr.send(JSON.stringify(bodyData));
+    });
+  }
+
+  refreshAccessToken(startTime, lastModified) {
+    let _this = this;
+    return new Promise((resolve, reject) => {
+
+      let msg = {
+        type: 'execute',
+        from: _this._runtimeProtoStubURL,
+        to: _this._runtimeSessionURL + '/idm',
+        body: {
+
+          method: 'refreshAccessToken',
+
+          params: {
+            resources: ['user_activity_context'],
+            domain: 'google.com'
+          }
+        }
+      }
+
+      _this._bus.postMessage(msg, (reply) => {
+        console.log('[GoogleProtoStub.refreshAccessToken] reply ', reply);
+        if (reply.body.hasOwnProperty('value')) {
+          _this._accessToken = reply.body.value;
+          _this.querySessions(startTime, lastModified);
+          resolve();
+        } else reject(reply.body);
+      });
     });
   }
 
