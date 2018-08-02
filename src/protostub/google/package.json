@@ -1,8 +1,8 @@
 {
-  "name": "vertx",
+  "name": "fitness.google.com",
   "version": "0.3.0",
   "description": "",
-  "main": "VertxProtoStub.ps.js",
+  "main": "GoogleProtoStub.ps.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

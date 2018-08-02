@@ -1,6 +1,6 @@
 {
   "name": "dev-protostubs",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Repository where all the protostubs and idp-proxyies are",
   "main": "webpack.config.js",
   "scripts": {
@@ -20,18 +20,19 @@
   "homepage": "https://github.com/reTHINK-project/dev-protostubs#readme",
   "dependencies": {
     "all": "0.0.0",
-    "atob": "^2.0.3",
-    "btoa": "^1.1.2"
+    "atob": "^2.1.0",
+    "btoa": "^1.2.1"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-arrays": "^1.1.0",
     "chai-as-promised": "^7.1.1",
     "chai-json-schema": "^1.5.0",
+    "jquery": "^3.3.1",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-coverage": "^1.1.1",
+    "karma-coverage": "^1.1.2",
     "karma-firefox-launcher": "^1.0.1",
     "karma-html-reporter": "^0.2.7",
     "karma-htmlfile-reporter": "^0.3.5",
@@ -40,10 +41,10 @@
     "karma-sinon": "^1.0.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-spec-reporter": "0.0.31",
-    "karma-webpack": "^2.0.4",
+    "karma-webpack": "^2.0.13",
     "mocha": "3.4.2",
     "sinon": "^2.4.1",
     "sinon-chai": "^2.14.0",
-    "webpack": "^3.6.0"
+    "webpack": "^3.11.0"
   }
 }

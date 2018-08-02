@@ -130,7 +130,7 @@ let getAccessTokenWithCodeToken = (function (resources, login) {
   });
 });
 
-let getExpires = (function (url) {
+export let getExpires = (function (url) {
   let expires = urlParser(url, 'expires_in');
 
   if (expires) expires = expires + Math.floor(Date.now() / 1000);
@@ -139,6 +139,7 @@ let getExpires = (function (url) {
   return expires;
 
 });
+
 
 let accessTokenResult = (function (resources, accessToken, expires, input, refresh) {
 

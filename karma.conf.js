@@ -3,11 +3,16 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
-      './src/idpproxy/facebook/tests/*.spec.js'
+      // './src/tests/*.spec.js',
+      './src/tests/GoogleIdpProxy.spec.js',
     ],
+    // to avoid DISCONNECTED messages
+    browserDisconnectTimeout : 100000, // default 2000
+    browserDisconnectTolerance : 1, // default 0
+    browserNoActivityTimeout : 60000, //default 10000
     exclude: [],
     preprocessors: {
-      './src/idpproxy/facebook/tests/*.spec.js': ['webpack', 'sourcemap']
+      './src/tests/*.spec.js': ['webpack', 'sourcemap']
     },
 
     // webpack configuration
@@ -40,13 +45,13 @@ module.exports = function(config) {
     },
 
     plugins: ['karma-spec-reporter',
-      'karma-webpack',
-      'karma-sourcemap-loader',
-      'karma-mocha', 'karma-chai',
-      'karma-sinon',
-//      'karma-htmlfile-reporter',
-      'karma-mocha-reporter',
-      'karma-chrome-launcher'],
+    'karma-webpack',
+    'karma-sourcemap-loader',
+    'karma-mocha', 'karma-chai',
+    'karma-sinon',
+    // 'karma-htmlfile-reporter',
+    'karma-mocha-reporter',
+    'karma-chrome-launcher'],
 
     // customDebugFile: './test/units.html',
 
@@ -62,7 +67,7 @@ module.exports = function(config) {
     port: 8080,
     hostname: 'localhost',
     colors: true,
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
     autoWatch: true,
 
     // start these browsers
@@ -73,8 +78,10 @@ module.exports = function(config) {
       ChromeTravis: {
         base: 'Chrome',
         flags: [
+          '--web-security=false',
+          '--ignore-ssl-errors=true',
           '--disable-web-security',
-          '--disable-popup',
+          //'--disable-popup',
           '--disable-popup-blocking',
           '--ignore-certificate-errors'
         ]

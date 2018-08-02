@@ -1,0 +1,45 @@
+@startuml
+
+node "JVM Hyperty Runtime" {
+  node  vertx.io {
+
+    node "Vertx Hyperty" as vertxHy
+
+    interface "Vertx Stream" as stream
+
+  }
+
+}
+
+node "Javascript Hyperty Core Runtime" as node {
+  node "Javascript Hyperty" as jsHy
+
+  interface "Hyperty Data Object" as hyDO
+
+  node "P2P Requester Vertx Protostub" as vertxStub {
+    node "Subscription Manager" as vertxSM
+    node "Observer"
+    node "Reporter"
+    interface "Vertx Data Object" as vertxDO
+  }
+}
+
+vertxHy -> vertxSM : subscribe
+
+hyDO <- vertxSM : subscribe
+
+hyDO <-up- jsHy : report
+
+Observer -up-> hyDO : observe
+
+Observer -> stream : stream
+
+vertxHy <-down-> stream : stream
+
+Reporter -up-> vertxDO : report
+
+Reporter <- stream : stream
+
+jsHy -> vertxDO : observe
+
+@enduml
