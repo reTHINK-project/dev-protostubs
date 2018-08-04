@@ -163,7 +163,7 @@ class VertxAppProtoStub {
         {
             bal = reply.body.identity.userProfile.info.balance;
         }
-        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [] }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [], ranking: 0 }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
 
           if (result != null) {
 
@@ -201,6 +201,7 @@ class VertxAppProtoStub {
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
+              _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
 
               let addressChanges = reply2.body.wallet.address + '/changes';
 
@@ -210,6 +211,7 @@ class VertxAppProtoStub {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 _this._walletReporterDataObject.data.balance = message.body.body.balance;
                 _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
+                _this._walletReporterDataObject.data.ranking = message.body.body.ranking;
               });
 
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
