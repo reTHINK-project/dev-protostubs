@@ -21,7 +21,7 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
-import { WalletReporter } from 'service-framework/dist/WalletManager';
+//import { WalletReporter } from 'service-framework/dist/WalletManager';
 //import { Syncher } from 'service-framework/dist/Syncher';
 
 
@@ -57,11 +57,13 @@ class VertxAppProtoStub {
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    //TODO: to be defined in the config
+    this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
 
     this._runtimeSessionURL = config.runtimeURL;
 
     this._syncher = factory.createSyncher(this._runtimeProtoStubURL, this._bus, this._config);
-    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory, this._syncher);
+//    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory, this._syncher);
     console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter, factory);
     this._eb = null;
     this._walletReporterDataObject = null;
@@ -730,7 +732,7 @@ class VertxAppProtoStub {
             resolve(wallet);
 
           } else {
-            _this._walletReporter.create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
+            _this._create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
@@ -756,6 +758,51 @@ class VertxAppProtoStub {
 
       }
 
+    });
+  }
+
+  /**
+   * This function is used to create a new status object syncher
+   * @return {Promise}
+   */
+
+   _create(init, resources, name = 'myWallet', reporter = null, reuseURL = null, domainRegistration = true) {
+    //debugger;
+    let _this = this;
+    let input;
+    return new Promise((resolve, reject) => {
+      if (!reporter && !reuseURL) {
+        input = {resources: resources};
+      } else if (reporter && !reuseURL) {
+        input = {resources: resources, reporter: reporter};
+      } else if (!reporter && reuseURL) {
+        input = {resources: resources, reuseURL: reuseURL};
+      } else {
+        input = {resources: resources, reuseURL: reuseURL, reporter: reporter};
+      }
+
+      input.domain_registration = domainRegistration;
+
+      console.info('[VertxAppProtoStub._create] lets create a new Wallet Object ', input);
+      _this._syncher.create(_this.walletDescURL, [], init, true, false, name, null, input)
+        .then((wallet) => {
+          _this.wallet = wallet;
+
+          _this._onSubscription(wallet);
+          resolve(wallet);
+
+        }).catch(function(reason) {
+          reject(reason);
+        });
+
+    });
+
+  }
+
+  _onSubscription(wallet) {
+    wallet.onSubscription((event) => {
+      console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
+      event.accept();
     });
   }
 
