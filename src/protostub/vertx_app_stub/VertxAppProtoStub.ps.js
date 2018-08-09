@@ -165,7 +165,7 @@ class VertxAppProtoStub {
         {
             bal = reply.body.identity.userProfile.info.balance;
         }
-        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [], ranking: 0, bonusCredit: bal }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [], ranking: 0, 'bonus-credit': bal }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
 
           if (result != null) {
 
@@ -205,7 +205,7 @@ class VertxAppProtoStub {
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
               _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
-              _this._walletReporterDataObject.data.bonusCredit = reply2.body.wallet.bonusCredit;
+              _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
               
 
               let addressChanges = reply2.body.wallet.address + '/changes';
@@ -217,7 +217,7 @@ class VertxAppProtoStub {
                 _this._walletReporterDataObject.data.balance = message.body.body.balance;
                 _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
                 _this._walletReporterDataObject.data.ranking = message.body.body.ranking;
-                _this._walletReporterDataObject.data.bonusCredit = message.body.body.bonusCredit;
+                _this._walletReporterDataObject.data['bonus-credit'] = message.body.body['bonus-credit'];
               });
 
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
