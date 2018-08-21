@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#develop"
   },
   "devDependencies": {
     "vertx3-eventbus-client": "3.5.2"

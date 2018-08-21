@@ -21,10 +21,10 @@
  * limitations under the License.
  **/
 
-import { Syncher } from 'service-framework/dist/Syncher'
-import { Discovery } from 'service-framework/dist/Discovery'
+//import { Syncher } from 'service-framework/dist/Syncher'
+//import { Discovery } from 'service-framework/dist/Discovery'
 import ConnectionController from './ConnectionController'
-import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
+//import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
 class Connection {
     constructor(dataObjectUrl) {
@@ -49,7 +49,7 @@ class IMSIWProtoStub {
 	 * @param  {Message.Message}                           busPostMessage     configuration
 	 * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
 	 */
-	constructor(runtimeProtoStubURL, miniBus, configuration) {
+	constructor(runtimeProtoStubURL, miniBus, configuration, factory) {
 
 		if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter')
 		if (!miniBus) throw new Error('The bus is a required parameter')
@@ -57,7 +57,7 @@ class IMSIWProtoStub {
 		if (!configuration.domain) throw new Error('The domain is a required parameter')
 
 		this._runtimeProtoStubURL = runtimeProtoStubURL
-		this._discovery = new Discovery(runtimeProtoStubURL, miniBus)
+		this._discovery = factory.createDiscovery(runtimeProtoStubURL, miniBus)
 		this.schema = `hyperty-catalogue://catalogue.${configuration.domain}/.well-known/dataschema/Connection`
 		this._connection = new ConnectionController(configuration,
 				(to, offer) =>{
@@ -68,7 +68,7 @@ class IMSIWProtoStub {
 					this.dataObjectReporter.delete()
 				})
 		this._bus = miniBus
-		this._syncher = new Syncher(this._runtimeProtoStubURL, miniBus, configuration)
+		this._syncher = factory.createSyncher(this._runtimeProtoStubURL, miniBus, configuration)
 
         miniBus.addListener('*', (msg) => {
             console.log('NEW MSG ->', msg)
@@ -80,7 +80,7 @@ class IMSIWProtoStub {
 					}
 					break
 				  case 'init':
-					this._identity = new MessageBodyIdentity('anton',
+					this._identity = factory.createMessageBodyIdentity('anton',
 							'sip://rethink-project.eu/anton@rethink-project.eu',
 							'',
 							'anton',
@@ -177,9 +177,9 @@ class IMSIWProtoStub {
     }
 }
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
 	return {
 		name: 'IMSIWProtoStub',
-		instance: new IMSIWProtoStub(url, bus, config)
+		instance: new IMSIWProtoStub(url, bus, config, factory)
 	}
 }

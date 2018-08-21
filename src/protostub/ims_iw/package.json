@@ -44,7 +44,6 @@
   },
   "dependencies": {
     "sdp-transform": "1.7.0",
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
     "sip.js": "^0.7.5"
   }
 }

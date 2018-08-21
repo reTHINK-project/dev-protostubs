@@ -45,7 +45,6 @@
     "yargs": "^5.0.0"
   },
   "dependencies": {
-    "service-framework": "github:rethink-project/dev-service-framework#develop",
     "webrtc-adapter": "^3.4.3"
   }
 }

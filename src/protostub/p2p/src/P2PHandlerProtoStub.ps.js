@@ -24,7 +24,7 @@
 
 // TODO: integrate the status eventing
 
-import {Syncher} from 'service-framework/dist/Syncher';
+//import {Syncher} from 'service-framework/dist/Syncher';
 import ConnectionController from './ConnectionController';
 
 /**
@@ -40,7 +40,7 @@ class P2PHandlerStub {
    * @param  {Message.Message}                           busPostMessage     configuration
    * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
    */
-  constructor(runtimeProtoStubURL, miniBus, configuration) {
+  constructor(runtimeProtoStubURL, miniBus, configuration, factory) {
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a required parameter');
     if (!miniBus) throw new Error('The bus is a required parameter');
     if (!configuration) throw new Error('The configuration is a required parameter');
@@ -57,7 +57,7 @@ class P2PHandlerStub {
 
     this._connectionControllers = {};
 
-    this._syncher = new Syncher(runtimeProtoStubURL, miniBus, configuration);
+    this._syncher = factory.createSyncher(runtimeProtoStubURL, miniBus, configuration);
     this._syncher.onNotification( (event) => {
 
       console.log('+[P2PHandlerProtoStub] On Syncher Notification ', event);
@@ -191,9 +191,9 @@ class P2PHandlerStub {
 
 }
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
   return {
     name: 'P2PHandlerStub',
-    instance: new P2PHandlerStub(url, bus, config)
+    instance: new P2PHandlerStub(url, bus, config, factory)
   };
 }
