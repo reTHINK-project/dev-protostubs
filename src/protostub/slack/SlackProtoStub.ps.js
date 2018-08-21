@@ -1,7 +1,7 @@
 import slack from 'slack';
 //import { Syncher, NotificationHandler } from 'service-framework/dist/Syncher';
 //import IdentityManager from 'service-framework/dist/IdentityManager';
-import {ChatManager} from 'runtime-core/dist/ChatManager';
+//import {ChatManager} from 'runtime-core/dist/ChatManager';
 //import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 //import {ContextReporter} from 'service-framework/dist/ContextManager';
 
@@ -39,7 +39,7 @@ class SlackProtoStub {
     this._factory = factory;
     this._contextReportersInfo = {};
     this._syncher = factory.createSyncher(runtimeProtoStubURL, bus, config);
-    this._chatManager = new ChatManager(runtimeProtoStubURL, bus, config, this._syncher);
+    this._chatManager = factory.createChatManager(runtimeProtoStubURL, bus, config, this._syncher);
     this._contextReporter = factory.createContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
 
     this._myUrl = runtimeProtoStubURL;
