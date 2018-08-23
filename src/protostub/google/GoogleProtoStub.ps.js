@@ -149,6 +149,9 @@ class GoogleProtoStub {
       _this.querySessions(startTime, lastModified);
       _this.startInterval = setInterval(function () {
         lastModified = reporter.metadata.lastModified;
+        if (!lastModified) {
+          lastModified = startTime;
+        }
         _this.querySessions(startTime, lastModified);
       }, _this.config.sessions_query_interval);
 
