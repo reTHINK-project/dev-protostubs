@@ -1,0 +1,13 @@
+{
+  "name": "edp",
+  "version": "0.3.1",
+  "description": "",
+  "main": "EdpIdpProxyStub.idp.js",
+  "scripts": {
+    "test": "karma start"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+  }
+}
