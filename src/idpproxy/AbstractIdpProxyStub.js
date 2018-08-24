@@ -58,7 +58,7 @@ class AbstractIdpProxyProtoStub {
             _this.replyMessage(msg, value, 200);
           },
 
-          function (error) { _this.replyMessage(msg, error.desc, error.code); }
+          function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
       case 'validateAssertion':
