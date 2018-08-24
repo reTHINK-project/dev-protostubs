@@ -1,14 +1,14 @@
 // import {getExpires} from './OAUTH';
 
-let identities = {};
-let nIdentity = 0;
-let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' );
+//let identities = {};
+//let nIdentity = 0;
+//let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '' );
 
 
 //let tokenEndpoint;
 //let authorisationEndpoint;
 let accessTokenEndpoint;
-let refreshAccessTokenEndpoint;
+//let refreshAccessTokenEndpoint;
 let domain;
 let accessTokenAuthorisationEndpoint;
 
@@ -25,40 +25,6 @@ function urlParser(url, name) {
   return results[1];
 }
 
-function sendHTTPRequest(method, url) {
-  let xhr = new XMLHttpRequest();
-  if ('withCredentials' in xhr) {
-    xhr.open(method, url, true);
-  } else if (typeof XDomainRequest != 'undefined') {
-    // Otherwise, check if XDomainRequest.
-    // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
-    xhr = new XDomainRequest();
-    xhr.open(method, url);
-  } else {
-    // Otherwise, CORS is not supported by the browser.
-    xhr = null;
-  }
-  return new Promise(function(resolve,reject) {
-    if (xhr) {
-      xhr.onreadystatechange = function(e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            let info = JSON.parse(xhr.responseText);
-            resolve(info);
-          } else if (xhr.status === 400) {
-            reject('There was an error processing the token');
-          } else {
-            reject('something else other than 200 was returned');
-          }
-        }
-      };
-      xhr.send();
-    } else {
-      reject('CORS not supported');
-    }
-  });
-}
-
 
 let accessTokenResult = (function (resources, accessToken, expires, input, refresh) {
 
@@ -69,7 +35,6 @@ let accessTokenResult = (function (resources, accessToken, expires, input, refre
   return result;
 
 });
-
 
 
 /**
@@ -133,15 +98,16 @@ export let IdpProxy = {
     //start the login phase
     return new Promise(function (resolve, reject) {
         // the user is loggedin, try to extract the Access Token and its expires
-        let isValid = urlParser(login, 'isValid');
+        let isValid = (urlParser(login, 'isValid') === 'true');
 
-        let accessToken = urlParser(login, 'consent');
+        let accessToken = (urlParser(login, 'consent') === 'true');
 
-        if (!isValid) accessToken = isValid;
+        if (isValid && accessToken) {
+          let expires = 3153600000 + Math.floor(Date.now() / 1000);
 
-        let expires = 3153600000 + Math.floor(Date.now() / 1000);
+          resolve( accessTokenResult(client_id, accessToken, expires, login) );
+        } else reject({ code: 401, desc: { consent: accessToken, isValid: isValid} })
 
-        resolve( accessTokenResult(client_id, accessToken, expires, login) );
     }, function (e) {
 
       reject(e);

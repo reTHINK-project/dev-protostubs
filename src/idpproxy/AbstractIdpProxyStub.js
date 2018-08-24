@@ -55,60 +55,63 @@ class AbstractIdpProxyProtoStub {
           function (value) {
 
             value.userProfile = convertUserProfile(value.userProfile);
-            _this.replyMessage(msg, value);
+            _this.replyMessage(msg, value, 200);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error.desc, error.code); }
         );
         break;
       case 'validateAssertion':
         //       console.info('validateAssertion');
         IdpProxy.validateAssertion(_this.config, params.assertion, params.origin).then(
-          function (value) { _this.replyMessage(msg, value); },
+          function (value) { _this.replyMessage(msg, value, 200); },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error.desc, error.code); }
         );
         break;
       case 'refreshAssertion':
         //     console.info('refreshAssertion');
         IdpProxy.refreshAssertion(params.identity).then(
-          function (value) { _this.replyMessage(msg, value); },
+          function (value) { _this.replyMessage(msg, value, 200); },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error.desc, error.code); }
         );
         break;
       case 'getAccessTokenAuthorisationEndpoint':
         //     console.info('getAccessToken');
         IdpProxy.getAccessTokenAuthorisationEndpoint(_this.config, params.resources).then(
           function (value) {
-            _this.replyMessage(msg, value);
+            _this.replyMessage(msg, value, 200);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error.desc, error.code); }
         );
         break;
       case 'getAccessToken':
         //     console.info('getAccessToken');
         IdpProxy.getAccessToken(_this.config, params.resources, params.login).then(
           function (value) {
-            console.info('OIDC.getAccessToken result: ', value);
+            console.info('AbstractIdpProxy.getAccessToken result: ', value);
             value.input = accessTokenInput(value.input);
-            _this.replyMessage(msg, value);
+            _this.replyMessage(msg, value, 200);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { 
+            console.info('AbstractIdpProxy.getAccessToken error: ', error);
+            _this.replyMessage(msg, error.desc, error.code); 
+          }
         );
         break;
       case 'refreshAccessToken':
         //     console.info('getAccessToken');
         IdpProxy.refreshAccessToken(_this.config, params.token).then(
           function (value) {
-            console.info('OIDC.refreshAccessToken result: ', value);
+            console.info('AbstractIdpProxy.refreshAccessToken result: ', value);
 //            value.input = accessTokenInput(value.input);
-            _this.replyMessage(msg, value);
+            _this.replyMessage(msg, value, 200);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error.desc, error.code); }
         );
         break;
       default:
@@ -122,13 +125,23 @@ class AbstractIdpProxyProtoStub {
   * @param  {message}   message received
   * @param  {value}     value to include in the new message to send
   */
-  replyMessage(msg, value) {
+  replyMessage(msg, value, code) {
     let _this = this;
+    let message;
 
-    let message = {
-      id: msg.id, type: 'response', to: msg.from, from: msg.to,
-      body: { code: 200, value: value }
-    };
+    if (code < 300) {
+      message = {
+        id: msg.id, type: 'response', to: msg.from, from: msg.to,
+        body: { code: code, value: value }
+      };
+    } else {
+      message = {
+        id: msg.id, type: 'response', to: msg.from, from: msg.to,
+        body: { code: code, description: value }
+      };
+
+    }
+
 
     console.log('[AbstractIdpProxyProtoStub.replyMessage] ', message);
 
