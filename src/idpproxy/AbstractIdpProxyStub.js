@@ -55,7 +55,7 @@ class AbstractIdpProxyProtoStub {
           function (value) {
 
             value.userProfile = convertUserProfile(value.userProfile);
-            _this.replyMessage(msg, value, 200);
+            _this.replyMessage(msg, value);
           },
 
           function (error) { _this.replyMessage(msg, error, 401); }
@@ -64,54 +64,51 @@ class AbstractIdpProxyProtoStub {
       case 'validateAssertion':
         //       console.info('validateAssertion');
         IdpProxy.validateAssertion(_this.config, params.assertion, params.origin).then(
-          function (value) { _this.replyMessage(msg, value, 200); },
+          function (value) { _this.replyMessage(msg, value); },
 
-          function (error) { _this.replyMessage(msg, error.desc, error.code); }
+          function (error) { _this.replyMessage(msg, error); }
         );
         break;
       case 'refreshAssertion':
         //     console.info('refreshAssertion');
         IdpProxy.refreshAssertion(params.identity).then(
-          function (value) { _this.replyMessage(msg, value, 200); },
+          function (value) { _this.replyMessage(msg, value); },
 
-          function (error) { _this.replyMessage(msg, error.desc, error.code); }
+          function (error) { _this.replyMessage(msg, error); }
         );
         break;
       case 'getAccessTokenAuthorisationEndpoint':
         //     console.info('getAccessToken');
         IdpProxy.getAccessTokenAuthorisationEndpoint(_this.config, params.resources).then(
           function (value) {
-            _this.replyMessage(msg, value, 200);
+            _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error.desc, error.code); }
+          function (error) { _this.replyMessage(msg, error); }
         );
         break;
       case 'getAccessToken':
         //     console.info('getAccessToken');
         IdpProxy.getAccessToken(_this.config, params.resources, params.login).then(
           function (value) {
-            console.info('AbstractIdpProxy.getAccessToken result: ', value);
+            console.info('OIDC.getAccessToken result: ', value);
             value.input = accessTokenInput(value.input);
-            _this.replyMessage(msg, value, 200);
+            _this.replyMessage(msg, value);
           },
 
-          function (error) { 
-            console.info('AbstractIdpProxy.getAccessToken error: ', error);
-            _this.replyMessage(msg, error.desc, error.code); 
-          }
+          function (error) { _this.replyMessage(msg, error); }
         );
         break;
       case 'refreshAccessToken':
         //     console.info('getAccessToken');
         IdpProxy.refreshAccessToken(_this.config, params.token).then(
           function (value) {
-            console.info('AbstractIdpProxy.refreshAccessToken result: ', value);
+            console.info('OIDC.refreshAccessToken result: ', value);
 //            value.input = accessTokenInput(value.input);
-            _this.replyMessage(msg, value, 200);
+            _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error.desc, error.code); }
+          function (error) { _this.replyMessage(msg, error); }
         );
         break;
       default:
@@ -125,23 +122,13 @@ class AbstractIdpProxyProtoStub {
   * @param  {message}   message received
   * @param  {value}     value to include in the new message to send
   */
-  replyMessage(msg, value, code) {
+  replyMessage(msg, value) {
     let _this = this;
-    let message;
 
-    if (code < 300) {
-      message = {
-        id: msg.id, type: 'response', to: msg.from, from: msg.to,
-        body: { code: code, value: value }
-      };
-    } else {
-      message = {
-        id: msg.id, type: 'response', to: msg.from, from: msg.to,
-        body: { code: code, description: value }
-      };
-
-    }
-
+    let message = {
+      id: msg.id, type: 'response', to: msg.from, from: msg.to,
+      body: { code: 200, value: value }
+    };
 
     console.log('[AbstractIdpProxyProtoStub.replyMessage] ', message);
 

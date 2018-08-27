@@ -81,9 +81,11 @@ class GoogleProtoStub {
             from: msg.to,
             to: msg.from,
             body: {
-              code: 200
+              code: 200,
+              runtimeURL: _this._runtimeSessionURL
             }
           };
+          console.log(_this);
           _this._bus.postMessage(msgResponse);
         }
         // get JS hyperty
@@ -298,6 +300,7 @@ class GoogleProtoStub {
       else throw error;
 
     }).catch(onError => {
+      _this._sendStatus('disconnected', onError);
       console.error("[GoogleProtoStub.querySessions] error: ", onError);
 
     });
@@ -463,6 +466,7 @@ class GoogleProtoStub {
     }
     _this._bus.postMessage(msg);
   }
+
 }
 
 export default function activate(url, bus, config, factory) {
