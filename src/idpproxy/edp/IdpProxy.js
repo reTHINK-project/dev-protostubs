@@ -133,15 +133,20 @@ export let IdpProxy = {
     //start the login phase
     return new Promise(function (resolve, reject) {
         // the user is loggedin, try to extract the Access Token and its expires
-        let isValid = urlParser(login, 'isValid');
+        let isValid = urlParser(login, 'isValid') === 'true' ? true : false;
 
-        let accessToken = urlParser(login, 'consent');
+        let consent = urlParser(login, 'consent') === 'true' ? true : false;
 
-        if (!isValid) accessToken = isValid;
+        if (consent & isValid) {
+          let accessToken = consent;
+          let expires = 3153600000 + Math.floor(Date.now() / 1000);
 
-        let expires = 3153600000 + Math.floor(Date.now() / 1000);
+          resolve( accessTokenResult(client_id, accessToken, expires, login) );
+        } else {
+          reject( {consent: consent, isValid: isValid});
+        }
 
-        resolve( accessTokenResult(client_id, accessToken, expires, login) );
+
     }, function (e) {
 
       reject(e);
