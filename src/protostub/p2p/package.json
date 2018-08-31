@@ -1,6 +1,6 @@
 {
   "name": "P2PStubs",
-  "version": "0.3.1",
+  "version": "0.5.0",
   "description": "Implementation of the P2P handler and requester stub",
   "main": "",
   "scripts": {

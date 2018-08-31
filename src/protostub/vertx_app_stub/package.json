@@ -1,6 +1,6 @@
 {
   "name": "vertx_app_stub",
-  "version": "0.3.1",
+  "version": "0.5.0",
   "description": "",
   "main": "VertxProtoStub.ps.js",
   "scripts": {
@@ -8,8 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "vertx3-eventbus-client": "3.5.2"
   }
