@@ -1,13 +1,13 @@
 import slack from 'slack';
-import { Syncher, NotificationHandler } from 'service-framework/dist/Syncher';
-import IdentityManager from 'service-framework/dist/IdentityManager';
-import {ChatManager,ChatController} from 'service-framework/dist/ChatManager';
-import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
-import {ContextReporter} from 'service-framework/dist/ContextManager';
+//import { Syncher, NotificationHandler } from 'service-framework/dist/Syncher';
+//import IdentityManager from 'service-framework/dist/IdentityManager';
+//import {ChatManager} from 'runtime-core/dist/ChatManager';
+//import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
+//import {ContextReporter} from 'service-framework/dist/ContextManager';
 
 class SlackProtoStub {
 
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor(runtimeProtoStubURL, bus, config, factory) {
 
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
     if (!bus) throw new Error('The bus is a needed parameter');
@@ -36,10 +36,11 @@ class SlackProtoStub {
     //this._chatControllersExtra = {};
     //this._schemaURL;
     this._dataObjectReporterURL;
+    this._factory = factory;
     this._contextReportersInfo = {};
-    this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
-    this._chatManager = new ChatManager(runtimeProtoStubURL, bus, config, this._syncher);
-    this._contextReporter = new ContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
+    this._syncher = factory.createSyncher(runtimeProtoStubURL, bus, config);
+    this._chatManager = factory.createChatManager(runtimeProtoStubURL, bus, config, this._syncher);
+    this._contextReporter = factory.createContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
 
     this._myUrl = runtimeProtoStubURL;
     this._bus = bus;
@@ -51,7 +52,7 @@ class SlackProtoStub {
       _this._onSlackInvitation(event);
     });
 
-    this._notificationHandler = new NotificationHandler(bus);
+    this._notificationHandler = factory.createNotificationHandler(bus);
 
     this._notificationHandler.onNotification('comm', (event) => {
       _this._chatManager.processNotification(event);
@@ -190,14 +191,14 @@ class SlackProtoStub {
                 console.log('Slack User information: ', infoReturned, event);
 
                 // username, userURL, avatar, cn, locale, idp, assertion
-                let identity = new MessageBodyIdentity(
+                let identity = _this._factory.createMessageBodyIdentity(
                   userInfo.name,
                   'slack://slack.com/' + userInfo.name + '@slack.com',
                   userInfo.profile.image_192,
                   userInfo.name,
                   '', 'slack.com', undefined, userInfo.profile);
 
-                let identityToInv = new MessageBodyIdentity(
+                let identityToInv = _this._factory.createMessageBodyIdentity(
                   toInvInfo.name,
                   'slack://slack.com/' + toInvInfo.name + '@slack.com',
                   toInvInfo.profile.image_192,
@@ -504,7 +505,7 @@ class SlackProtoStub {
 
             if (neededInfoInvited.id != currentUser.id && neededOwnInfo.id != currentUser.id) {
               console.log('[SlackProtostub] to add ', currentUser.id);
-              let identity = new MessageBodyIdentity(
+              let identity = _this._factory.createMessageBodyIdentity(
                 currentUser.name,
                 'slack://slack.com/' + currentUser.name + '@slack.com',
                 currentUser.profile.image_192,
@@ -574,7 +575,7 @@ class SlackProtoStub {
         return value.id === message.user;
       })[0];
 
-      let identity = new MessageBodyIdentity(
+      let identity = _this._factory.createMessageBodyIdentity(
         invInfo.name,
         'slack://slack.com/' + invInfo.name + '@slack.com',
         invInfo.profile.image_192,
@@ -660,7 +661,7 @@ class SlackProtoStub {
         } else {
 
           console.log('[SlackProtostub getUserInfo] ', data);
-          let identity = new MessageBodyIdentity(
+          let identity = _this._factory.createMessageBodyIdentity(
                     data.user.name,
                     'slack://slack.com/' + data.user.name + '@slack.com',
                     data.user.profile.image_192,
@@ -879,9 +880,9 @@ class SlackProtoStub {
 }
 
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
   return {
     name: 'SlackProtoStub',
-    instance: new SlackProtoStub(url, bus, config)
+    instance: new SlackProtoStub(url, bus, config, factory)
   };
 }

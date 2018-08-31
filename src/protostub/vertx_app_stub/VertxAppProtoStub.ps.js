@@ -21,8 +21,8 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
-import { WalletReporter } from 'service-framework/dist/WalletManager';
-import { Syncher } from 'service-framework/dist/Syncher';
+//import { WalletReporter } from 'service-framework/dist/WalletManager';
+//import { Syncher } from 'service-framework/dist/Syncher';
 
 
 class VertxAppProtoStub {
@@ -33,7 +33,7 @@ class VertxAppProtoStub {
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
    * @return {VertxAppProtoStub}
    */
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor(runtimeProtoStubURL, bus, config, factory) {
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
     if (!bus) throw new Error('The bus is a needed parameter');
     if (!config) throw new Error('The config is a needed parameter');
@@ -57,12 +57,14 @@ class VertxAppProtoStub {
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    //TODO: to be defined in the config
+    this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
 
     this._runtimeSessionURL = config.runtimeURL;
 
-    this._syncher = new Syncher(this._runtimeProtoStubURL, this._bus, this._config);
-    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, this._syncher);
-    console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter);
+    this._syncher = factory.createSyncher(this._runtimeProtoStubURL, this._bus, this._config);
+    //    this._walletReporter = new WalletReporter(this._runtimeProtoStubURL, this._bus, this._config, factory, this._syncher);
+    console.log('[VertxAppProtoStub] this._contextReporter', this._contextReporter, factory);
     this._eb = null;
     this._walletReporterDataObject = null;
     this._publicWalletsReporterDataObject = null;
@@ -117,7 +119,7 @@ class VertxAppProtoStub {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
         let test = _this._eb.enableReconnect(true);
-        console.log('[VertxAppProtoStub]',  test);
+        console.log('[VertxAppProtoStub]', test);
         _this._eventBusUsage().then(function (result) {
           console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
           if (result) {
@@ -159,11 +161,10 @@ class VertxAppProtoStub {
         //  2 - call create() method on reporter (send as reply)
         console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
         let bal = 0;
-        if (reply.body.identity.userProfile.hasOwnProperty('info') && reply.body.identity.userProfile.info.hasOwnProperty('balance'))
-        {
-            bal = reply.body.identity.userProfile.info.balance;
+        if (reply.body.identity.userProfile.hasOwnProperty('info') && reply.body.identity.userProfile.info.hasOwnProperty('balance')) {
+          bal = reply.body.identity.userProfile.info.balance;
         }
-        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [] }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
+        _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { balance: bal, transactions: [], ranking: 0, 'bonus-credit': bal }, ['wallet'], reply.body.identity.userProfile.userURL, null, true).then(function (result) {
 
           if (result != null) {
 
@@ -192,6 +193,7 @@ class VertxAppProtoStub {
 
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
+
               /*
               if (reply2.body.wallet.balance != 0) {
                 let balance1 = JSON.parse(JSON.stringify(reply2.body.wallet.balance));
@@ -201,6 +203,9 @@ class VertxAppProtoStub {
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
+              _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
+              _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
+
 
               let addressChanges = reply2.body.wallet.address + '/changes';
 
@@ -208,8 +213,27 @@ class VertxAppProtoStub {
 
               _this._eb.registerHandler(addressChanges, function (error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
-                _this._walletReporterDataObject.data.balance = message.body.body.balance;
-                _this._walletReporterDataObject.data.transactions = message.body.body.transactions;
+                const { balance, transactions, ranking, 'bonus-credit': bonusCredit } = message.body.body
+                if (balance) {
+                  _this._walletReporterDataObject.data.balance = balance;
+                }
+                if (transactions) {
+                  if (Array.isArray(transactions) === true) {
+                    _this._walletReporterDataObject.data.transactions = transactions;
+                  }
+                  else {
+                    // single value
+                    const transactionsCopy = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
+                    transactionsCopy.push(transactions);
+                    _this._walletReporterDataObject.data.transactions = transactionsCopy;
+                  }
+                }
+                if (ranking) {
+                  _this._walletReporterDataObject.data.ranking = ranking;
+                }
+                if (bonusCredit) {
+                  _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit;
+                }
               });
 
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
@@ -324,7 +348,7 @@ class VertxAppProtoStub {
         } else {
           _this.smartIotIntegration(msg);
         }
-      } else if(msg.body.type === 'delete') {
+      } else if (msg.body.type === 'delete') {
         _this.smartIotIntegration(msg);
       }
 
@@ -426,7 +450,7 @@ class VertxAppProtoStub {
     }
   }
 
-  smartIotIntegration(msg){
+  smartIotIntegration(msg) {
 
     let _this = this;
     const smartIotStubAddress = msg.to;
@@ -436,11 +460,11 @@ class VertxAppProtoStub {
     delete msg.body.type;
 
     _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
-      console.log('[VertxAppProtoStub] smartIot Integration', reply,reply_err);
+      console.log('[VertxAppProtoStub] smartIot Integration', reply, reply_err);
       if (reply_err == null) {
 
 
-        _this._sendReplyMsg(msg,reply.body.body);
+        _this._sendReplyMsg(msg, reply.body.body);
         /*
         if (msg.body.resource == 'device') {
           _this._sendReplyMsg(msg,reply.body.body);
@@ -495,14 +519,14 @@ class VertxAppProtoStub {
         }
         */
       } else {
-      console.log('[VertxAppProtoStub] no reply', msg);
+        console.log('[VertxAppProtoStub] no reply', msg);
 
-    }
+      }
     });
 
 
   }
-  _sendReplyMsg(msg,body) {
+  _sendReplyMsg(msg, body) {
     let _this = this;
 
     let responseMsg = {
@@ -584,30 +608,30 @@ class VertxAppProtoStub {
     return new Promise(function (resolve) {
 
       let createPub = {
-	       type: 'create',
-         to: 'hyperty://sharing-cities-dsm/wallet-manager',
-         from: _this._runtimeSessionURL,
-         identity: _this._publicWallets
-       }
+        type: 'create',
+        to: 'hyperty://sharing-cities-dsm/wallet-manager',
+        from: _this._runtimeSessionURL,
+        identity: _this._publicWallets
+      }
 
-       _this._eb.send('hyperty://sharing-cities-dsm/wallet-manager', createPub, function (reply_err, reply) {
-         if (reply_err == null) {
+      _this._eb.send('hyperty://sharing-cities-dsm/wallet-manager', createPub, function (reply_err, reply) {
+        if (reply_err == null) {
 
-           console.log("[VertxAppProtoStub] Received reply public wallets", reply);
+          console.log("[VertxAppProtoStub] Received reply public wallets", reply);
 
-           let responseMsg = {};
-           responseMsg.body = {};
-           responseMsg.body.value = {};
-           responseMsg.body.code = 200;
+          let responseMsg = {};
+          responseMsg.body = {};
+          responseMsg.body.value = {};
+          responseMsg.body.code = 200;
 
-           reply.reply(responseMsg, function (reply_err, reply2) {
+          reply.reply(responseMsg, function (reply_err, reply2) {
 
-             console.log("[VertxAppProtoStub] Received reply2 public wallets", reply);
+            console.log("[VertxAppProtoStub] Received reply2 public wallets", reply);
 
-           });
-           resolve();
-         }
-       });
+          });
+          resolve();
+        }
+      });
 
     });
   }
@@ -728,7 +752,7 @@ class VertxAppProtoStub {
             resolve(wallet);
 
           } else {
-            _this._walletReporter.create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
+            _this._create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
@@ -757,6 +781,51 @@ class VertxAppProtoStub {
     });
   }
 
+  /**
+   * This function is used to create a new status object syncher
+   * @return {Promise}
+   */
+
+  _create(init, resources, name = 'myWallet', reporter = null, reuseURL = null, domainRegistration = true) {
+    //debugger;
+    let _this = this;
+    let input;
+    return new Promise((resolve, reject) => {
+      if (!reporter && !reuseURL) {
+        input = { resources: resources };
+      } else if (reporter && !reuseURL) {
+        input = { resources: resources, reporter: reporter };
+      } else if (!reporter && reuseURL) {
+        input = { resources: resources, reuseURL: reuseURL };
+      } else {
+        input = { resources: resources, reuseURL: reuseURL, reporter: reporter };
+      }
+
+      input.domain_registration = domainRegistration;
+
+      console.info('[VertxAppProtoStub._create] lets create a new Wallet Object ', input);
+      _this._syncher.create(_this.walletDescURL, [], init, true, false, name, null, input)
+        .then((wallet) => {
+          _this.wallet = wallet;
+
+          _this._onSubscription(wallet);
+          resolve(wallet);
+
+        }).catch(function (reason) {
+          reject(reason);
+        });
+
+    });
+
+  }
+
+  _onSubscription(wallet) {
+    wallet.onSubscription((event) => {
+      console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
+      event.accept();
+    });
+  }
+
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(identityToUse, contextUrl, schemaUrl) {
     let _this = this;
@@ -776,7 +845,7 @@ class VertxAppProtoStub {
     let _this = this;
 
     return new Promise(function (resolve, reject) {
-      console.log('[VertxAppProtoStub] waiting for eb Open state(',_this._eb.sockJSConn.readyState, ')', _this._eb);
+      console.log('[VertxAppProtoStub] waiting for eb Open state(', _this._eb.sockJSConn.readyState, ')', _this._eb);
 
       _this._eb.onopen = () => {
         console.log('[VertxAppProtoStub] _this._eb-> open');
@@ -787,12 +856,12 @@ class VertxAppProtoStub {
             _this._configAvailableStreams().then(function () {
 
               let toCreatePub = {
-              	       type: 'create',
-                       to: 'hyperty://sharing-cities-dsm/wallet-manager',
-                       from: _this._runtimeSessionURL,
-                       identity: _this._publicWallets.identity,
-                       body: {type: 'create'}
-                     }
+                type: 'create',
+                to: 'hyperty://sharing-cities-dsm/wallet-manager',
+                from: _this._runtimeSessionURL,
+                identity: _this._publicWallets.identity,
+                body: { type: 'create' }
+              }
               _this.createWalletPub(toCreatePub).then(function () {
                 clearTimeout(timer1);
                 resolve(true);
@@ -845,9 +914,9 @@ class VertxAppProtoStub {
   }
 }
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
   return {
     name: 'VertxAppProtoStub',
-    instance: new VertxAppProtoStub(url, bus, config)
+    instance: new VertxAppProtoStub(url, bus, config, factory)
   };
 }

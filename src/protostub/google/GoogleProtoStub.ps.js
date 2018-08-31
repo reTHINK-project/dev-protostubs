@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-import { Syncher } from "service-framework/dist/Syncher";
+//import { Syncher } from "service-framework/dist/Syncher";
 
 class GoogleProtoStub {
   /**
@@ -30,7 +30,7 @@ class GoogleProtoStub {
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
    * @return {GoogleProtoStub}
    */
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor(runtimeProtoStubURL, bus, config, factory) {
     if (!runtimeProtoStubURL)
       throw new Error("The runtimeProtoStubURL is a needed parameter");
     if (!bus) throw new Error("The bus is a needed parameter");
@@ -50,7 +50,7 @@ class GoogleProtoStub {
     this._domain = config.domain;
 
     this._runtimeSessionURL = config.runtimeURL;
-    this._syncher = new Syncher(runtimeProtoStubURL, bus, config);
+    this._syncher = factory.createSyncher(runtimeProtoStubURL, bus, config);
 
     this._userActivityVertxHypertyURL = "hyperty://sharing-cities-dsm/user-activity";
 
@@ -81,9 +81,11 @@ class GoogleProtoStub {
             from: msg.to,
             to: msg.from,
             body: {
-              code: 200
+              code: 200,
+              runtimeURL: _this._runtimeSessionURL
             }
           };
+          console.log(_this);
           _this._bus.postMessage(msgResponse);
         }
         // get JS hyperty
@@ -149,6 +151,9 @@ class GoogleProtoStub {
       _this.querySessions(startTime, lastModified);
       _this.startInterval = setInterval(function () {
         lastModified = reporter.metadata.lastModified;
+        if (!lastModified) {
+          lastModified = startTime;
+        }
         _this.querySessions(startTime, lastModified);
       }, _this.config.sessions_query_interval);
 
@@ -295,6 +300,7 @@ class GoogleProtoStub {
       else throw error;
 
     }).catch(onError => {
+      _this._sendStatus('disconnected', onError);
       console.error("[GoogleProtoStub.querySessions] error: ", onError);
 
     });
@@ -460,11 +466,12 @@ class GoogleProtoStub {
     }
     _this._bus.postMessage(msg);
   }
+
 }
 
-export default function activate(url, bus, config) {
+export default function activate(url, bus, config, factory) {
   return {
     name: "GoogleProtoStub",
-    instance: new GoogleProtoStub(url, bus, config)
+    instance: new GoogleProtoStub(url, bus, config, factory)
   };
 }

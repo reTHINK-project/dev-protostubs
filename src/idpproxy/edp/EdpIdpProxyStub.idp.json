@@ -1,0 +1,11 @@
+{
+  "language": "javascript",
+  "description": "IDPProxy for EDP Distribuição IDP",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "edpdistribuicao.pt"
+}

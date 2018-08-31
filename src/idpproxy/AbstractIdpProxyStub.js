@@ -58,7 +58,7 @@ class AbstractIdpProxyProtoStub {
             _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
       case 'validateAssertion':
@@ -74,7 +74,7 @@ class AbstractIdpProxyProtoStub {
         IdpProxy.refreshAssertion(params.identity).then(
           function (value) { _this.replyMessage(msg, value); },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error, value, 401); }
         );
         break;
       case 'getAccessTokenAuthorisationEndpoint':
@@ -84,7 +84,7 @@ class AbstractIdpProxyProtoStub {
             _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
       case 'getAccessToken':
@@ -96,7 +96,7 @@ class AbstractIdpProxyProtoStub {
             _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
       case 'refreshAccessToken':
@@ -108,7 +108,7 @@ class AbstractIdpProxyProtoStub {
             _this.replyMessage(msg, value);
           },
 
-          function (error) { _this.replyMessage(msg, error); }
+          function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
       default:
@@ -122,13 +122,16 @@ class AbstractIdpProxyProtoStub {
   * @param  {message}   message received
   * @param  {value}     value to include in the new message to send
   */
-  replyMessage(msg, value) {
+  replyMessage(msg, value, code = 200) {
     let _this = this;
 
     let message = {
       id: msg.id, type: 'response', to: msg.from, from: msg.to,
-      body: { code: 200, value: value }
+      body: { code: code }
     };
+
+    if (code < 300 ) message.body.value = value;
+    else message.body.description = value;
 
     console.log('[AbstractIdpProxyProtoStub.replyMessage] ', message);
 
