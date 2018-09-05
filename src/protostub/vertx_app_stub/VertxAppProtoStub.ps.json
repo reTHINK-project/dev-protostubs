@@ -3,7 +3,7 @@
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "https://vertx-runtime.hybroker.rethink.ptinovacao.pt/eventbus",
+    "url": "https://msg-node.localhost:9091/eventbus",
     "vertxbus_ping_interval": 10000,
     "host": "sharing-cities-dsm",
     "domain": "hybroker.rethink.ptinovacao.pt",
@@ -16,7 +16,8 @@
             "userURL": "user://public-wallets"
           }
         }
-      }
+      },
+    "timeoutValue": 500
   },
   "constraints": {
         "browser": true

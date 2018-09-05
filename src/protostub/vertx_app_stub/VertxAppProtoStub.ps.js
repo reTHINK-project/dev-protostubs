@@ -57,6 +57,7 @@ class VertxAppProtoStub {
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    this._timeOutValue = config.timeoutValue;
     //TODO: to be defined in the config
     this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
 
@@ -130,15 +131,20 @@ class VertxAppProtoStub {
 
       else {
 
-        function waitForEB() {
-          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-            _this._SubscriptionManager(msg);
-            clearTimeout(timer);
-          }
-        }
+        if (_this._eb != null && _this._eb.hasOwnProperty('sockJSConn') && WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+          _this._SubscriptionManager(msg);
+        } else {
 
-        let timer = setTimeout(waitForEB, 2000);
+          function waitForEB() {
+            console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
+            if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+              _this._SubscriptionManager(msg);
+              clearTimeout(timer);
+            }
+          }
+          let timer = setTimeout(waitForEB, _this._timeOutValue);
+
+        }
       }
 
     });
@@ -877,7 +883,7 @@ class VertxAppProtoStub {
             });
           }
         }
-        let timer1 = setTimeout(waitForEB1, 200);
+        let timer1 = setTimeout(waitForEB1, _this._timeOutValue);
       };
 
       _this._eb.onerror = function (e) {
