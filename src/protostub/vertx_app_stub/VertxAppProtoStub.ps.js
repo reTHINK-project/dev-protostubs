@@ -151,6 +151,48 @@ class VertxAppProtoStub {
 
   }
 
+
+
+  updateResource(msg) {
+    /**
+    *
+    *  let updateMessage = {
+    *    type: 'forward', to: 'hyperty://sharing-cities-dsm/wallet-manager', from: _this.hypertyURL,
+    *    identity: _this.identity,
+    *    body: {
+    *      type: 'update',
+    *      from: _this.hypertyURL,
+    *      resource: source,
+    *      value: value
+    *    }
+    *  };
+    *
+    */
+    let _this = this;
+    const toAddress = msg.to;
+
+    // 1 - send to wallet manager (request to create wallet)
+    let hypertyURL = msg.from;
+    msg.type = msg.body.type;
+    msg.from = hypertyURL;
+    delete msg.body.type;
+    delete msg.body.from;
+
+    _this._eb.send(toAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] update response from vertx', reply);
+      let responseMsg = {
+        id: msg.id,
+        type: 'response',
+        from: msg.to,
+        to: hypertyURL,
+        body: reply.body
+      };
+
+      _this.postMessage(responseMsg);
+
+    });
+  }
+
   createWallet(msg) {
     let _this = this;
     const walletManagerAddress = msg.to;
@@ -183,7 +225,7 @@ class VertxAppProtoStub {
             reply.reply(responseMsg, function (reply_err, reply2) {
 
               // 4 - send reply back to the JS wallet hyperty
-              console.log
+
               let responseMsg = {
                 id: msg.id,
                 type: 'response',
@@ -356,6 +398,8 @@ class VertxAppProtoStub {
         }
       } else if (msg.body.type === 'delete') {
         _this.smartIotIntegration(msg);
+      } else if (msg.body.type === 'update') {
+        updateResource(msg);
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
