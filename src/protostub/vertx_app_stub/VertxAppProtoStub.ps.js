@@ -188,7 +188,7 @@ class VertxAppProtoStub {
         body: reply.body
       };
 
-      _this.postMessage(responseMsg);
+      _this._bus.postMessage(responseMsg);
 
     });
   }
@@ -399,7 +399,7 @@ class VertxAppProtoStub {
       } else if (msg.body.type === 'delete') {
         _this.smartIotIntegration(msg);
       } else if (msg.body.type === 'update') {
-        updateResource(msg);
+        _this.updateResource(msg);
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
