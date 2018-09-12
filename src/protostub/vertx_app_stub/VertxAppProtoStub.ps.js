@@ -180,15 +180,20 @@ class VertxAppProtoStub {
 
     _this._eb.send(toAddress, msg, function (reply_err, reply) {
       console.log('[VertxAppProtoStub] update response from vertx', reply);
-      let responseMsg = {
-        id: msg.id,
-        type: 'response',
-        from: msg.to,
-        to: hypertyURL,
-        body: reply.body
-      };
+      let responseMsg;
+      if (reply != null && reply.hasOwnProperty('body')) {
+        responseMsg = {
+          id: msg.id,
+          type: 'response',
+          from: msg.to,
+          to: hypertyURL,
+          body: reply.body
+        };
+        _this._bus.postMessage(responseMsg);
+      }
 
-      _this._bus.postMessage(responseMsg);
+
+
 
     });
   }
