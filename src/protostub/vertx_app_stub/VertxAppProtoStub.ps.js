@@ -57,6 +57,7 @@ class VertxAppProtoStub {
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    this._timeOutValue = config.timeoutValue;
     //TODO: to be defined in the config
     this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
 
@@ -130,19 +131,71 @@ class VertxAppProtoStub {
 
       else {
 
-        function waitForEB() {
-          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-            _this._SubscriptionManager(msg);
-            clearTimeout(timer);
-          }
-        }
+        if (_this._eb != null && _this._eb.hasOwnProperty('sockJSConn') && WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+          _this._SubscriptionManager(msg);
+        } else {
 
-        let timer = setTimeout(waitForEB, 2000);
+          function waitForEB() {
+            console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
+            if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+              _this._SubscriptionManager(msg);
+              clearTimeout(timer);
+            }
+          }
+          let timer = setTimeout(waitForEB, _this._timeOutValue);
+
+        }
       }
 
     });
 
+  }
+
+
+
+  updateResource(msg) {
+    /**
+    *
+    *  let updateMessage = {
+    *    type: 'forward', to: 'hyperty://sharing-cities-dsm/wallet-manager', from: _this.hypertyURL,
+    *    identity: _this.identity,
+    *    body: {
+    *      type: 'update',
+    *      from: _this.hypertyURL,
+    *      resource: source,
+    *      value: value
+    *    }
+    *  };
+    *
+    */
+    let _this = this;
+    const toAddress = msg.to;
+
+    // 1 - send to wallet manager (request to create wallet)
+    let hypertyURL = msg.from;
+    msg.type = msg.body.type;
+    msg.from = hypertyURL;
+    delete msg.body.type;
+    delete msg.body.from;
+
+    _this._eb.send(toAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] update response from vertx', reply);
+      let responseMsg;
+      if (reply != null && reply.hasOwnProperty('body')) {
+        responseMsg = {
+          id: msg.id,
+          type: 'response',
+          from: msg.to,
+          to: hypertyURL,
+          body: reply.body
+        };
+        _this._bus.postMessage(responseMsg);
+      }
+
+
+
+
+    });
   }
 
   createWallet(msg) {
@@ -177,7 +230,7 @@ class VertxAppProtoStub {
             reply.reply(responseMsg, function (reply_err, reply2) {
 
               // 4 - send reply back to the JS wallet hyperty
-              console.log
+
               let responseMsg = {
                 id: msg.id,
                 type: 'response',
@@ -350,6 +403,8 @@ class VertxAppProtoStub {
         }
       } else if (msg.body.type === 'delete') {
         _this.smartIotIntegration(msg);
+      } else if (msg.body.type === 'update') {
+        _this.updateResource(msg);
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
@@ -877,7 +932,7 @@ class VertxAppProtoStub {
             });
           }
         }
-        let timer1 = setTimeout(waitForEB1, 200);
+        let timer1 = setTimeout(waitForEB1, _this._timeOutValue);
       };
 
       _this._eb.onerror = function (e) {
