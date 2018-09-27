@@ -490,24 +490,24 @@ class VertxAppProtoStub {
         userURL = msg.body.value.reporter;
       }
 
-      let inviteMessage = {
-        type: 'create',
-        from: msg.from,
-        to: msg.to,
-        identity: { userProfile: { userURL: userURL, guid: guid } }
-      };
-      if (msg.to == 'hyperty://sharing-cities-dsm/crm/tickets') {
-        inviteMessage.body ={
-          ticket: {
-            created: msg.body.value.created,
-            lastModified: msg.body.value.lastModified,
-            message: msg.body.value.name
-          }
-        }
-      }
-      console.log("[VertxAppProtoStub] MSG to INVITE", inviteMessage);
+      // let inviteMessage = {
+      //   type: 'create',
+      //   from: msg.from,
+      //   to: msg.to,
+      //   identity: { userProfile: { userURL: userURL, guid: guid } }
+      // };
+      // if (msg.to == 'hyperty://sharing-cities-dsm/crm/tickets') {
+      //   // inviteMessage.body ={
+      //   //   ticket: {
+      //   //     created: msg.body.value.created,
+      //   //     lastModified: msg.body.value.lastModified,
+      //   //     message: msg.body.value.name
+      //   //   }
+      //   // }
+      // }
+      console.log("[VertxAppProtoStub] MSG to INVITE", msg);
       //Invite Vertx to subscribe...
-      _this._eb.publish(msg.to, inviteMessage);
+      _this._eb.publish(msg.to, msg);
 
       let msgResponse = {
         id: msg.id,
