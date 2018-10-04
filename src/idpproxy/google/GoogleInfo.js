@@ -77,15 +77,15 @@ export function revokeAccessTokenEndpoint(token) {
 
 export function mapping(resource) {
   if (!resource) {
-    return "fitness.location.read";
+    return "fitness.location.read%20fitness.activity.read";
   }
   switch (resource) {
     case "user_activity_context":
-      return "fitness.location.read";
+      return "fitness.location.read%20fitness.activity.read";
       break;
 
     default:
-      return "fitness.location.read";
+      return "fitness.location.read%20fitness.activity.read";
       break;
   }
 }
