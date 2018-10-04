@@ -40,7 +40,7 @@ export let googleAPIInfo = {
   "accessType": "offline",
   "type": "code",
   // TODO - scope is read from message (support multiple Google APIs)
-  "scope": "https://www.googleapis.com/auth/fitness.activity.read",
+  "scope": "https://www.googleapis.com/auth/fitness.location.read",
   "state": "state",
   "domain": "google.com",
   'grant_type': "authorization_code",
@@ -77,15 +77,15 @@ export function revokeAccessTokenEndpoint(token) {
 
 export function mapping(resource) {
   if (!resource) {
-    return "fitness.activity.read";
+    return "fitness.location.read";
   }
   switch (resource) {
     case "user_activity_context":
-      return "fitness.activity.read";
+      return "fitness.location.read";
       break;
 
     default:
-      return "fitness.activity.read";
+      return "fitness.location.read";
       break;
   }
 }
@@ -121,7 +121,3 @@ export function accessTokenInput(info) {
 
   return {info};
 }
-
-
-
-
