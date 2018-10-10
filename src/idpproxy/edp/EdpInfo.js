@@ -2,8 +2,8 @@
 let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '');
 
 export let edpInfo = {
-  "authorisationEndpoint": "https://fe-dot-online-dist-edp-pre.appspot.com/sharing-cities/login?",
-  "revokeEndpoint": "https://fe-dot-online-dist-edp-pre.appspot.com/sharing-cities/revoke?",
+  "authorisationEndpoint":  "https://online.edpdistribuicao.pt/sharing-cities/login?",
+  "revokeEndpoint": "https://online.edpdistribuicao.pt/sharing-cities/revoke?",
   "domain": "edpdistribuicao.pt"
 };
 
