@@ -432,9 +432,11 @@ class VertxAppProtoStub {
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
       console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
-
-      if (msg.body.identity == null && msg.to == 'hyperty://sharing-cities-dsm/user-activity') {
-        msg.body.identity = _this.identity;
+      if (msg.identity == null) { /*&& (msg.to == 'hyperty://sharing-cities-dsm/user-activity' || msg.to == 'hyperty://sharing-cities-dsm/elearning') ) {*/
+        if (_this.identity == null && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
+          _this.identity = msg.body.identity;
+        }
+        msg.identity = _this.identity;
       }
       // handle message subscribe before invite Vertx
       _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
