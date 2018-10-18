@@ -253,7 +253,16 @@ class VertxAppProtoStub {
                 if (guid) {
                   _this._eb.registerHandler(guid, function (error, message) {
                     console.log('[VertxAppProtoStub] new msg on user GUID', message);
-                    _this._bus.postMessage(message.body);
+                    // HACK: send reply instantly to CRM
+                    let response = { body: { code: 200 } };
+                    message.reply(response);
+
+                    _this._bus.postMessage(message.body)
+                    // , (reply) => {
+                    //   debugger;
+                    //   console.log('[VertxAppProtoStub] reply to message', reply);
+                    //   // resolve(reply);
+                    // });
                   });
                 }
               }
