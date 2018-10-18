@@ -21,6 +21,7 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
+import URI from 'urijs';
 //import { WalletReporter } from 'service-framework/dist/WalletManager';
 //import { Syncher } from 'service-framework/dist/Syncher';
 
@@ -50,10 +51,12 @@ class VertxAppProtoStub {
 
     this._id = 0;
 
+    let uri = new URI(config.runtimeURL);
+
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._bus = bus;
     this._config = config;
-    this._domain = config.domain;
+    this._domain = uri.hostname();
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
