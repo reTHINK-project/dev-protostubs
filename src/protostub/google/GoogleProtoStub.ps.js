@@ -189,7 +189,8 @@ class GoogleProtoStub {
         resources: resources,
         expires: 3600,
         reporter: reporterURL,
-        domain_registration: false
+        domain_registration: false,
+        domain_routing: false 
       };
 
       _this._syncher

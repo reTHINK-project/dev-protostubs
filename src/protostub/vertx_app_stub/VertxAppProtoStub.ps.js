@@ -799,7 +799,8 @@ class VertxAppProtoStub {
           expires: 3600,
           reporter: identityURL,
           reuseURL: reuseURL,
-          domain_registration: false
+          domain_registration: false,
+          domain_routing: false 
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
@@ -887,6 +888,7 @@ class VertxAppProtoStub {
       }
 
       input.domain_registration = domainRegistration;
+      input.domain_routing = false;
 
       console.info('[VertxAppProtoStub._create] lets create a new Wallet Object ', input);
       _this._syncher.create(_this.walletDescURL, [], init, true, false, name, null, input)
