@@ -241,8 +241,7 @@ class VertxAppProtoStub {
                   code: 200,
                   reporter_url: result.url,
                   publics_url: _this._publicWalletsReporterDataObject.url,
-                  crm: reply2.body.crm,
-                  valid: reply2.body.valid
+                  role: reply2.body.role
                 }
               };
 
