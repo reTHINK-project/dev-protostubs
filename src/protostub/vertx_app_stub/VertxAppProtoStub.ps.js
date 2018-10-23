@@ -424,10 +424,10 @@ class VertxAppProtoStub {
         if (msg.body.resource == 'wallet') {
           _this.createWallet(msg);
         } else {
-          _this.smartIotIntegration(msg);
+          _this.forwardToVertxRuntime(msg);
         }
       } else if (msg.body.type === 'delete') {
-        _this.smartIotIntegration(msg);
+        _this.forwardToVertxRuntime(msg);
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
       }
@@ -543,19 +543,18 @@ class VertxAppProtoStub {
     }
   }
 
-  smartIotIntegration(msg) {
+  forwardToVertxRuntime(msg) {
 
     let _this = this;
-    const smartIotStubAddress = msg.to;
+    const vertxAddress = msg.to;
 
     msg.type = msg.body.type;
     delete msg.body.from;
     delete msg.body.type;
 
-    _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
-      console.log('[VertxAppProtoStub] smartIot Integration', reply, reply_err);
+    _this._eb.send(vertxAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] forwardToVertxRuntime', reply, reply_err);
       if (reply_err == null) {
-
 
         _this._sendReplyMsg(msg, reply.body.body);
         /*
@@ -808,7 +807,7 @@ class VertxAppProtoStub {
           reporter: identityURL,
           reuseURL: reuseURL,
           domain_registration: false,
-          domain_routing: false 
+          domain_routing: false
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
