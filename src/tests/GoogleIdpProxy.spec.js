@@ -108,19 +108,19 @@ let idpProxy = new GoogleIdpProxyProtoStub(idpProxyUrl, bus, {});
 
 describe('IdP Proxy test', function() {
 
-  it('get login url', function(done) {
+  it.skip('get login url', function(done) {
     bus.postMessage( generateAssertionMessage, (reply)=> {
-      console.log('IdpProxyTest.reply with login url: ', reply.body.value.loginUrl)
-      expect(reply.body.value).to.have.keys('name', 'loginUrl');
+      console.log('IdpProxyTest.reply with login url: ', reply.body.description.loginUrl)
+      expect(reply.body.description).to.have.keys('name', 'loginUrl');
 
-      loginUrl = reply.body.value.loginUrl;
+      loginUrl = reply.body.description.loginUrl;
       done();
 
     })
   });
 
 
-  it('generate Assertion', function(done) {
+  it.skip('generate Assertion', function(done) {
     this.timeout(10000);
 
     // replace window.open to get reference to opened windows
@@ -138,7 +138,7 @@ describe('IdP Proxy test', function() {
       generateAssertionMessage.body.params.usernameHint = result;
 
       bus.postMessage( generateAssertionMessage, (reply)=> {
-        expect(reply.body.value).to.have.keys('assertion', 'expires', 'idp', 'userProfile' );
+        expect(reply.body.value).to.have.keys('assertion', 'expires', 'idp', 'userProfile', 'refresh' );
 
         assertion = reply.body.value.assertion;
 
@@ -181,14 +181,13 @@ describe('IdP Proxy test', function() {
 
   });
 
-  it('refresh Assertion', function(done) {
+  it.skip('refresh Assertion', function(done) {
 
     refreshAssertionMessage.body.params.identity = assertion;
 
     bus.postMessage( refreshAssertionMessage, (reply)=> {
       console.log('IdpProxyTest.reply with refreshed assertion: ', reply.body.value)
-      expect(reply.body.value).to.have.keys('identity');
-
+      expect(reply.body.value).to.be.a('string');
       done();
 
     })
@@ -207,7 +206,7 @@ describe('IdP Proxy test', function() {
 
   });
 
-  it.skip('get AccessToken authorisation url', function (done) {
+  it('get AccessToken authorisation url', function (done) {
     bus.postMessage(getAccessTokenAuthorisationEndpointMessage, (reply) => {
       console.log('IdpProxyTest.reply with AccessToken auth url: ', reply.body.value)
       expect(reply.body.value).to.be.a('string');
@@ -216,7 +215,7 @@ describe('IdP Proxy test', function() {
     });
   });
 
-  it.skip('get Access Token', function (done) {
+  it('get Access Token', function (done) {
     this.timeout(20000);
 
     // replace window.open to get reference to opened windows
@@ -282,7 +281,7 @@ describe('IdP Proxy test', function() {
 
   });
 
-  it.skip('refresh access token', function (done) {
+  it('refresh access token', function (done) {
 
     refreshAccessTokenMessage.body.params.token.accessToken = accessToken;
     refreshAccessTokenMessage.body.params.token.refresh = refreshToken;

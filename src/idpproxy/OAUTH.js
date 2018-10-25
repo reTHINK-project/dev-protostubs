@@ -117,7 +117,7 @@ let getAccessTokenWithCodeToken = (function (resources, login) {
 
     if (!code) reject('[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ', login);
 
-      sendHTTPRequest('POST', accessTokenEndpoint(code)).then(function (info) {
+      sendHTTPRequest('POST', accessTokenEndpoint(code, resources)).then(function (info) {
 
         if (info.hasOwnProperty('access_token')) {
           let expires = getExpires(info);

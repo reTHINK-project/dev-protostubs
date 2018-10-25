@@ -240,9 +240,31 @@ class VertxAppProtoStub {
                   wallet: reply2.body.wallet,
                   code: 200,
                   reporter_url: result.url,
-                  publics_url: _this._publicWalletsReporterDataObject.url
+                  publics_url: _this._publicWalletsReporterDataObject.url,
+                  role: reply2.body.role
                 }
               };
+
+              console.log('[VertxAppProtoStub] setting up GUID Handler');
+
+              if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('guid')) {
+                let guid = msg.identity.userProfile.guid;
+                if (guid) {
+                  _this._eb.registerHandler(guid, function (error, message) {
+                    console.log('[VertxAppProtoStub] new msg on user GUID', message);
+                    // HACK: send reply instantly to CRM
+                    let response = { body: { code: 200 } };
+                    message.reply(response);
+
+                    _this._bus.postMessage(message.body)
+                    // , (reply) => {
+                    //   debugger;
+                    //   console.log('[VertxAppProtoStub] reply to message', reply);
+                    //   // resolve(reply);
+                    // });
+                  });
+                }
+              }
 
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
@@ -409,9 +431,11 @@ class VertxAppProtoStub {
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
       console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
-
-      if (msg.body.identity == null && msg.to == 'hyperty://sharing-cities-dsm/user-activity') {
-        msg.body.identity = _this.identity;
+      if (msg.identity == null) { /*&& (msg.to == 'hyperty://sharing-cities-dsm/user-activity' || msg.to == 'hyperty://sharing-cities-dsm/elearning') ) {*/
+        if (_this.identity == null && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
+          _this.identity = msg.body.identity;
+        }
+        msg.identity = _this.identity;
       }
       // handle message subscribe before invite Vertx
       _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
@@ -475,14 +499,25 @@ class VertxAppProtoStub {
       else {
         userURL = msg.body.value.reporter;
       }
-      let inviteMessage = {
-        type: 'create',
-        from: msg.from,
-        to: msg.to,
-        identity: { userProfile: { userURL: userURL, guid: guid } }
-      }
+
+      // let inviteMessage = {
+      //   type: 'create',
+      //   from: msg.from,
+      //   to: msg.to,
+      //   identity: { userProfile: { userURL: userURL, guid: guid } }
+      // };
+      // if (msg.to == 'hyperty://sharing-cities-dsm/crm/tickets') {
+      //   // inviteMessage.body ={
+      //   //   ticket: {
+      //   //     created: msg.body.value.created,
+      //   //     lastModified: msg.body.value.lastModified,
+      //   //     message: msg.body.value.name
+      //   //   }
+      //   // }
+      // }
+      console.log("[VertxAppProtoStub] MSG to INVITE", msg);
       //Invite Vertx to subscribe...
-      _this._eb.publish(msg.to, inviteMessage);
+      _this._eb.publish(msg.to, msg);
 
       let msgResponse = {
         id: msg.id,
