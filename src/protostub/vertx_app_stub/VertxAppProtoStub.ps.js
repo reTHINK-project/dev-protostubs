@@ -21,6 +21,7 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
+import URI from 'urijs';
 //import { WalletReporter } from 'service-framework/dist/WalletManager';
 //import { Syncher } from 'service-framework/dist/Syncher';
 
@@ -50,10 +51,12 @@ class VertxAppProtoStub {
 
     this._id = 0;
 
+    let uri = new URI(config.runtimeURL);
+
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._bus = bus;
     this._config = config;
-    this._domain = config.domain;
+    this._domain = uri.hostname();
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
@@ -421,10 +424,10 @@ class VertxAppProtoStub {
         if (msg.body.resource == 'wallet') {
           _this.createWallet(msg);
         } else {
-          _this.smartIotIntegration(msg);
+          _this.forwardToVertxRuntime(msg);
         }
       } else if (msg.body.type === 'delete') {
-        _this.smartIotIntegration(msg);
+        _this.forwardToVertxRuntime(msg);
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
       }
@@ -540,19 +543,18 @@ class VertxAppProtoStub {
     }
   }
 
-  smartIotIntegration(msg) {
+  forwardToVertxRuntime(msg) {
 
     let _this = this;
-    const smartIotStubAddress = msg.to;
+    const vertxAddress = msg.to;
 
     msg.type = msg.body.type;
     delete msg.body.from;
     delete msg.body.type;
 
-    _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
-      console.log('[VertxAppProtoStub] smartIot Integration', reply, reply_err);
+    _this._eb.send(vertxAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] forwardToVertxRuntime', reply, reply_err);
       if (reply_err == null) {
-
 
         _this._sendReplyMsg(msg, reply.body.body);
         /*
@@ -804,7 +806,8 @@ class VertxAppProtoStub {
           expires: 3600,
           reporter: identityURL,
           reuseURL: reuseURL,
-          domain_registration: false
+          domain_registration: false,
+          domain_routing: false
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
@@ -892,6 +895,7 @@ class VertxAppProtoStub {
       }
 
       input.domain_registration = domainRegistration;
+      input.domain_routing = false;
 
       console.info('[VertxAppProtoStub._create] lets create a new Wallet Object ', input);
       _this._syncher.create(_this.walletDescURL, [], init, true, false, name, null, input)
@@ -921,7 +925,17 @@ class VertxAppProtoStub {
     let _this = this;
     //MessageBodyIdentity Constructor
     return new Promise(function (resolve) {
-      _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, false, identityToUse).then(function (obj) {
+      let input = {
+        schema: schemaUrl,
+        resource: contextUrl,
+        store: true,
+        p2p: false,
+        mutual: true,
+        domain_subscription: false,
+        identity: identityToUse
+      };
+
+      _this._syncher.subscribe(input).then(function (obj) {
         console.log('[VertxAppProtoStub] subscribe success', obj);
         resolve(true);
       }).catch(function (error) {
