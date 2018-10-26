@@ -945,6 +945,8 @@ class VertxAppProtoStub {
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
 
+              _this._sendStatusVertxRuntime("online");
+
               let toCreatePub = {
                 type: 'create',
                 to: 'hyperty://sharing-cities-dsm/wallet-manager',
@@ -1006,6 +1008,20 @@ class VertxAppProtoStub {
   _sendMessage(address, messageToSend) {
 
     //send to vertx, and wait to a reply
+  }
+
+  _sendStatusVertxRuntime(value) {
+    let _this = this;
+    let msgUpdate = {
+      to :"hyperty://sharing-cities-dsm/registry/status",
+      type: "update",
+      identity: _this.identity,
+      body: {
+        resource:_this.identity.userProfile.guid,
+        status: value
+      }
+    }
+    _this._eb.publish("hyperty://sharing-cities-dsm/registry/status", msgUpdate);
   }
 }
 
