@@ -1002,6 +1002,11 @@ class VertxAppProtoStub {
     }
     _this._bus.postMessage(msg);
   }
+
+  _sendMessage(address, messageToSend) {
+
+    //send to vertx, and wait to a reply
+  }
 }
 
 export default function activate(url, bus, config, factory) {
