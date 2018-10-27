@@ -1031,7 +1031,7 @@ class VertxAppProtoStub {
 
       if (_this._identity) {
         let msgUpdate = {
-          to :"hyperty://sharing-cities-dsm/registry/status",
+          to :"hyperty://sharing-cities-dsm/registry",
           type: "update",
           identity: _this._identity,
           body: {
@@ -1039,7 +1039,7 @@ class VertxAppProtoStub {
             status: 'online'
           }
         }
-        _this._eb.publish("hyperty://sharing-cities-dsm/registry/status", msgUpdate);
+        _this._eb.publish("hyperty://sharing-cities-dsm/registry", msgUpdate);
   
         console.log('[VertxAppProtoStub.heartBeat] ', msgUpdate);
   
