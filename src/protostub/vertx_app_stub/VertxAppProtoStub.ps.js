@@ -74,6 +74,7 @@ class VertxAppProtoStub {
     this._publicWalletsReporterDataObject = null;
     this._alreadyListening = [];
     this._dataObjectsURL = {};
+    this._heartbeatRate = 90000;
 
 
 
@@ -1045,7 +1046,7 @@ class VertxAppProtoStub {
   
       }
 
-      }, 5000);
+      }, _this._heartbeatRate);
   
     // returns function to stop the heart beat
   
