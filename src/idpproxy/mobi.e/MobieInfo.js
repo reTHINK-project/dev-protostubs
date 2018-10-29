@@ -23,8 +23,8 @@ export let googleInfo = {
 export let mobieAPIInfo = {
   "clientID": "DSMSHARCITIES",
 //  "issuer": "https://accounts.google.com",
-  "tokenEndpoint": "https://www.googleapis.com/oauth2/v4/token?",
-  "revokeEndpoint": "https://accounts.google.com/o/oauth2/revoke?",
+  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth?",
+  "revokeEndpoint": "https://sharingcities.mobinteli.com/dsmauth/revoke?",
 //  "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
 //  "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
 //  "userinfo": "https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
@@ -36,7 +36,7 @@ export let mobieAPIInfo = {
 //  "state": "state",
   "domain": "mobie.pt",
 //  'grant_type': "authorization_code",
-  'secret': "Xx4rKucb5ZYTaXlcZX9HLfZW"
+  'secret': "secretKey"
 };
 
 
@@ -81,7 +81,7 @@ export function revokeAccessTokenEndpoint(token) {
     + '&token=' + token
 }
 
-export function mapping(resource) {
+/*export function mapping(resource) {
   if (!resource) {
     return "fitness.activity.read";
   }
@@ -94,20 +94,19 @@ export function mapping(resource) {
       return "fitness.activity.read";
       break;
   }
-}
+}*/
 
 
-export function accessTokenAuthorisationEndpoint(API) {
-  let url = googleAPIInfo.authorisationEndpoint
+export function accessTokenAuthorisationEndpoint(nonce) {
+  let url = mobieAPIInfo.authorisationEndpoint
     + 'redirect_uri=' + redirectURI
-    + '&response_type=' + googleAPIInfo.type
-    + '&client_id=' + googleAPIInfo.clientID
-    + '&scope=' + 'https://www.googleapis.com/auth/' + API
-    + '&access_type=' + googleAPIInfo.accessType
-//    + '&include_granted_scopes=true'
-//    + '&prompt=none'
-    + '&state=' + googleAPIInfo.state;
-  console.log('[GoogleInfo.accessTokenAuthorisationEndpoint] ', url);
+    + '&response_type=' + mobieAPIInfo.type
+    + '&client_id=' + mobieAPIInfo.clientID
+//    + '&scope=' + mobieAPIInfo.scope
+//    + '&access_type=' + mobieAPIInfo.accessType
+    + '&state=' + nonce
+    + '&BU=MOBI.E';
+  console.log('[MobieInfo.accessTokenAuthorisationEndpoint] ', url);
   return url;
 }
 

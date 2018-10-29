@@ -4,7 +4,7 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'sinon'],
     files: [
       // './src/tests/*.spec.js',
-      './src/tests/GoogleIdpProxy.spec.js',
+      './src/tests/MobieIdpProxy.spec.js',
     ],
     // to avoid DISCONNECTED messages
     browserDisconnectTimeout : 100000, // default 2000
