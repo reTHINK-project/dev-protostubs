@@ -59,7 +59,7 @@ class VertxAppProtoStub {
     this._domain = uri.hostname();
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
-    this._identity = null;
+    this.identity = null;
     this._timeOutValue = config.timeoutValue;
     //TODO: to be defined in the config
     this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
@@ -116,6 +116,7 @@ class VertxAppProtoStub {
 
     bus.addListener('*', (msg) => {
       console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+
       if (_this.identity == null && msg.hasOwnProperty('identity')) {
         _this.identity = msg.identity;
       }
@@ -248,11 +249,16 @@ class VertxAppProtoStub {
                 }
               };
 
+              //update status
+
+
+
               console.log('[VertxAppProtoStub] setting up GUID Handler');
 
               if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('guid')) {
                 let guid = msg.identity.userProfile.guid;
                 if (guid) {
+                  _this._sendStatusVertxRuntime("online");
                   _this._eb.registerHandler(guid, function (error, message) {
                     console.log('[VertxAppProtoStub] new msg on user GUID', message);
                     // HACK: send reply instantly to CRM
@@ -959,7 +965,7 @@ class VertxAppProtoStub {
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
 
-              _this._sendStatusVertxRuntime("online");
+
 
               let toCreatePub = {
                 type: 'create',
@@ -1027,7 +1033,7 @@ class VertxAppProtoStub {
   _sendStatusVertxRuntime(value) {
     let _this = this;
     let msgUpdate = {
-      to :"hyperty://sharing-cities-dsm/registry/status",
+      to :"runtime://sharing-cities-dsm/registry",
       type: "update",
       identity: _this.identity,
       body: {
@@ -1035,7 +1041,7 @@ class VertxAppProtoStub {
         status: value
       }
     }
-    _this._eb.publish("hyperty://sharing-cities-dsm/registry/status", msgUpdate);
+    _this._eb.publish("runtime://sharing-cities-dsm/registry", msgUpdate);
   }
 }
 
