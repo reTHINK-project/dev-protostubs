@@ -6,7 +6,7 @@ import $ from 'jquery';
 
 //import { generateGUID } from '../src/utils/utils';
 //import IdpProxy from '../GoogleIdpProxyStub.idp';
-import {login} from '../idpproxy/Login';
+import {login} from '../idpproxy/LoginMobie';
 import MobieIdpProxyProtoStub from '../idpproxy/mobi.e/MobieIdpProxyStub.idp';
 
 

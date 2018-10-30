@@ -23,7 +23,9 @@ export let googleInfo = {
 export let mobieAPIInfo = {
   "clientID": "DSMSHARCITIES",
 //  "issuer": "https://accounts.google.com",
-  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth?",
+  "authorisationEndpoint": "http://sc.ceiia.pagekite.me/dsmauth?",
+  "tokenEndpoint": "http://sc.ceiia.pagekite.me/dsmauth/token/?",
+//  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth?",
   "revokeEndpoint": "https://sharingcities.mobinteli.com/dsmauth/revoke?",
 //  "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
 //  "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
