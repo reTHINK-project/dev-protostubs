@@ -121,6 +121,12 @@ class VertxAppProtoStub {
       if (!_this._identity && msg.hasOwnProperty('identity')) {
         _this._identity = msg.identity;
       }
+      if (! _this._identity && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('body') && msg.body.body.hasOwnProperty('identity') && msg.body.body.identity.hasOwnProperty('guid')) {
+        let constIdentity = { userProfile: {guid:msg.body.body.identity.guid}}
+        _this._identity = constIdentity;
+      }
+
+
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
@@ -251,11 +257,11 @@ class VertxAppProtoStub {
               };
 
               //update status
-              if (! _this._isHeartBeatON) {
+              /*if (! _this._isHeartBeatON) {
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
-              }
+              }*/
 
               console.log('[VertxAppProtoStub] after heartBeat');
 
@@ -972,6 +978,12 @@ class VertxAppProtoStub {
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
 
+              if (! _this._isHeartBeatON) {
+                _this._sendStatusVertxRuntime();
+                _this._heartBeat();
+                _this._isHeartBeatON = true;
+              }
+
 
               let toCreatePub = {
                 type: 'create',
@@ -1055,7 +1067,7 @@ class VertxAppProtoStub {
 
   _sendStatusVertxRuntime() {
     let _this = this;
-
+    console.log("[VertxAppProtoStub._sendStatusVertxRuntime] identity", _this._identity);
     if (_this._identity) {
       console.log("[VertxAppProtoStub._sendStatusVertxRuntime] update status of user");
       let msgUpdate = {
