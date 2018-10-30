@@ -60,6 +60,7 @@ class VertxAppProtoStub {
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    this._isHeartBeatON = false;
     this._timeOutValue = config.timeoutValue;
     //TODO: to be defined in the config
     this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
@@ -250,7 +251,13 @@ class VertxAppProtoStub {
               };
 
               //update status
+              if (! _this._isHeartBeatON) {
+                _this._sendStatusVertxRuntime();
+                _this._heartBeat();
+                _this._isHeartBeatON = true;
+              }
 
+              console.log('[VertxAppProtoStub] after heartBeat');
 
 
               console.log('[VertxAppProtoStub] setting up GUID Handler');
@@ -258,7 +265,7 @@ class VertxAppProtoStub {
               if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('guid')) {
                 let guid = msg.identity.userProfile.guid;
                 if (guid) {
-                  //_this._sendStatusVertxRuntime("online");
+
                   _this._eb.registerHandler(guid, function (error, message) {
                     console.log('[VertxAppProtoStub] new msg on user GUID', message);
                     // HACK: send reply instantly to CRM
@@ -965,7 +972,6 @@ class VertxAppProtoStub {
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
 
-              _this._heartBeat();
 
               let toCreatePub = {
                 type: 'create',
@@ -1035,21 +1041,7 @@ class VertxAppProtoStub {
 
     let id = setInterval(function () {
 
-      if (_this._identity) {
-        let msgUpdate = {
-          to :"runtime://sharing-cities-dsm/registry",
-          type: "update",
-          identity: _this._identity,
-          body: {
-            resource:_this._identity.userProfile.guid,
-            status: 'online'
-          }
-        }
-        _this._eb.publish("runtime://sharing-cities-dsm/registry", msgUpdate);
-
-        console.log('[VertxAppProtoStub.heartBeat] ', msgUpdate);
-
-      }
+      _this._sendStatusVertxRuntime();
 
       }, _this._heartbeatRate);
 
@@ -1060,6 +1052,27 @@ class VertxAppProtoStub {
       }
 
   }
+
+  _sendStatusVertxRuntime() {
+    let _this = this;
+
+    if (_this._identity) {
+      console.log("[VertxAppProtoStub._sendStatusVertxRuntime] update status of user");
+      let msgUpdate = {
+        to :"runtime://sharing-cities-dsm/registry",
+        type: "update",
+        identity: _this._identity,
+        body: {
+          resource:_this._identity.userProfile.guid,
+          status: 'online'
+        }
+      }
+      _this._eb.publish("runtime://sharing-cities-dsm/registry", msgUpdate);
+
+      console.log('[VertxAppProtoStub._sendStatusVertxRuntime] ', msgUpdate);
+    }
+  }
+
 }
 
 export default function activate(url, bus, config, factory) {
