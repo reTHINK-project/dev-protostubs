@@ -257,11 +257,11 @@ class VertxAppProtoStub {
               };
 
               //update status
-              /*if (! _this._isHeartBeatON) {
+              if (! _this._isHeartBeatON) {
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
-              }*/
+              }
 
               console.log('[VertxAppProtoStub] after heartBeat');
 
@@ -388,7 +388,7 @@ class VertxAppProtoStub {
                 });
 
                 console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
-                resolve(true);
+                return resolve(true);
 
               });
             }
@@ -472,7 +472,9 @@ class VertxAppProtoStub {
 
           _this._resumeObservers(contextUrl).then(function (result) {
             if (result == false) {
+              console.log('[VertxAppProtoStub] setting up observer to ', contextUrl);
               _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+                console.log('[VertxAppProtoStub] _setUpObserver result ', result);
                 if (result) {
                   let response = { body: { code: 200 } };
                   messageFROMsubscription.reply(response);
@@ -497,7 +499,7 @@ class VertxAppProtoStub {
           }).catch(function (error) {
             //debugger;
           });
-
+/*
           _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
             if (result) {
               let response = { body: { code: 200 } };
@@ -506,7 +508,7 @@ class VertxAppProtoStub {
               let response = { body: { code: 406 } };
               messageFROMsubscription.reply(response);
             }
-          });
+          });*/
         }
       });
 
@@ -795,13 +797,13 @@ class VertxAppProtoStub {
           observersList.forEach((dataObjectObserverURL) => {
             console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
             if (contextUrl == dataObjectObserverURL) {
-              resolve(observers[dataObjectObserverURL]);
+              return resolve(observers[dataObjectObserverURL]);
             }
           });
         } else {
-          resolve(false);
+          return resolve(false);
         }
-        resolve(false);
+        return resolve(false);
 
       }).catch((reason) => {
         console.info('[GroupChatManager] Resume Observer | ', reason);
@@ -836,11 +838,11 @@ class VertxAppProtoStub {
               event.accept();
               console.log('[VertxAppProtoStub] new subs', event);
             });
-            resolve(reporter);
+            return resolve(reporter);
 
           }).catch(function (err) {
             console.error('[VertxAppProtoStub] err', err);
-            resolve(null);
+            return resolve(null);
           });
       } else {
 
@@ -861,7 +863,7 @@ class VertxAppProtoStub {
               event.accept();
               console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
             });
-            resolve(wallet);
+            return resolve(wallet);
 
           } else {
             _this._create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
@@ -878,10 +880,10 @@ class VertxAppProtoStub {
                 event.accept();
                 console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
               });
-              resolve(wallet);
+              return resolve(wallet);
             }).catch(function (err) {
               console.error('[VertxAppProtoStub] err', err);
-              resolve(null);
+              return resolve(null);
             });
           }
         }).catch(function (error) {
@@ -922,10 +924,10 @@ class VertxAppProtoStub {
           _this.wallet = wallet;
 
           _this._onSubscription(wallet);
-          resolve(wallet);
+          return resolve(wallet);
 
         }).catch(function (reason) {
-          reject(reason);
+          return reject(reason);
         });
 
     });
@@ -944,6 +946,7 @@ class VertxAppProtoStub {
     let _this = this;
     //MessageBodyIdentity Constructor
     return new Promise(function (resolve) {
+      console.log('[VertxAppProtoStub._setUpObserver] ctxurl', contextUrl);
       let input = {
         schema: schemaUrl,
         resource: contextUrl,
@@ -955,11 +958,11 @@ class VertxAppProtoStub {
       };
 
       _this._syncher.subscribe(input).then(function (obj) {
-        console.log('[VertxAppProtoStub] subscribe success', obj);
-        resolve(true);
+        console.log('[VertxAppProtoStub._setUpObserver] subscribe success', obj);
+        return resolve(true);
       }).catch(function (error) {
-        resolve(false);
-        console.log('[VertxAppProtoStub] error', error);
+        console.log('[VertxAppProtoStub._setUpObserver] error', error);
+        return resolve(false);
       });
     });
   }
@@ -978,11 +981,12 @@ class VertxAppProtoStub {
           if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
             _this._configAvailableStreams().then(function () {
 
+              /*
               if (! _this._isHeartBeatON) {
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
-              }
+              }*/
 
 
               let toCreatePub = {
@@ -994,7 +998,7 @@ class VertxAppProtoStub {
               }
               _this.createWalletPub(toCreatePub).then(function () {
                 clearTimeout(timer1);
-                resolve(true);
+                return resolve(true);
               });
               /*
               _this._setUpPublicWallets().then(function (result) {
