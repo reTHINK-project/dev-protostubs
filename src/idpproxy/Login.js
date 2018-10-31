@@ -80,8 +80,9 @@ export function login(urlreceived) {
             console.log('openPopup url: ', win.document.URL);
             console.log('openPopup origin: ', location.origin);
 
-            if ((win.document.URL.indexOf('access_token') !== -1 || win.document.URL.indexOf('code') !== -1 || win.document.URL.indexOf('consent') !== -1) && win.document.URL.indexOf(location.origin) !== -1) {
-              clearInterval(pollTimer);
+//            if ( win.document.URL.indexOf(location.origin) !== -1) {
+            if ((win.document.URL.indexOf('access_token') !== -1 || win.document.URL.indexOf('code=') !== -1 || win.document.URL.indexOf('consent') !== -1) && win.document.URL.indexOf(location.origin) !== -1) {
+                clearInterval(pollTimer);
               let url =   win.document.URL;
 
               win.close();
