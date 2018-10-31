@@ -76,11 +76,11 @@ class VertxAppProtoStub {
     this._alreadyListening = [];
     this._dataObjectsURL = {};
     this._heartbeatRate = 90000;
+    this._status = 'created';
 
+    let connecting;
 
-
-
-    _this._sendStatus('created');
+    _this._sendStatus(this._status);
 
     // used to save data of eachF observer saving data and timestamp to publish to vertx
     _this._dataObservers = {};
@@ -117,7 +117,7 @@ class VertxAppProtoStub {
 
 
     bus.addListener('*', (msg) => {
-      console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+      console.log('[VertxAppProtoStub] Outgoing Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
       if (!_this._identity && msg.hasOwnProperty('identity')) {
         _this._identity = msg.identity;
       }
@@ -126,7 +126,24 @@ class VertxAppProtoStub {
         _this._identity = constIdentity;
       }
 
+      console.log('[VertxAppProtoStub] connection status ', _this._status);
 
+      switch (_this._status) {
+        case 'live':
+          _this._SubscriptionManager(msg);
+          break;
+        case 'in-progress':
+          connecting.then( ()=> {
+            _this._SubscriptionManager(msg);
+          });
+          break;
+        case 'created':
+          connecting = _this._open(config);
+          _this._status = 'in-progress';
+          break
+      }
+
+/*
       if (_this._eb === null) {
         _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
         console.log('[VertxAppProtoStub] Eventbus', _this._eb);
@@ -156,10 +173,68 @@ class VertxAppProtoStub {
           let timer = setTimeout(waitForEB, _this._timeOutValue);
 
         }
-      }
+      }*/
 
     });
 
+  }
+
+  _open(config) {
+
+    let _this = this;
+
+//    let ready = new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
+      _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
+      console.log('[VertxAppProtoStub] Eventbus', _this._eb);
+      _this._eb.enableReconnect(true);
+      _this._eb.onopen = () => {
+
+        let timer1;
+
+        let connect = function() {
+          _this._status = 'live';
+          clearTimeout(timer1);
+          console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
+          _this._configAvailableStreams().then(function () {
+  
+              /*
+              if (! _this._isHeartBeatON) {
+                _this._sendStatusVertxRuntime();
+                _this._heartBeat();
+                _this._isHeartBeatON = true;
+              }*/
+    
+    
+              let toCreatePub = {
+                type: 'create',
+                to: 'hyperty://sharing-cities-dsm/wallet-manager',
+                from: _this._runtimeSessionURL,
+                identity: _this._publicWallets.identity,
+                body: { type: 'create' }
+              }
+              _this.createWalletPub(toCreatePub).then(function () {
+                resolve();
+              });
+            });
+          };
+
+          if (_this._eb.sockJSConn.readyState === WebSocket.OPEN ) connect();
+          else {
+            timer1 = setTimeout( () => {
+              console.log('[VertxAppProtoStub._open] trying connect ', _this._eb.sockJSConn.readyState);
+              if (_this._eb.sockJSConn.readyState === WebSocket.OPEN ) connect();
+            }, _this._timeOutValue);
+
+          }
+
+
+      };
+    });
+
+
+
+//    });
   }
 
 
