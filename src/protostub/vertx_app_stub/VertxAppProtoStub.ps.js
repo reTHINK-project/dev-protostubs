@@ -138,42 +138,12 @@ class VertxAppProtoStub {
           });
           break;
         case 'created':
-          connecting = _this._open(config);
+          connecting = _this._open(config).then( ()=> {
+            _this._SubscriptionManager(msg);
+          });
           _this._status = 'in-progress';
           break
       }
-
-/*
-      if (_this._eb === null) {
-        _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
-        console.log('[VertxAppProtoStub] Eventbus', _this._eb);
-        let test = _this._eb.enableReconnect(true);
-        console.log('[VertxAppProtoStub]', test);
-        _this._eventBusUsage().then(function (result) {
-          console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
-          if (result) {
-            _this._SubscriptionManager(msg);
-          }
-        });
-      }
-
-      else {
-
-        if (_this._eb != null && _this._eb.hasOwnProperty('sockJSConn') && WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-          _this._SubscriptionManager(msg);
-        } else {
-
-          function waitForEB() {
-            console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-            if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-              _this._SubscriptionManager(msg);
-              clearTimeout(timer);
-            }
-          }
-          let timer = setTimeout(waitForEB, _this._timeOutValue);
-
-        }
-      }*/
 
     });
 
@@ -1042,58 +1012,6 @@ class VertxAppProtoStub {
     });
   }
 
-  _eventBusUsage() {
-    let _this = this;
-
-    return new Promise(function (resolve, reject) {
-      console.log('[VertxAppProtoStub] waiting for eb Open state(', _this._eb.sockJSConn.readyState, ')', _this._eb);
-
-      _this._eb.onopen = () => {
-        console.log('[VertxAppProtoStub] _this._eb-> open');
-
-        function waitForEB1() {
-          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-            _this._configAvailableStreams().then(function () {
-
-              /*
-              if (! _this._isHeartBeatON) {
-                _this._sendStatusVertxRuntime();
-                _this._heartBeat();
-                _this._isHeartBeatON = true;
-              }*/
-
-
-              let toCreatePub = {
-                type: 'create',
-                to: 'hyperty://sharing-cities-dsm/wallet-manager',
-                from: _this._runtimeSessionURL,
-                identity: _this._publicWallets.identity,
-                body: { type: 'create' }
-              }
-              _this.createWalletPub(toCreatePub).then(function () {
-                clearTimeout(timer1);
-                return resolve(true);
-              });
-              /*
-              _this._setUpPublicWallets().then(function (result) {
-
-              }).catch(function (error) {
-
-              });*/
-
-
-            });
-          }
-        }
-        let timer1 = setTimeout(waitForEB1, _this._timeOutValue);
-      };
-
-      _this._eb.onerror = function (e) {
-        console.log('[VertxAppProtoStub] General error: ', e); // this does happen
-      }
-    });
-  }
 
 
   /**
