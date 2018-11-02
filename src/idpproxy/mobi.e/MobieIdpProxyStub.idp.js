@@ -1,6 +1,6 @@
 import { IdpProxy } from "../OAUTH"
 import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint } from "./MobieInfo"
-import { convertUserProfile } from "./GoogleConverter"
+//import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
@@ -17,8 +17,8 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
   constructor(runtimeProtoStubURL, bus, config) {
-    config.domain = 'mobie.com';
-    config.idpUrl = 'domain-idp://mobie.com';
+    config.domain = 'mobie.pt';
+    config.idpUrl = 'domain-idp://mobie.pt';
     config.idpProxy = IdpProxy;
 //    config.idpInfo = googleInfo;
     config.apiInfo = mobieAPIInfo;
