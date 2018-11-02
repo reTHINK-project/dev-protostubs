@@ -479,9 +479,6 @@ class VertxAppProtoStub {
 
 
         });
-
-
-
       }
 
       if (msg.body.type === 'create') {
@@ -497,37 +494,32 @@ class VertxAppProtoStub {
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
-      console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
+      _this._processSubscription(msg);
+    } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
+      console.log('[VertxAppProtoStub] new change ', msg);
+      _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
+        if (reply_err == null) {
+          console.log("[VertxAppProtoStub] Received reply from change ", reply);
+        }
+      });
+    }
+  }
+
+  _processSubscription(msg) {
+    let _this = this;
+      console.log('[VertxAppProtoStub._processSubscription] New MSG', msg);
       if (msg.identity == null) { /*&& (msg.to == 'hyperty://sharing-cities-dsm/user-activity' || msg.to == 'hyperty://sharing-cities-dsm/elearning') ) {*/
         if (!_this._identity && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
           _this._identity = msg.body.identity;
         }
         msg.identity = _this._identity;
       }
-      // handle message subscribe before invite Vertx
-      _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
 
-        console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
-        let messageToSubscribe = messageFROMsubscription.body;
-        if (messageToSubscribe.to.includes('/subscription')) {
-          let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
-          let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+      let contextUrl = msg.from.split('/subscription')[0];
 
-          // should resume observers, if dont have go to _setUpObserver
-
-          _this._resumeObservers(contextUrl).then(function (result) {
+      _this._resumeObservers(contextUrl).then(function (result) {
             if (!result) {
-              console.log('[VertxAppProtoStub] setting up observer to ', contextUrl);
-              _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-                console.log('[VertxAppProtoStub] _setUpObserver result ', result);
-                if (result) {
-                  let response = { body: { code: 200 } };
-                  messageFROMsubscription.reply(response);
-                } else {
-                  let response = { body: { code: 406 } };
-                  messageFROMsubscription.reply(response);
-                }
-              });
+              _this._processNewSubscription(msg);
             } else {
               let changesAddress = result.url + "/changes";
               _this._alreadyListening.push(changesAddress);
@@ -538,12 +530,54 @@ class VertxAppProtoStub {
                   }
                 });
               });
-              let response = { body: { code: 200 } };
-              messageFROMsubscription.reply(response);
             }
           }).catch(function (error) {
             //debugger;
           });
+
+
+
+      let msgResponse = {
+        id: msg.id,
+        type: 'response',
+        from: msg.to,
+        to: msg.from,
+        body: {
+          code: 200
+        }
+      };
+      _this._bus.postMessage(msgResponse);
+
+
+  }
+
+  _processNewSubscription(msg) {
+    let _this = this;
+    console.log('[VertxAppProtoStub._processNewSubscription] ', msg);
+
+      // handle message subscribe before invite Vertx
+      _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
+
+        let response = { body: { code: 200 } };
+        messageFROMsubscription.reply(response);
+        console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
+        let messageToSubscribe = messageFROMsubscription.body;
+        if (messageToSubscribe.to.includes('/subscription')) {
+          let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
+          let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+
+          // should resume observers, if dont have go to _setUpObserver
+
+          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+            console.log('[VertxAppProtoStub] _setUpObserver result ', result);
+            if (result) {
+              let response = { body: { code: 200 } };
+              messageFROMsubscription.reply(response);
+            } else {
+              let response = { body: { code: 406 } };
+              messageFROMsubscription.reply(response);
+            }
+          });    
 /*
           _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
             if (result) {
@@ -588,25 +622,7 @@ class VertxAppProtoStub {
       //Invite Vertx to subscribe...
       _this._eb.publish(msg.to, msg);
 
-      let msgResponse = {
-        id: msg.id,
-        type: 'response',
-        from: msg.to,
-        to: msg.from,
-        body: {
-          code: 200
-        }
-      };
-      _this._bus.postMessage(msgResponse);
 
-    } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
-      console.log('[VertxAppProtoStub] new change ', msg);
-      _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
-        if (reply_err == null) {
-          console.log("[VertxAppProtoStub] Received reply from change ", reply);
-        }
-      });
-    }
   }
 
   forwardToVertxRuntime(msg) {
@@ -830,28 +846,27 @@ class VertxAppProtoStub {
   _resumeObservers(contextUrl) {
     let _this = this;
 
+    let resumedObserver = false;
+
     return new Promise((resolve, reject) => {
       console.log('[VertxAppProtoStub._resumeObservers] requesting for ', contextUrl);
       //debugger;
       _this._syncher.resumeObservers({ store: true, resource: contextUrl }).then((observers) => {
         //debugger;
-        console.log('[VertxAppProtoStub] Resuming observer : ', observers, _this, _this._onResume);
+        console.log('[VertxAppProtoStub._resumeObservers] reply from syncManagers : ', observers);
 
         let observersList = Object.keys(observers);
         if (observersList.length > 0) {
           //debugger;
           observersList.forEach((dataObjectObserverURL) => {
             if (contextUrl === dataObjectObserverURL) {
-              console.log('[VertxAppProtoStub] resuming: ', observers[dataObjectObserverURL]);
-              resolve(observers[dataObjectObserverURL]);
+//              console.log('[VertxAppProtoStub] resuming: ', observers[dataObjectObserverURL]);
+              resumedObserver = observers[dataObjectObserverURL];
             }
           });
-        } else {
-          console.log('[VertxAppProtoStub] nothing to resume for ', contextUrl);
-          resolve(false);
-        }
-        console.log('[VertxAppProtoStub] nothing to resume for ', contextUrl);
-        resolve(false);
+        } 
+        console.log('[VertxAppProtoStub._resumeObservers] resuming: ', resumedObserver);
+        resolve(resumedObserver);
 
       }).catch((reason) => {
         console.info('[GroupChatManager] Resume Observer | ', reason);
