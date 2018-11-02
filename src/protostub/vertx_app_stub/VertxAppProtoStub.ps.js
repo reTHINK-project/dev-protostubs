@@ -516,7 +516,7 @@ class VertxAppProtoStub {
           // should resume observers, if dont have go to _setUpObserver
 
           _this._resumeObservers(contextUrl).then(function (result) {
-            if (result == false) {
+            if (!result) {
               console.log('[VertxAppProtoStub] setting up observer to ', contextUrl);
               _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
                 console.log('[VertxAppProtoStub] _setUpObserver result ', result);
@@ -831,8 +831,9 @@ class VertxAppProtoStub {
     let _this = this;
 
     return new Promise((resolve, reject) => {
+      console.log('[VertxAppProtoStub._resumeObservers] requesting for ', contextUrl);
       //debugger;
-      _this._syncher.resumeObservers({ store: true }).then((observers) => {
+      _this._syncher.resumeObservers({ store: true, resource: contextUrl }).then((observers) => {
         //debugger;
         console.log('[VertxAppProtoStub] Resuming observer : ', observers, _this, _this._onResume);
 
@@ -840,15 +841,17 @@ class VertxAppProtoStub {
         if (observersList.length > 0) {
           //debugger;
           observersList.forEach((dataObjectObserverURL) => {
-            console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
-            if (contextUrl == dataObjectObserverURL) {
-              return resolve(observers[dataObjectObserverURL]);
+            if (contextUrl === dataObjectObserverURL) {
+              console.log('[VertxAppProtoStub] resuming: ', observers[dataObjectObserverURL]);
+              resolve(observers[dataObjectObserverURL]);
             }
           });
         } else {
-          return resolve(false);
+          console.log('[VertxAppProtoStub] nothing to resume for ', contextUrl);
+          resolve(false);
         }
-        return resolve(false);
+        console.log('[VertxAppProtoStub] nothing to resume for ', contextUrl);
+        resolve(false);
 
       }).catch((reason) => {
         console.info('[GroupChatManager] Resume Observer | ', reason);
