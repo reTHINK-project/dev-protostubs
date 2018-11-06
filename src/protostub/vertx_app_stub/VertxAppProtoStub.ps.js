@@ -169,7 +169,7 @@ class VertxAppProtoStub {
           clearTimeout(timer1);
           console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
               //update status
-              if (! _this._isHeartBeatON) {
+              if (! _this._isHeartBeatON && _this._guid) {
                 _this._setGUIDHandler(_this._guid);                
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
