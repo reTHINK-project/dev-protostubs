@@ -166,6 +166,13 @@ class VertxAppProtoStub {
           _this._status = 'live';
           clearTimeout(timer1);
           console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
+              //update status
+              if (! _this._isHeartBeatON) {
+                _this._sendStatusVertxRuntime();
+                _this._heartBeat();
+                _this._isHeartBeatON = true;
+              }
+
           _this._configAvailableStreams().then(function () {
   
               /*
@@ -302,11 +309,11 @@ class VertxAppProtoStub {
               };
 
               //update status
-              if (! _this._isHeartBeatON) {
+/*              if (! _this._isHeartBeatON) {
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
-              }
+              }*/
 
               console.log('[VertxAppProtoStub] after heartBeat');
 
