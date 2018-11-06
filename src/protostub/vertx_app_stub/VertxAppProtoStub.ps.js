@@ -120,10 +120,12 @@ class VertxAppProtoStub {
       console.log('[VertxAppProtoStub] Outgoing Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
       if (!_this._identity && msg.hasOwnProperty('identity')) {
         _this._identity = msg.identity;
+        _this._guid = msg.identity.guid ? msg.identity.guid : msg.identity.userProfile.guid;
       }
       if (! _this._identity && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('body') && msg.body.body.hasOwnProperty('identity') && msg.body.body.identity.hasOwnProperty('guid')) {
         let constIdentity = { userProfile: {guid:msg.body.body.identity.guid}}
         _this._identity = constIdentity;
+        _this._guid = constIdentity.userProfile.guid;
       }
 
       console.log('[VertxAppProtoStub] connection status ', _this._status);
@@ -168,6 +170,7 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
               //update status
               if (! _this._isHeartBeatON) {
+                _this._setGUIDHandler(_this._guid);                
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
@@ -214,6 +217,26 @@ class VertxAppProtoStub {
 //    });
   }
 
+  _setGUIDHandler(guid) {
+
+    let _this = this;
+
+    console.log('[VertxAppProtoStub._setGUIDHandler] ', guid);
+
+    _this._eb.registerHandler(guid, function (error, message) {
+      console.log('[VertxAppProtoStub._setGUIDHandler] new msg on user GUID', message);
+      // HACK: send reply instantly to CRM
+      let response = { body: { code: 200 } };
+      message.reply(response);
+
+      _this._bus.postMessage(message.body)
+      // , (reply) => {
+      //   debugger;
+      //   console.log('[VertxAppProtoStub] reply to message', reply);
+      //   // resolve(reply);
+      // });
+    });
+  }
 
 
   updateResource(msg) {
@@ -315,30 +338,8 @@ class VertxAppProtoStub {
                 _this._isHeartBeatON = true;
               }*/
 
-              console.log('[VertxAppProtoStub] after heartBeat');
 
 
-              console.log('[VertxAppProtoStub] setting up GUID Handler');
-
-              if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('guid')) {
-                let guid = msg.identity.userProfile.guid;
-                if (guid) {
-
-                  _this._eb.registerHandler(guid, function (error, message) {
-                    console.log('[VertxAppProtoStub] new msg on user GUID', message);
-                    // HACK: send reply instantly to CRM
-                    let response = { body: { code: 200 } };
-                    message.reply(response);
-
-                    _this._bus.postMessage(message.body)
-                    // , (reply) => {
-                    //   debugger;
-                    //   console.log('[VertxAppProtoStub] reply to message', reply);
-                    //   // resolve(reply);
-                    // });
-                  });
-                }
-              }
 
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
