@@ -170,22 +170,22 @@ class VertxAppProtoStub {
           console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
               //update status
               if (! _this._isHeartBeatON && _this._guid) {
-                _this._setGUIDHandler(_this._guid);                
+                _this._setGUIDHandler(_this._guid);
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
               }
 
           _this._configAvailableStreams().then(function () {
-  
+
               /*
               if (! _this._isHeartBeatON) {
                 _this._sendStatusVertxRuntime();
                 _this._heartBeat();
                 _this._isHeartBeatON = true;
               }*/
-    
-    
+
+
               let toCreatePub = {
                 type: 'create',
                 to: 'hyperty://sharing-cities-dsm/wallet-manager',
@@ -226,10 +226,14 @@ class VertxAppProtoStub {
     _this._eb.registerHandler(guid, function (error, message) {
       console.log('[VertxAppProtoStub._setGUIDHandler] new msg on user GUID', message);
       // HACK: send reply instantly to CRM
-      let response = { body: { code: 200 } };
-      message.reply(response);
+      if (message) {
+        let response = { body: { code: 200 } };
+        message.reply(response);
 
-      _this._bus.postMessage(message.body)
+        _this._bus.postMessage(message.body);
+      } else {
+        console.log('[VertxAppProtoStub._setGUIDHandler] error message');
+      }
       // , (reply) => {
       //   debugger;
       //   console.log('[VertxAppProtoStub] reply to message', reply);
@@ -585,7 +589,7 @@ class VertxAppProtoStub {
               let response = { body: { code: 406 } };
               messageFROMsubscription.reply(response);
             }
-          });    
+          });
 /*
           _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
             if (result) {
@@ -872,7 +876,7 @@ class VertxAppProtoStub {
               resumedObserver = observers[dataObjectObserverURL];
             }
           });
-        } 
+        }
         console.log('[VertxAppProtoStub._resumeObservers] resuming: ', resumedObserver);
         resolve(resumedObserver);
 
