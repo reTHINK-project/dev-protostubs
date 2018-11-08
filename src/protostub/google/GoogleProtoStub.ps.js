@@ -129,6 +129,7 @@ class GoogleProtoStub {
               });
           } else {
             _this.startWorking(reporter);
+            _this.startQuerying();
           }
         }).catch(function (error) {
         });
