@@ -124,12 +124,12 @@ class GoogleProtoStub {
             _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
               .then(function (reporter) {
                 if (reporter) {
-                  _this.startWorking(reporter);
+                  _this.startWorking(reporter, false);
                 }
               });
           } else {
-            _this.startWorking(reporter);
-            _this.startQuerying();
+            _this.startWorking(reporter, true);
+
           }
         }).catch(function (error) {
         });
@@ -137,7 +137,7 @@ class GoogleProtoStub {
     });
   }
 
-  startWorking(reporter) {
+  startWorking(reporter, resumedReporter) {
     let _this = this;
     _this.reporter = reporter;
     _this.hasStartedQuerying = false;
@@ -159,6 +159,11 @@ class GoogleProtoStub {
       }, _this.config.sessions_query_interval);
 
       _this.started = true;
+    }
+
+    if (resumedReporter) {
+      _this.hasStartedQuerying = true;
+      startQuerying();
     }
 
     reporter.onSubscription(function (event) {
@@ -191,7 +196,7 @@ class GoogleProtoStub {
         expires: 3600,
         reporter: reporterURL,
         domain_registration: false,
-        domain_routing: false 
+        domain_routing: false
       };
 
       _this._syncher
@@ -223,10 +228,7 @@ class GoogleProtoStub {
             console.log('[GoogleProtoStub] ', reporters[dataObjectReporterURL]);
 
             if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
-
               return resolve(reporters[dataObjectReporterURL]);
-            } else {
-              return resolve(false);
             }
           });
 
