@@ -531,7 +531,7 @@ class VertxAppProtoStub {
 
       _this._resumeObservers(contextUrl).then(function (result) {
             if (!result) {
-              _this._processNewSubscription(msg);
+              _this._processNewSubscription(msg, true);
             } else {
               let changesAddress = result.url + "/changes";
               _this._alreadyListening.push(changesAddress);
@@ -542,6 +542,7 @@ class VertxAppProtoStub {
                   }
                 });
               });
+              _this._processNewSubscription(msg, false);
             }
           }).catch(function (error) {
             //debugger;
@@ -563,7 +564,7 @@ class VertxAppProtoStub {
 
   }
 
-  _processNewSubscription(msg) {
+  _processNewSubscription(msg, newObserver) {
     let _this = this;
     console.log('[VertxAppProtoStub._processNewSubscription] ', msg);
 
@@ -580,16 +581,24 @@ class VertxAppProtoStub {
 
           // should resume observers, if dont have go to _setUpObserver
 
-          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-            console.log('[VertxAppProtoStub] _setUpObserver result ', result);
-            if (result) {
-              let response = { body: { code: 200 } };
-              messageFROMsubscription.reply(response);
-            } else {
-              let response = { body: { code: 406 } };
-              messageFROMsubscription.reply(response);
-            }
-          });
+          if (newObserver) {
+            _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+              console.log('[VertxAppProtoStub] _setUpObserver result ', result);
+              if (result) {
+                let response = { body: { code: 200 } };
+                messageFROMsubscription.reply(response);
+              } else {
+                let response = { body: { code: 406 } };
+                messageFROMsubscription.reply(response);
+              }
+            });
+          } else {
+
+            let response = { body: { code: 200 } };
+            messageFROMsubscription.reply(response);
+
+          }
+
 /*
           _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
             if (result) {
