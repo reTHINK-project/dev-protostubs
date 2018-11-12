@@ -488,6 +488,18 @@ class VertxAppProtoStub {
   _SubscriptionManager(msg) {
     console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
+
+    //check registered handlers
+    if (msg.to.includes('/changes')) {
+      console.log('[VertxAppProtoStub] to pub changes + check if is handler registered?!', _this);
+      let urlToPublish = msg.to;
+
+      let urlToCheck = urlToPublish.split('/changes')[0] + '/subscription';
+      if (!_this._eb.handlers.hasOwnProperty(urlToCheck)) {
+        _this._reWriteHandlers();
+      }
+    }
+
     if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('type')) {
 
       // To Handle Message read type to get for example shops List
@@ -534,13 +546,7 @@ class VertxAppProtoStub {
       _this._processSubscription(msg);
     } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
       console.log('[VertxAppProtoStub] new change ', msg);
-      console.log('[VertxAppProtoStub] to pub changes + check if is handler registered?!', _this);
-      let urlToPublish = msg.to;
 
-      let urlToCheck = urlToPublish.split('/changes')[0] + '/subscription';
-      if (!_this._eb.handlers.hasOwnProperty(urlToCheck)) {
-        _this._reWriteHandlers();
-      }
       _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
         if (reply_err == null) {
           console.log("[VertxAppProtoStub] Received reply from change ", reply);
