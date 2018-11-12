@@ -463,7 +463,19 @@ class VertxAppProtoStub {
 
                 function pubWalletsFunctionHandler (error, message) {
                   console.log('[VertxAppProtoStub]  new change on wallet', message);
-                  _this._publicWalletsReporterDataObject.data.wallets = message.body.body.wallets;
+                
+                  const { wallets } = message.body.body;
+                  if (wallets) {
+                    _this._publicWalletsReporterDataObject.data.wallets = wallets;
+                  }
+                  else {
+                    const [walletToUpdateIdentity, transaction, value] = message.body.body;
+                    const walletGuid = walletToUpdateIdentity.value.userProfile.guid;
+
+                    let walletToUpdate = _this._publicWalletsReporterDataObject.data.wallets.filter(wallet => wallet.identity.userProfile.guid === walletGuid)[0];
+                    walletToUpdate.balance = value.value;
+                    walletToUpdate.transactions.push(transaction.value);
+                  }
                 }
 
                 _this._registeredHandlers[pubWalletsHandler] = pubWalletsFunctionHandler;
