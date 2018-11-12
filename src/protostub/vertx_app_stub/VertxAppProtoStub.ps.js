@@ -157,7 +157,17 @@ class VertxAppProtoStub {
 
 //    let ready = new Promise((resolve,reject) => {
     return new Promise((resolve, reject) => {
-      _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
+
+      let options = {
+        vertxbus_reconnect_attempts_max: Infinity, // Max reconnect attempts
+        vertxbus_reconnect_delay_min: 1000, // Initial delay (in ms) before first reconnect attempt
+        vertxbus_reconnect_delay_max: 3000, // Max delay (in ms) between reconnect attempts
+        vertxbus_reconnect_exponent: 2, // Exponential backoff factor
+        vertxbus_randomization_factor: 0.5, // Randomization factor between 0 and 1
+        vertxbus_ping_interval: config.vertxbus_ping_interval
+      };
+
+      _this._eb = new EventBus(config.url, options);
       console.log('[VertxAppProtoStub] Eventbus', _this._eb);
       _this._eb.enableReconnect(true);
       _this._eb.onopen = () => {
@@ -542,6 +552,7 @@ class VertxAppProtoStub {
                   }
                 });
               });
+              //TODO: to be removed
               _this._processNewSubscription(msg, false);
             }
           }).catch(function (error) {
