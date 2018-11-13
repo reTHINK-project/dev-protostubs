@@ -463,7 +463,7 @@ class VertxAppProtoStub {
 
                 function pubWalletsFunctionHandler (error, message) {
                   console.log('[VertxAppProtoStub]  new change on wallet', message);
-                
+
                   const { wallets } = message.body.body;
                   if (wallets) {
                     _this._publicWalletsReporterDataObject.data.wallets = wallets;
@@ -508,7 +508,9 @@ class VertxAppProtoStub {
 
       let urlToCheck = urlToPublish.split('/changes')[0] + '/subscription';
       if (!_this._eb.handlers.hasOwnProperty(urlToCheck)) {
+        console.log('[VertxAppProtoStub] Lets RewriteHandlers', Object.keys(_this._eb.handlers));
         _this._reWriteHandlers();
+        console.log('[VertxAppProtoStub] After RewriteHandlers', Object.keys(_this._eb.handlers));
       }
     }
 
@@ -1184,6 +1186,7 @@ class VertxAppProtoStub {
     let _this = this;
     Object.keys(_this._registeredHandlers).forEach(function(element) {
       if(!_this._eb.handlers.hasOwnProperty(element)) {
+        console.log('[VertxAppProtoStub._reWriteHandlers] rewrite:', element);
         _this._eb.registerHandler(element, _this._registeredHandlers[element]);
       }
     });
