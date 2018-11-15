@@ -418,7 +418,7 @@ export let IdpProxy = {
   },
 
 /**
-  * Function to get an Access Token
+  * Function to refresh an Access Token
   *
   * @param  {login} optional login result
   * @return {Promise} returns a promise with an identity assertion

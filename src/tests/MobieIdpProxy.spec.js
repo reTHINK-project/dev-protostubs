@@ -281,7 +281,7 @@ describe('IdP Proxy test', function() {
 
   });
 
-  it('refresh access token', function (done) {
+  it.skip('refresh access token', function (done) {
 
     refreshAccessTokenMessage.body.params.token.accessToken = accessToken;
     refreshAccessTokenMessage.body.params.token.refresh = refreshToken;
