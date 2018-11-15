@@ -384,7 +384,7 @@ class VertxAppProtoStub {
                   const [balance, transaction, ranking, bonusCredit] = message.body.body;
                   _this._walletReporterDataObject.data.balance = balance.value;
                   let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
-                  tr.push(transaction.value);
+                  tr.push(JSON.parse(JSON.stringify(transaction.value)));
                   const timeout = 50;
                   setTimeout(() => {
                     _this._walletReporterDataObject.data.transactions = tr;
@@ -493,7 +493,9 @@ class VertxAppProtoStub {
 
                     let walletToUpdate = _this._publicWalletsReporterDataObject.data.wallets.filter(wallet => wallet.identity.userProfile.guid === walletGuid)[0];
                     walletToUpdate.balance = value.value;
-                    walletToUpdate.transactions.push(transaction.value);
+                    let transactions = JSON.parse(JSON.stringify(walletToUpdate.transactions));
+                    transactions.push(JSON.parse(JSON.stringify(transaction.value)));
+                    walletToUpdate.transactions = transactions;
                   }
                 }
 
