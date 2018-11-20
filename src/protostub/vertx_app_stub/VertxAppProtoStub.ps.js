@@ -391,10 +391,10 @@ class VertxAppProtoStub {
                   }, timeout);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data.ranking = ranking.value;
-                  }, timeout);
+                  }, timeout*2);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit.value;
-                  }, timeout);
+                  }, timeout*3);
                 }
                 else {
                   const { balance, transactions, ranking, 'bonus-credit': bonusCredit } = message.body.body
