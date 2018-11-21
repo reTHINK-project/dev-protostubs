@@ -370,6 +370,7 @@ class VertxAppProtoStub {
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
+              _this._walletReporterDataObject.data.accounts = reply2.body.wallet.accounts;
               _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
               _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
 
@@ -381,7 +382,7 @@ class VertxAppProtoStub {
               function individualWalletFunctionHandler(error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 if (Array.isArray(message.body.body)) {
-                  const [balance, transaction, ranking, bonusCredit] = message.body.body;
+                  const [balance, transaction, ranking, bonusCredit, accounts] = message.body.body;
                   _this._walletReporterDataObject.data.balance = balance.value;
                   let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
                   tr.push(JSON.parse(JSON.stringify(transaction.value)));
@@ -395,9 +396,12 @@ class VertxAppProtoStub {
                   setTimeout(() => {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit.value;
                   }, timeout*3);
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data.accounts = accounts.value;
+                  }, timeout * 4);
                 }
                 else {
-                  const { balance, transactions, ranking, 'bonus-credit': bonusCredit } = message.body.body
+                  const { balance, transactions, ranking, 'bonus-credit': bonusCredit, accounts } = message.body.body
                   if (balance) {
                     _this._walletReporterDataObject.data.balance = balance;
                   }
@@ -414,6 +418,9 @@ class VertxAppProtoStub {
                   }
                   if (ranking) {
                     _this._walletReporterDataObject.data.ranking = ranking;
+                  }
+                  if (accounts) {
+                    _this._walletReporterDataObject.data.accounts = accounts;
                   }
                   if (bonusCredit) {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit;
