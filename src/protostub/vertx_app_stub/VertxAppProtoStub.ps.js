@@ -1016,7 +1016,7 @@ class VertxAppProtoStub {
         _this._resumeReporters(name, name).then(function (wallet) {
           //debugger;
           console.log('[VertxAppProtoStub._setUpReporter] Wallet resumed', wallet);
-          if (wallet != false) {
+          if (wallet) {
 
             if (isPubWallet) {
               _this._publicWalletsReporterDataObject = wallet;
@@ -1089,7 +1089,7 @@ class VertxAppProtoStub {
         .then((wallet) => {
           _this.wallet = wallet;
 
-          _this._onSubscription(wallet);
+//          _this._onSubscription(wallet);
           return resolve(wallet);
 
         }).catch(function (reason) {
@@ -1100,12 +1100,12 @@ class VertxAppProtoStub {
 
   }
 
-  _onSubscription(wallet) {
+/*  _onSubscription(wallet) {
     wallet.onSubscription((event) => {
       console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
       event.accept();
     });
-  }
+  }*/
 
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(identityToUse, contextUrl, schemaUrl) {
