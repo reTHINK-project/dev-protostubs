@@ -152,6 +152,11 @@ class VertxAppProtoStub {
 
   }
 
+  _deepClone(obj) {
+    //TODO: simple but inefficient JSON deep clone...
+    if (obj) return JSON.parse(JSON.stringify(obj));
+  }  
+
   _open(config) {
 
     let _this = this;
@@ -332,21 +337,6 @@ class VertxAppProtoStub {
 
             reply.reply(responseMsg, function (reply_err, reply2) {
 
-              // 4 - send reply back to the JS wallet hyperty
-
-              let responseMsg = {
-                id: msg.id,
-                type: 'response',
-                from: msg.to,
-                to: hypertyURL,
-                body: {
-                  wallet: reply2.body.wallet,
-                  code: 200,
-                  reporter_url: result.url,
-                  publics_url: _this._publicWalletsReporterDataObject.url,
-                  role: reply2.body.role
-                }
-              };
 
               //update status
               /*              if (! _this._isHeartBeatON) {
@@ -355,11 +345,7 @@ class VertxAppProtoStub {
                               _this._isHeartBeatON = true;
                             }*/
 
-
-
-
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
-
 
               /*
               if (reply2.body.wallet.balance != 0) {
@@ -427,9 +413,25 @@ class VertxAppProtoStub {
               _this._registeredHandlers[addressChanges] = individualWalletFunctionHandler;
               _this._eb.registerHandler(addressChanges, individualWalletFunctionHandler);
 
-              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+              // 4 - send reply back to the JS wallet hyperty
 
-              _this._bus.postMessage(responseMsg);
+              let responseMsg2Wallet = {
+                id: msg.id,
+                type: 'response',
+                from: msg.to,
+                to: hypertyURL,
+                body: {
+                  wallet: _this._deepClone(reply2.body.wallet),
+                  code: 200,
+                  reporter_url: result.url,
+                  publics_url: _this._publicWalletsReporterDataObject.url,
+                  role: reply2.body.role
+                }
+              };
+
+              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg2Wallet);
+
+              _this._bus.postMessage(responseMsg2Wallet);
 
             });
           }
