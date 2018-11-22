@@ -382,7 +382,7 @@ class VertxAppProtoStub {
               function individualWalletFunctionHandler(error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 if (Array.isArray(message.body.body)) {
-                  const [balance, transaction, ranking, bonusCredit, accounts] = message.body.body;
+                  const [balance, transaction, accounts, ranking, bonusCredit ] = message.body.body;
                   _this._walletReporterDataObject.data.balance = balance.value;
                   let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
                   tr.push(JSON.parse(JSON.stringify(transaction.value)));
@@ -392,10 +392,10 @@ class VertxAppProtoStub {
                   }, timeout);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data.ranking = ranking.value;
-                  }, timeout*2);
+                  }, timeout * 2);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit.value;
-                  }, timeout*3);
+                  }, timeout * 3);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data.accounts = accounts.value;
                   }, timeout * 4);
@@ -434,6 +434,7 @@ class VertxAppProtoStub {
               _this._registeredHandlers[addressChanges] = individualWalletFunctionHandler;
               _this._eb.registerHandler(addressChanges, individualWalletFunctionHandler);
 
+              responseMsg = JSON.parse(JSON.stringify(responseMsg));
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
 
               _this._bus.postMessage(responseMsg);
@@ -1096,7 +1097,7 @@ class VertxAppProtoStub {
         .then((wallet) => {
           _this.wallet = wallet;
 
-//          _this._onSubscription(wallet);
+          //          _this._onSubscription(wallet);
           return resolve(wallet);
 
         }).catch(function (reason) {
@@ -1107,12 +1108,12 @@ class VertxAppProtoStub {
 
   }
 
-/*  _onSubscription(wallet) {
-    wallet.onSubscription((event) => {
-      console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
-      event.accept();
-    });
-  }*/
+  /*  _onSubscription(wallet) {
+      wallet.onSubscription((event) => {
+        console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
+        event.accept();
+      });
+    }*/
 
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(identityToUse, contextUrl, schemaUrl) {
