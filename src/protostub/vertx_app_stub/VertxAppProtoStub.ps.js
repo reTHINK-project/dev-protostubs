@@ -558,7 +558,8 @@ class VertxAppProtoStub {
           body: msg.body.body
         };
 
-        _this._eb.send(msg.to, toRead, function (reply_err, reply) {
+
+        _this._eb.send(msg.body.to, toRead, function (reply_err, reply) {
           if (reply_err == null) {
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
 
