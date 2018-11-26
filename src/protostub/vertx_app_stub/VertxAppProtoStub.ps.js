@@ -382,7 +382,7 @@ class VertxAppProtoStub {
               function individualWalletFunctionHandler(error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 if (Array.isArray(message.body.body)) {
-                  const [balance, transaction, accounts, ranking, bonusCredit ] = message.body.body;
+                  const [balance, transaction, accounts, ranking, bonusCredit] = message.body.body;
                   _this._walletReporterDataObject.data.balance = balance.value;
                   let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
                   tr.push(JSON.parse(JSON.stringify(transaction.value)));
@@ -550,7 +550,13 @@ class VertxAppProtoStub {
       if (msg.body.type === 'read') {
 
 
-        let toRead = { type: 'read' };
+        let toRead = {
+          type: 'read',
+          from: msg.body.from,
+          to: msg.body.to,
+          identity: msg.body.identity,
+          body: msg.body.body
+        };
 
         _this._eb.send(msg.to, toRead, function (reply_err, reply) {
           if (reply_err == null) {
@@ -564,7 +570,12 @@ class VertxAppProtoStub {
             };
             responseMsg.body = {};
             //debugger;
-            responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            if (reply.body.data) {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            }
+            else {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body));
+            }
             //responseMsg.body.value = _this._dataStreamData[msg.to];
             responseMsg.body.code = 200;
             _this._bus.postMessage(responseMsg);
