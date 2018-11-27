@@ -638,8 +638,10 @@ class VertxAppProtoStub {
             }
           });
         });
-        //TODO: to be removed
-        _this._processNewSubscription(msg, false);
+        // required to handle version transitions
+        if (!result.metadata.hasOwnProperty('subscribed') || 
+        (result.metadata.hasOwnProperty('subscribed')&& !result.metadata.subscribed) )
+          _this._processNewSubscription(msg, false);
       }
     }).catch(function (error) {
       //debugger;
@@ -1017,7 +1019,8 @@ class VertxAppProtoStub {
           reporter: identityURL,
           reuseURL: reuseURL,
           domain_registration: false,
-          domain_routing: false
+          domain_routing: false,
+          subscribed: false
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
@@ -1143,12 +1146,13 @@ class VertxAppProtoStub {
         p2p: false,
         mutual: true,
         domain_subscription: false,
-        identity: identityToUse
+        identity: identityToUse,
+        suscribed: true
       };
 
       _this._syncher.subscribe(input).then(function (obj) {
         console.log('[VertxAppProtoStub._setUpObserver] subscribe success', obj);
-        return resolve(true);
+        return resolve(obj);
       }).catch(function (error) {
         console.log('[VertxAppProtoStub._setUpObserver] error', error);
         return resolve(false);
