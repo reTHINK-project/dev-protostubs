@@ -50,6 +50,8 @@ class VertxAppProtoStub {
     console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB eb", EventBus);
 
     this._id = 0;
+    this._updating = false;
+    this._version = config.version;
 
     let uri = new URI(config.runtimeURL);
 
@@ -638,8 +640,10 @@ class VertxAppProtoStub {
             }
           });
         });
-        //TODO: to be removed
-        _this._processNewSubscription(msg, false);
+        // required to handle updates
+        if (_this._updating ) {
+          _this._processNewSubscription(msg, false);
+        }
       }
     }).catch(function (error) {
       //debugger;
@@ -1042,6 +1046,10 @@ class VertxAppProtoStub {
           if (wallet) {
 
             if (isPubWallet) {
+              if (!wallet.data.hasOwnProperty('version')) { //Hack to manage updates
+                wallet.data.version = _this._version;
+                _this._updating = true;
+              }
               _this._publicWalletsReporterDataObject = wallet;
             } else {
               _this._walletReporterDataObject = wallet;
@@ -1059,6 +1067,7 @@ class VertxAppProtoStub {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
+                wallet.data.version = _this._version;
                 _this._publicWalletsReporterDataObject = wallet;
               } else {
                 _this._walletReporterDataObject = wallet;
@@ -1148,7 +1157,7 @@ class VertxAppProtoStub {
 
       _this._syncher.subscribe(input).then(function (obj) {
         console.log('[VertxAppProtoStub._setUpObserver] subscribe success', obj);
-        return resolve(true);
+        return resolve(obj);
       }).catch(function (error) {
         console.log('[VertxAppProtoStub._setUpObserver] error', error);
         return resolve(false);
