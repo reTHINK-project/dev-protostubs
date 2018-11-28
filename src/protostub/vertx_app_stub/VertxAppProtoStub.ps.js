@@ -50,6 +50,8 @@ class VertxAppProtoStub {
     console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB eb", EventBus);
 
     this._id = 0;
+    this._updating = false;
+    this._version = config.version;
 
     let uri = new URI(config.runtimeURL);
 
@@ -151,11 +153,6 @@ class VertxAppProtoStub {
     });
 
   }
-
-  _deepClone(obj) {
-    //TODO: simple but inefficient JSON deep clone...
-    if (obj) return JSON.parse(JSON.stringify(obj));
-  }  
 
   _open(config) {
 
@@ -337,6 +334,21 @@ class VertxAppProtoStub {
 
             reply.reply(responseMsg, function (reply_err, reply2) {
 
+              // 4 - send reply back to the JS wallet hyperty
+
+              let responseMsg = {
+                id: msg.id,
+                type: 'response',
+                from: msg.to,
+                to: hypertyURL,
+                body: {
+                  wallet: reply2.body.wallet,
+                  code: 200,
+                  reporter_url: result.url,
+                  publics_url: _this._publicWalletsReporterDataObject.url,
+                  role: reply2.body.role
+                }
+              };
 
               //update status
               /*              if (! _this._isHeartBeatON) {
@@ -345,7 +357,11 @@ class VertxAppProtoStub {
                               _this._isHeartBeatON = true;
                             }*/
 
+
+
+
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
+
 
               /*
               if (reply2.body.wallet.balance != 0) {
@@ -356,6 +372,7 @@ class VertxAppProtoStub {
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
+              _this._walletReporterDataObject.data.accounts = reply2.body.wallet.accounts;
               _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
               _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
 
@@ -367,7 +384,7 @@ class VertxAppProtoStub {
               function individualWalletFunctionHandler(error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
                 if (Array.isArray(message.body.body)) {
-                  const [balance, transaction, ranking, bonusCredit] = message.body.body;
+                  const [balance, transaction, accounts, ranking, bonusCredit] = message.body.body;
                   _this._walletReporterDataObject.data.balance = balance.value;
                   let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
                   tr.push(JSON.parse(JSON.stringify(transaction.value)));
@@ -377,13 +394,16 @@ class VertxAppProtoStub {
                   }, timeout);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data.ranking = ranking.value;
-                  }, timeout*2);
+                  }, timeout * 2);
                   setTimeout(() => {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit.value;
-                  }, timeout*3);
+                  }, timeout * 3);
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data.accounts = accounts.value;
+                  }, timeout * 4);
                 }
                 else {
-                  const { balance, transactions, ranking, 'bonus-credit': bonusCredit } = message.body.body
+                  const { balance, transactions, ranking, 'bonus-credit': bonusCredit, accounts } = message.body.body
                   if (balance) {
                     _this._walletReporterDataObject.data.balance = balance;
                   }
@@ -401,6 +421,9 @@ class VertxAppProtoStub {
                   if (ranking) {
                     _this._walletReporterDataObject.data.ranking = ranking;
                   }
+                  if (accounts) {
+                    _this._walletReporterDataObject.data.accounts = accounts;
+                  }
                   if (bonusCredit) {
                     _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit;
                   }
@@ -413,25 +436,10 @@ class VertxAppProtoStub {
               _this._registeredHandlers[addressChanges] = individualWalletFunctionHandler;
               _this._eb.registerHandler(addressChanges, individualWalletFunctionHandler);
 
-              // 4 - send reply back to the JS wallet hyperty
+              responseMsg = JSON.parse(JSON.stringify(responseMsg));
+              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
 
-              let responseMsg2Wallet = {
-                id: msg.id,
-                type: 'response',
-                from: msg.to,
-                to: hypertyURL,
-                body: {
-                  wallet: _this._deepClone(reply2.body.wallet),
-                  code: 200,
-                  reporter_url: result.url,
-                  publics_url: _this._publicWalletsReporterDataObject.url,
-                  role: reply2.body.role
-                }
-              };
-
-              console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg2Wallet);
-
-              _this._bus.postMessage(responseMsg2Wallet);
+              _this._bus.postMessage(responseMsg);
 
             });
           }
@@ -490,7 +498,7 @@ class VertxAppProtoStub {
                     _this._publicWalletsReporterDataObject.data.wallets = wallets;
                   }
                   else {
-                    const [walletToUpdateIdentity, transaction, value] = message.body.body;
+                    const [walletToUpdateIdentity, transaction, accounts, value] = message.body.body;
                     const walletGuid = walletToUpdateIdentity.value.userProfile.guid;
 
                     let walletToUpdate = _this._publicWalletsReporterDataObject.data.wallets.filter(wallet => wallet.identity.userProfile.guid === walletGuid)[0];
@@ -498,6 +506,7 @@ class VertxAppProtoStub {
                     let transactions = JSON.parse(JSON.stringify(walletToUpdate.transactions));
                     transactions.push(JSON.parse(JSON.stringify(transaction.value)));
                     walletToUpdate.transactions = transactions;
+                    walletToUpdate.accounts = accounts.value;
                   }
                 }
 
@@ -543,9 +552,18 @@ class VertxAppProtoStub {
       if (msg.body.type === 'read') {
 
 
-        let toRead = { type: 'read' };
+        let to = msg.to;
+        if (msg.body.to)
+          to = msg.body.to;
+        let toRead = {
+          type: 'read',
+          from: msg.body.from,
+          to: msg.body.to,
+          identity: msg.body.identity,
+          body: msg.body.body
+        };
 
-        _this._eb.send(msg.to, toRead, function (reply_err, reply) {
+        _this._eb.send(to, toRead, function (reply_err, reply) {
           if (reply_err == null) {
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
 
@@ -557,7 +575,12 @@ class VertxAppProtoStub {
             };
             responseMsg.body = {};
             //debugger;
-            responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            if (reply.body.data) {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            }
+            else {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body));
+            }
             //responseMsg.body.value = _this._dataStreamData[msg.to];
             responseMsg.body.code = 200;
             _this._bus.postMessage(responseMsg);
@@ -617,8 +640,10 @@ class VertxAppProtoStub {
             }
           });
         });
-        //TODO: to be removed
-        _this._processNewSubscription(msg, false);
+        // required to handle updates
+        if (_this._updating ) {
+          _this._processNewSubscription(msg, false);
+        }
       }
     }).catch(function (error) {
       //debugger;
@@ -1021,6 +1046,10 @@ class VertxAppProtoStub {
           if (wallet) {
 
             if (isPubWallet) {
+              if (!wallet.data.hasOwnProperty('version')) { //Hack to manage updates
+                wallet.data.version = _this._version;
+                _this._updating = true;
+              }
               _this._publicWalletsReporterDataObject = wallet;
             } else {
               _this._walletReporterDataObject = wallet;
@@ -1038,6 +1067,7 @@ class VertxAppProtoStub {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
+                wallet.data.version = _this._version;
                 _this._publicWalletsReporterDataObject = wallet;
               } else {
                 _this._walletReporterDataObject = wallet;
@@ -1091,7 +1121,7 @@ class VertxAppProtoStub {
         .then((wallet) => {
           _this.wallet = wallet;
 
-//          _this._onSubscription(wallet);
+          //          _this._onSubscription(wallet);
           return resolve(wallet);
 
         }).catch(function (reason) {
@@ -1102,12 +1132,12 @@ class VertxAppProtoStub {
 
   }
 
-/*  _onSubscription(wallet) {
-    wallet.onSubscription((event) => {
-      console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
-      event.accept();
-    });
-  }*/
+  /*  _onSubscription(wallet) {
+      wallet.onSubscription((event) => {
+        console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
+        event.accept();
+      });
+    }*/
 
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(identityToUse, contextUrl, schemaUrl) {
@@ -1127,7 +1157,7 @@ class VertxAppProtoStub {
 
       _this._syncher.subscribe(input).then(function (obj) {
         console.log('[VertxAppProtoStub._setUpObserver] subscribe success', obj);
-        return resolve(true);
+        return resolve(obj);
       }).catch(function (error) {
         console.log('[VertxAppProtoStub._setUpObserver] error', error);
         return resolve(false);
