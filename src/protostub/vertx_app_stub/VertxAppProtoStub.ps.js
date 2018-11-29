@@ -1046,7 +1046,9 @@ class VertxAppProtoStub {
           if (wallet) {
 
             if (isPubWallet) {
-              if (!wallet.data.hasOwnProperty('version') || (wallet.data.hasOwnProperty('version') && wallet.data.version === '27.11.2018')) { //Hack to manage updates
+              if (!wallet.data.hasOwnProperty('version') || 
+                (wallet.data.hasOwnProperty('version') && wallet.data.version === '27.11.2018') || 
+                (wallet.data.hasOwnProperty('version') && wallet.data.version < _this._version) ) { //Hack to manage updates
                 wallet.data.version = _this._version;
                 _this._updating = true;
               }
