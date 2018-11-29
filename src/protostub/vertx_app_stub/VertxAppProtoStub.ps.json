@@ -6,7 +6,6 @@
     "url": "https://vertx-runtime.hysmart.rethink.ptinovacao.pt/eventbus",
     "vertxbus_ping_interval": 10000,
     "host": "sharing-cities-dsm",
-    "domain": "hybroker.rethink.ptinovacao.pt",
     "streams": [
     ],
     "publicWallets" : {
@@ -17,7 +16,8 @@
           }
         }
       },
-    "timeoutValue": 500
+    "timeoutValue": 500,
+    "version": "27.11.2018"
   },
   "constraints": {
         "browser": true

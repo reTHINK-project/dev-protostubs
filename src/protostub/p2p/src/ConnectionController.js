@@ -99,7 +99,12 @@ class ConnectionController {
 
     return new Promise((resolve, reject) => {
 
-      this._syncher.subscribe(this._objectDescURL, invitationEvent.url).then((dataObjectObserver) => {
+      let input = {
+        schema: this._objectDescURL,
+        resource: invitationEvent.url
+      };
+
+      this._syncher.subscribe(input).then((dataObjectObserver) => {
         console.info('+[P2P-ConnectionController] got Data Object Observer', dataObjectObserver);
         this._setupObserver(dataObjectObserver);
         resolve();

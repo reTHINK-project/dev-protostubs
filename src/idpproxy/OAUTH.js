@@ -8,6 +8,17 @@ let authorisationEndpoint;
 let domain;
 let accessTokenEndpoint;
 let accessTokenAuthorisationEndpoint;
+let refreshAccessTokenEndpoint;
+
+export let getExpiresAtJSON = (function (json) {
+  let expires = json.hasOwnProperty('expires_in') ? json.expires_in : false
+
+  if (expires) expires = expires + Math.floor(Date.now() / 1000);
+  else expires = 3153600000 + Math.floor(Date.now() / 1000);
+
+  return Number(expires);
+
+});
 
 //function to parse the query string in the given URL to obatin certain values
 function urlParser(url, name) {
@@ -37,12 +48,15 @@ function sendHTTPRequest(method, url) {
   return new Promise(function (resolve, reject) {
     if (xhr) {
       xhr.onreadystatechange = function (e) {
+        console.log('[OAUTH2.sendHTTPRequest] response ', e);
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
             let info = JSON.parse(xhr.responseText);
             resolve(info);
           } else if (xhr.status === 400) {
             reject('There was an error processing the token');
+          } else if (xhr.status === 401) {
+            reject('Not Authorised');
           } else {
             reject('something else other than 200 was returned');
           }
@@ -70,7 +84,7 @@ let exchangeRefreshToken = (function (refreshToken) {
   });
 });
 
-let generateAssertionWithAccessToken = ( function (contents, expires, info) {
+let generateAssertionWithAccessToken = (function (contents, expires, info) {
 
   return new Promise(function (resolve, reject) {
     sendHTTPRequest('GET', userInfoEndpoint(info)).then(function (infoToken) {
@@ -83,9 +97,9 @@ let generateAssertionWithAccessToken = ( function (contents, expires, info) {
       //TODO delete later the field infoToken, and delete the need in the example
       let returnValue = { assertion: assertion, idp: idpBundle, expires: expires, userProfile: infoToken };
 
-/*      identities[nIdentity] = returnValue;
-      ++nIdentity;
-*/
+      /*      identities[nIdentity] = returnValue;
+            ++nIdentity;
+      */
       console.log('[OAUTH2.generateAssertion] returning: ', JSON.stringify(returnValue));
 
       resolve(returnValue);
@@ -93,20 +107,20 @@ let generateAssertionWithAccessToken = ( function (contents, expires, info) {
   });
 });
 
-let generateAssertionWithCodeToken = (function ( contents, expires, hint) {
+let generateAssertionWithCodeToken = (function (contents, expires, hint) {
   return new Promise(function (resolve, reject) {
     let code = urlParser(hint, 'code');
 
     if (!code) reject('[OAUTH2.generateAssertionWithCode] code not returned by the authentication: ', hint);
 
-      sendHTTPRequest('POST', tokenEndpoint(code)).then(function (info) {
+    sendHTTPRequest('POST', tokenEndpoint(code)).then(function (info) {
 
-        if (info.hasOwnProperty('access_token')) 
-          resolve(generateAssertionWithAccessToken( contents, expires, info) );
-        else reject('[OAUTH2.generateAssertionWithCode] access token not returned in the exchange code result: ', info);
-      }, function (error) {
-        reject(error);
-      });
+      if (info.hasOwnProperty('access_token'))
+        resolve(generateAssertionWithAccessToken(contents, expires, info));
+      else reject('[OAUTH2.generateAssertionWithCode] access token not returned in the exchange code result: ', info);
+    }, function (error) {
+      reject(error);
+    });
 
   });
 });
@@ -117,15 +131,16 @@ let getAccessTokenWithCodeToken = (function (resources, login) {
 
     if (!code) reject('[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ', login);
 
-      sendHTTPRequest('POST', accessTokenEndpoint(code, resources)).then(function (info) {
+    sendHTTPRequest('POST', accessTokenEndpoint(code, resources)).then(function (info) {
 
-        if (info.hasOwnProperty('access_token')) {
-          let expires = getExpires(info);
-          resolve (accessTokenResult(resources, info.access_token, expires, info));
-        } else reject('[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ', info);
-      }, function (error) {
-        reject(error);
-      });
+      if (info.hasOwnProperty('access_token')) {
+        let expires = getExpires(info);
+        let refresh = info.hasOwnProperty('refresh_token') ? info.refresh_token : false;
+        resolve(accessTokenResult(resources, info.access_token, expires, info, refresh));
+      } else reject('[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ', info);
+    }, function (error) {
+      reject(error);
+    });
 
   });
 });
@@ -171,10 +186,10 @@ export let IdpProxy = {
     domain = config.domain;
 
     return new Promise(function (resolve, reject) {
-//      let i = idpInfo;
+      //      let i = idpInfo;
       let decodedContent = atob(assertion);
       let content = JSON.parse(decodedContent);
-      sendHTTPRequest('GET', config.validateAssertionEndpoint({access_token: content.tokenID, input: content.tokenIDJSON })).then(result => {
+      sendHTTPRequest('GET', config.validateAssertionEndpoint({ access_token: content.tokenID, input: content.tokenIDJSON })).then(result => {
         if (JSON.stringify(result) === JSON.stringify(content.tokenIDJSON)) {
           //        if (result.hasOwnProperty('name')) {
           resolve({ identity: config.convertUserProfile(result).id, contents: content.publicKey });
@@ -250,7 +265,7 @@ export let IdpProxy = {
     console.log('[OAUTH2.generateAssertion:contents]', contents);
     console.log('[OAUTH2.generateAssertion:origin]', origin);
     console.log('[OAUTH2.generateAssertion:hint]', hint);
-//    let i = idpInfo;
+    //    let i = idpInfo;
     userInfoEndpoint = config.userInfoEndpoint;
     tokenEndpoint = config.tokenEndpoint;
     authorisationEndpoint = config.authorisationEndpoint;
@@ -261,7 +276,7 @@ export let IdpProxy = {
     return new Promise(function (resolve, reject) {
       if (!hint) {
 
-//        console.log('[OAUTH2.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
+        //        console.log('[OAUTH2.generateAssertion] NO_HINT: rejecting with requestUrl ', requestUrl);
 
         reject({ name: 'IdPLoginError', loginUrl: authorisationEndpoint(contents) });
 
@@ -274,8 +289,8 @@ export let IdpProxy = {
 
         let accessToken = urlParser(hint, 'access_token');
 
-        if (accessToken) resolve( generateAssertionWithAccessToken(contents, expires,{access_token: accessToken} ) );
-        else resolve( generateAssertionWithCodeToken(contents, expires, hint) );
+        if (accessToken) resolve(generateAssertionWithAccessToken(contents, expires, { access_token: accessToken }));
+        else resolve(generateAssertionWithCodeToken(contents, expires, hint));
       }
     }, function (e) {
 
@@ -293,24 +308,24 @@ export let IdpProxy = {
 
   getAccessTokenAuthorisationEndpoint: (config, resources) => {
     console.log('[OAUTH2.getAccessTokenAuthorisationEndpoint:config]', config);
-//    console.log('[OAUTH2.generateAssertion:contents]', contents);
-//    console.log('[OAUTH2.generateAssertion:origin]', origin);
+    //    console.log('[OAUTH2.generateAssertion:contents]', contents);
+    //    console.log('[OAUTH2.generateAssertion:origin]', origin);
     console.log('[OAUTH2.getAccessTokenAuthorisationEndpoint:resources]', resources);
-//    let i = idpInfo;
+    //    let i = idpInfo;
     accessTokenAuthorisationEndpoint = config.accessTokenAuthorisationEndpoint;
 
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
 
-        resolve( accessTokenAuthorisationEndpoint(resources));
+      resolve(accessTokenAuthorisationEndpoint(resources));
 
     }, function (e) {
 
       reject(e);
     });
   },
-  
+
   /**
   * Function to get an Access Token
   *
@@ -323,29 +338,74 @@ export let IdpProxy = {
 
   getAccessToken: (config, resources, login) => {
     console.log('[OAUTH2.getAccessToken:config]', config);
-//    console.log('[OAUTH2.generateAssertion:contents]', contents);
-//    console.log('[OAUTH2.generateAssertion:origin]', origin);
+    //    console.log('[OAUTH2.generateAssertion:contents]', contents);
+    //    console.log('[OAUTH2.generateAssertion:origin]', origin);
     console.log('[OAUTH2.getAccessToken:login]', login);
-//    let i = idpInfo;
+    //    let i = idpInfo;
     accessTokenEndpoint = config.accessTokenEndpoint;
     domain = config.domain;
 
     let _this = this;
     //start the login phase
     return new Promise(function (resolve, reject) {
-        // the user is loggedin, try to extract the Access Token and its expires
-        let expires = getExpires(login);
+      // the user is loggedin, try to extract the Access Token and its expires
+      let expires = getExpires(login);
 
-        let accessToken = urlParser(login, 'access_token');
+      let accessToken = urlParser(login, 'access_token');
 
-        if (accessToken) resolve( accessTokenResult(resources, accessToken, expires, login) );
-        else resolve( getAccessTokenWithCodeToken(resources, login) );
+      if (accessToken) resolve(accessTokenResult(resources, accessToken, expires, login));
+      else resolve(getAccessTokenWithCodeToken(resources, login));
+    }, function (e) {
+
+      reject(e);
+    });
+  },
+
+/**
+  * Function to refresh an Access Token
+  *
+  * @param  {login} optional login result
+  * @return {Promise} returns a promise with an identity assertion
+  */
+
+ refreshAccessToken: (config, token) => {
+    console.log('[OAUTH2.refreshAccessToken:config]', config);
+    //    console.log('[OIDC.generateAssertion:contents]', contents);
+    //    console.log('[OIDC.generateAssertion:origin]', origin);
+    console.log('[OAUTH2.refreshAccessToken:outdated token]', token);
+    //    let i = idpInfo;
+    refreshAccessTokenEndpoint = config.refreshAccessTokenEndpoint;
+    domain = config.domain;
+
+    let _this = this;
+    //start the login phase
+    return new Promise(function (resolve, reject) {
+      // the user is loggedin, try to extract the Access Token and its expires
+
+      let refresh = token.refresh;
+
+      if (!refresh) reject('[OAUTH2.refreshAccessToken] refresh token not available in the access token', token);
+
+      sendHTTPRequest('POST', refreshAccessTokenEndpoint(refresh)).then(function (info) {
+
+        console.info('[OAUTH2.refreshAccessToken] response: ', info);
+
+        if (info.hasOwnProperty('access_token')) {
+
+          let expires = getExpiresAtJSON(info);
+          resolve(accessTokenResult(token.resources, info.access_token, expires, info, refresh));
+        } else reject('[OAUTH2.refreshAccessToken] new access token not returned in the response: ', info);
+      }, function (error) {
+        reject(error);
+      });
+
+      //      });
+
     }, function (e) {
 
       reject(e);
     });
   }
-
 
 
 };

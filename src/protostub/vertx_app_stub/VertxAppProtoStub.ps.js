@@ -21,6 +21,7 @@
 * limitations under the License.
 **/
 import EventBus from 'vertx3-eventbus-client';
+import URI from 'urijs';
 //import { WalletReporter } from 'service-framework/dist/WalletManager';
 //import { Syncher } from 'service-framework/dist/Syncher';
 
@@ -49,14 +50,19 @@ class VertxAppProtoStub {
     console.log("[VertxAppProtoStub] VERTX APP PROTOSTUB eb", EventBus);
 
     this._id = 0;
+    this._updating = false;
+    this._version = config.version;
+
+    let uri = new URI(config.runtimeURL);
 
     this._runtimeProtoStubURL = runtimeProtoStubURL;
     this._bus = bus;
     this._config = config;
-    this._domain = config.domain;
+    this._domain = uri.hostname();
     this._streams = config.streams;
     this._publicWallets = config.publicWallets;
     this._identity = null;
+    this._isHeartBeatON = false;
     this._timeOutValue = config.timeoutValue;
     //TODO: to be defined in the config
     this.walletDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/WalletData';
@@ -71,11 +77,13 @@ class VertxAppProtoStub {
     this._publicWalletsReporterDataObject = null;
     this._alreadyListening = [];
     this._dataObjectsURL = {};
+    this._heartbeatRate = 90000;
+    this._status = 'created';
+    this._registeredHandlers = {};
 
+    let connecting;
 
-
-
-    _this._sendStatus('created');
+    _this._sendStatus(this._status);
 
     // used to save data of eachF observer saving data and timestamp to publish to vertx
     _this._dataObservers = {};
@@ -112,45 +120,142 @@ class VertxAppProtoStub {
 
 
     bus.addListener('*', (msg) => {
-      console.log('[VertxAppProtoStub] Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
-      if (_this.identity == null && msg.hasOwnProperty('identity')) {
-        _this.identity = msg.identity;
+      console.log('[VertxAppProtoStub] Outgoing Message ', msg, _this._eb, JSON.stringify(_this._dataStreamIdentity));
+      if (!_this._identity && msg.hasOwnProperty('identity')) {
+        _this._identity = msg.identity;
+        _this._guid = msg.identity.guid ? msg.identity.guid : msg.identity.userProfile.guid;
       }
-      if (_this._eb === null) {
-        _this._eb = new EventBus(config.url, { "vertxbus_ping_interval": config.vertxbus_ping_interval });
-        console.log('[VertxAppProtoStub] Eventbus', _this._eb);
-        let test = _this._eb.enableReconnect(true);
-        console.log('[VertxAppProtoStub]', test);
-        _this._eventBusUsage().then(function (result) {
-          console.log('[VertxAppProtoStub] Message _eventBusUsage', result);
-          if (result) {
-            _this._SubscriptionManager(msg);
-          }
-        });
+      if (!_this._identity && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('body') && msg.body.body.hasOwnProperty('identity') && msg.body.body.identity.hasOwnProperty('guid')) {
+        let constIdentity = { userProfile: { guid: msg.body.body.identity.guid } }
+        _this._identity = constIdentity;
+        _this._guid = constIdentity.userProfile.guid;
       }
 
-      else {
+      console.log('[VertxAppProtoStub] connection status ', _this._status);
 
-        if (_this._eb != null && _this._eb.hasOwnProperty('sockJSConn') && WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
+      switch (_this._status) {
+        case 'live':
           _this._SubscriptionManager(msg);
-        } else {
-
-          function waitForEB() {
-            console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-            if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-              _this._SubscriptionManager(msg);
-              clearTimeout(timer);
-            }
-          }
-          let timer = setTimeout(waitForEB, _this._timeOutValue);
-
-        }
+          break;
+        case 'in-progress':
+          connecting.then(() => {
+            _this._SubscriptionManager(msg);
+          });
+          break;
+        case 'created':
+          connecting = _this._open(config).then(() => {
+            _this._SubscriptionManager(msg);
+          });
+          _this._status = 'in-progress';
+          break
       }
 
     });
 
   }
 
+  _open(config) {
+
+    let _this = this;
+
+    //    let ready = new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
+
+      let options = {
+        vertxbus_reconnect_attempts_max: Infinity, // Max reconnect attempts
+        vertxbus_reconnect_delay_min: 1000, // Initial delay (in ms) before first reconnect attempt
+        vertxbus_reconnect_delay_max: 3000, // Max delay (in ms) between reconnect attempts
+        vertxbus_reconnect_exponent: 2, // Exponential backoff factor
+        vertxbus_randomization_factor: 0.5, // Randomization factor between 0 and 1
+        vertxbus_ping_interval: config.vertxbus_ping_interval
+      };
+
+      _this._eb = new EventBus(config.url, options);
+      console.log('[VertxAppProtoStub] Eventbus', _this._eb);
+      _this._eb.enableReconnect(true);
+      _this._eb.onopen = () => {
+
+        let timer1;
+
+        let connect = function () {
+          _this._status = 'live';
+          clearTimeout(timer1);
+          console.log('[VertxAppProtoStub._open] connected ', _this._eb.sockJSConn.readyState);
+          //update status
+          if (!_this._isHeartBeatON && _this._guid) {
+            _this._setGUIDHandler(_this._guid);
+            _this._sendStatusVertxRuntime();
+            _this._heartBeat();
+            _this._isHeartBeatON = true;
+          }
+
+          _this._configAvailableStreams().then(function () {
+
+            /*
+            if (! _this._isHeartBeatON) {
+              _this._sendStatusVertxRuntime();
+              _this._heartBeat();
+              _this._isHeartBeatON = true;
+            }*/
+
+
+            let toCreatePub = {
+              type: 'create',
+              to: 'hyperty://sharing-cities-dsm/wallet-manager',
+              from: _this._runtimeSessionURL,
+              identity: _this._publicWallets.identity,
+              body: { type: 'create' }
+            }
+            _this.createWalletPub(toCreatePub).then(function () {
+              resolve();
+            });
+          });
+        };
+
+        if (_this._eb.sockJSConn.readyState === WebSocket.OPEN) connect();
+        else {
+          timer1 = setTimeout(() => {
+            console.log('[VertxAppProtoStub._open] trying connect ', _this._eb.sockJSConn.readyState);
+            if (_this._eb.sockJSConn.readyState === WebSocket.OPEN) connect();
+          }, _this._timeOutValue);
+
+        }
+
+
+      };
+    });
+
+
+
+    //    });
+  }
+
+  _setGUIDHandler(guid) {
+
+    let _this = this;
+
+    console.log('[VertxAppProtoStub._setGUIDHandler] ', guid);
+
+    function guidHandlerFunctionHandler(error, message) {
+      console.log('[VertxAppProtoStub._setGUIDHandler] new msg on user GUID', message);
+      // HACK: send reply instantly to CRM
+      if (message) {
+        let response = { body: { code: 200 } };
+        message.reply(response);
+
+        _this._bus.postMessage(message.body);
+      } else {
+        console.log('[VertxAppProtoStub._setGUIDHandler] error message');
+      }
+      // , (reply) => {
+      //   debugger;
+      //   console.log('[VertxAppProtoStub] reply to message', reply);
+      //   // resolve(reply);
+      // });
+    }
+    _this._registeredHandlers[guid] = guidHandlerFunctionHandler;
+    _this._eb.registerHandler(guid, guidHandlerFunctionHandler);
+  }
 
 
   updateResource(msg) {
@@ -158,7 +263,7 @@ class VertxAppProtoStub {
     *
     *  let updateMessage = {
     *    type: 'forward', to: 'hyperty://sharing-cities-dsm/wallet-manager', from: _this.hypertyURL,
-    *    identity: _this.identity,
+    *    identity: _this._identity,
     *    body: {
     *      type: 'update',
     *      from: _this.hypertyURL,
@@ -245,26 +350,15 @@ class VertxAppProtoStub {
                 }
               };
 
-              console.log('[VertxAppProtoStub] setting up GUID Handler');
+              //update status
+              /*              if (! _this._isHeartBeatON) {
+                              _this._sendStatusVertxRuntime();
+                              _this._heartBeat();
+                              _this._isHeartBeatON = true;
+                            }*/
 
-              if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('guid')) {
-                let guid = msg.identity.userProfile.guid;
-                if (guid) {
-                  _this._eb.registerHandler(guid, function (error, message) {
-                    console.log('[VertxAppProtoStub] new msg on user GUID', message);
-                    // HACK: send reply instantly to CRM
-                    let response = { body: { code: 200 } };
-                    message.reply(response);
 
-                    _this._bus.postMessage(message.body)
-                    // , (reply) => {
-                    //   debugger;
-                    //   console.log('[VertxAppProtoStub] reply to message', reply);
-                    //   // resolve(reply);
-                    // });
-                  });
-                }
-              }
+
 
               console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
@@ -278,6 +372,7 @@ class VertxAppProtoStub {
 
               let transactions = JSON.parse(JSON.stringify(reply2.body.wallet.transactions));
               _this._walletReporterDataObject.data.transactions = transactions;
+              _this._walletReporterDataObject.data.accounts = reply2.body.wallet.accounts;
               _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
               _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
 
@@ -286,31 +381,62 @@ class VertxAppProtoStub {
 
               console.log('[VertxAppProtoStub.createWallet] Vertx event bus address', addressChanges);
 
-              _this._eb.registerHandler(addressChanges, function (error, message) {
+              function individualWalletFunctionHandler(error, message) {
                 console.log('[VertxAppProtoStub] new change on individual wallet', message);
-                const { balance, transactions, ranking, 'bonus-credit': bonusCredit } = message.body.body
-                if (balance) {
-                  _this._walletReporterDataObject.data.balance = balance;
+                if (Array.isArray(message.body.body)) {
+                  const [balance, transaction, accounts, ranking, bonusCredit] = message.body.body;
+                  _this._walletReporterDataObject.data.balance = balance.value;
+                  let tr = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
+                  tr.push(JSON.parse(JSON.stringify(transaction.value)));
+                  const timeout = 50;
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data.transactions = tr;
+                  }, timeout);
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data.ranking = ranking.value;
+                  }, timeout * 2);
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit.value;
+                  }, timeout * 3);
+                  setTimeout(() => {
+                    _this._walletReporterDataObject.data.accounts = accounts.value;
+                  }, timeout * 4);
                 }
-                if (transactions) {
-                  if (Array.isArray(transactions) === true) {
-                    _this._walletReporterDataObject.data.transactions = transactions;
+                else {
+                  const { balance, transactions, ranking, 'bonus-credit': bonusCredit, accounts } = message.body.body
+                  if (balance) {
+                    _this._walletReporterDataObject.data.balance = balance;
                   }
-                  else {
-                    // single value
-                    const transactionsCopy = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
-                    transactionsCopy.push(transactions);
-                    _this._walletReporterDataObject.data.transactions = transactionsCopy;
+                  if (transactions) {
+                    if (Array.isArray(transactions) === true) {
+                      _this._walletReporterDataObject.data.transactions = transactions;
+                    }
+                    else {
+                      // single value
+                      const transactionsCopy = JSON.parse(JSON.stringify(_this._walletReporterDataObject.data.transactions));
+                      transactionsCopy.push(transactions);
+                      _this._walletReporterDataObject.data.transactions = transactionsCopy;
+                    }
+                  }
+                  if (ranking) {
+                    _this._walletReporterDataObject.data.ranking = ranking;
+                  }
+                  if (accounts) {
+                    _this._walletReporterDataObject.data.accounts = accounts;
+                  }
+                  if (bonusCredit) {
+                    _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit;
                   }
                 }
-                if (ranking) {
-                  _this._walletReporterDataObject.data.ranking = ranking;
-                }
-                if (bonusCredit) {
-                  _this._walletReporterDataObject.data['bonus-credit'] = bonusCredit;
-                }
-              });
 
+              }
+
+
+
+              _this._registeredHandlers[addressChanges] = individualWalletFunctionHandler;
+              _this._eb.registerHandler(addressChanges, individualWalletFunctionHandler);
+
+              responseMsg = JSON.parse(JSON.stringify(responseMsg));
               console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
 
               _this._bus.postMessage(responseMsg);
@@ -360,13 +486,35 @@ class VertxAppProtoStub {
                 console.log('[VertxAppProtoStub] wallet returned from vertx', reply2.body.wallet);
 
                 _this._publicWalletsReporterDataObject.data.wallets = reply2.body.wallet.wallets;
-                _this._eb.registerHandler('wallet://public-wallets/changes', function (error, message) {
+
+
+                let pubWalletsHandler = 'wallet://public-wallets/changes';
+
+                function pubWalletsFunctionHandler(error, message) {
                   console.log('[VertxAppProtoStub]  new change on wallet', message);
-                  _this._publicWalletsReporterDataObject.data.wallets = message.body.body.wallets;
-                });
+
+                  const { wallets } = message.body.body;
+                  if (wallets) {
+                    _this._publicWalletsReporterDataObject.data.wallets = wallets;
+                  }
+                  else {
+                    const [walletToUpdateIdentity, transaction, accounts, value] = message.body.body;
+                    const walletGuid = walletToUpdateIdentity.value.userProfile.guid;
+
+                    let walletToUpdate = _this._publicWalletsReporterDataObject.data.wallets.filter(wallet => wallet.identity.userProfile.guid === walletGuid)[0];
+                    walletToUpdate.balance = value.value;
+                    let transactions = JSON.parse(JSON.stringify(walletToUpdate.transactions));
+                    transactions.push(JSON.parse(JSON.stringify(transaction.value)));
+                    walletToUpdate.transactions = transactions;
+                    walletToUpdate.accounts = accounts.value;
+                  }
+                }
+
+                _this._registeredHandlers[pubWalletsHandler] = pubWalletsFunctionHandler;
+                _this._eb.registerHandler(pubWalletsHandler, pubWalletsFunctionHandler);
 
                 console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
-                resolve(true);
+                return resolve(true);
 
               });
             }
@@ -384,15 +532,38 @@ class VertxAppProtoStub {
   _SubscriptionManager(msg) {
     console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
+
+    //check registered handlers
+    if (msg.to.includes('/changes')) {
+      console.log('[VertxAppProtoStub] to pub changes + check if is handler registered?!', _this);
+      let urlToPublish = msg.to;
+
+      let urlToCheck = urlToPublish.split('/changes')[0] + '/subscription';
+      if (!_this._eb.handlers.hasOwnProperty(urlToCheck)) {
+        console.log('[VertxAppProtoStub] Lets RewriteHandlers', Object.keys(_this._eb.handlers));
+        _this._reWriteHandlers();
+        console.log('[VertxAppProtoStub] After RewriteHandlers', Object.keys(_this._eb.handlers));
+      }
+    }
+
     if (msg.hasOwnProperty('body') && msg.body.hasOwnProperty('type')) {
 
       // To Handle Message read type to get for example shops List
       if (msg.body.type === 'read') {
 
 
-        let toRead = { type: 'read' };
+        let to = msg.to;
+        if (msg.body.to)
+          to = msg.body.to;
+        let toRead = {
+          type: 'read',
+          from: msg.body.from,
+          to: msg.body.to,
+          identity: msg.body.identity,
+          body: msg.body.body
+        };
 
-        _this._eb.send(msg.to, toRead, function (reply_err, reply) {
+        _this._eb.send(to, toRead, function (reply_err, reply) {
           if (reply_err == null) {
             console.log("[VertxAppProtoStub] Received reply ", reply.body);
 
@@ -404,7 +575,12 @@ class VertxAppProtoStub {
             };
             responseMsg.body = {};
             //debugger;
-            responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            if (reply.body.data) {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body.data));
+            }
+            else {
+              responseMsg.body.value = JSON.parse(JSON.stringify(reply.body));
+            }
             //responseMsg.body.value = _this._dataStreamData[msg.to];
             responseMsg.body.code = 200;
             _this._bus.postMessage(responseMsg);
@@ -412,126 +588,25 @@ class VertxAppProtoStub {
 
 
         });
-
-
-
       }
 
       if (msg.body.type === 'create') {
         if (msg.body.resource == 'wallet') {
           _this.createWallet(msg);
         } else {
-          _this.smartIotIntegration(msg);
+          _this.forwardToVertxRuntime(msg);
         }
       } else if (msg.body.type === 'delete') {
-        _this.smartIotIntegration(msg);
+        _this.forwardToVertxRuntime(msg);
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
       }
 
     } else if (msg.type === 'create' && msg.from.includes('/subscription')) {
-      console.log('[VertxAppProtoStub] TO INVITE MSG', msg);
-      if (msg.identity == null) { /*&& (msg.to == 'hyperty://sharing-cities-dsm/user-activity' || msg.to == 'hyperty://sharing-cities-dsm/elearning') ) {*/
-        if (_this.identity == null && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
-          _this.identity = msg.body.identity;
-        }
-        msg.identity = _this.identity;
-      }
-      // handle message subscribe before invite Vertx
-      _this._eb.registerHandler(msg.from, function (error, messageFROMsubscription) {
-
-        console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
-        let messageToSubscribe = messageFROMsubscription.body;
-        if (messageToSubscribe.to.includes('/subscription')) {
-          let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
-          let contextUrl = messageToSubscribe.to.split("/subscription")[0];
-
-          // should resume observers, if dont have go to _setUpObserver
-
-          _this._resumeObservers(contextUrl).then(function (result) {
-            if (result == false) {
-              _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-                if (result) {
-                  let response = { body: { code: 200 } };
-                  messageFROMsubscription.reply(response);
-                } else {
-                  let response = { body: { code: 406 } };
-                  messageFROMsubscription.reply(response);
-                }
-              });
-            } else {
-              let changesAddress = result.url + "/changes";
-              _this._alreadyListening.push(changesAddress);
-              _this._bus.addListener(changesAddress, (event) => {
-                _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
-                  if (reply_err == null) {
-                    console.log("[VertxAppProtoStub] Received reply from change ", reply);
-                  }
-                });
-              });
-              let response = { body: { code: 200 } };
-              messageFROMsubscription.reply(response);
-            }
-          }).catch(function (error) {
-            //debugger;
-          });
-
-          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
-            if (result) {
-              let response = { body: { code: 200 } };
-              messageFROMsubscription.reply(response);
-            } else {
-              let response = { body: { code: 406 } };
-              messageFROMsubscription.reply(response);
-            }
-          });
-        }
-      });
-
-      // check if identity exists
-      //Message to invite Vertx to Subscribe a Reporter
-      let userURL;
-      let guid;
-      if (msg.body.identity) {
-        userURL = msg.body.identity.userProfile.userURL;
-        guid = msg.body.identity.userProfile.guid;
-      }
-      else {
-        userURL = msg.body.value.reporter;
-      }
-
-      // let inviteMessage = {
-      //   type: 'create',
-      //   from: msg.from,
-      //   to: msg.to,
-      //   identity: { userProfile: { userURL: userURL, guid: guid } }
-      // };
-      // if (msg.to == 'hyperty://sharing-cities-dsm/crm/tickets') {
-      //   // inviteMessage.body ={
-      //   //   ticket: {
-      //   //     created: msg.body.value.created,
-      //   //     lastModified: msg.body.value.lastModified,
-      //   //     message: msg.body.value.name
-      //   //   }
-      //   // }
-      // }
-      console.log("[VertxAppProtoStub] MSG to INVITE", msg);
-      //Invite Vertx to subscribe...
-      _this._eb.publish(msg.to, msg);
-
-      let msgResponse = {
-        id: msg.id,
-        type: 'response',
-        from: msg.to,
-        to: msg.from,
-        body: {
-          code: 200
-        }
-      };
-      _this._bus.postMessage(msgResponse);
-
+      _this._processSubscription(msg);
     } else if (msg.to.includes('/changes') && !_this._alreadyListening.includes(msg.to)) {
       console.log('[VertxAppProtoStub] new change ', msg);
+
       _this._eb.publish(msg.to, msg.body.value, function (reply_err, reply) {
         if (reply_err == null) {
           console.log("[VertxAppProtoStub] Received reply from change ", reply);
@@ -540,19 +615,156 @@ class VertxAppProtoStub {
     }
   }
 
-  smartIotIntegration(msg) {
+  _processSubscription(msg) {
+    let _this = this;
+    console.log('[VertxAppProtoStub._processSubscription] New MSG', msg);
+    if (msg.identity == null) { /*&& (msg.to == 'hyperty://sharing-cities-dsm/user-activity' || msg.to == 'hyperty://sharing-cities-dsm/elearning') ) {*/
+      if (!_this._identity && msg.hasOwnProperty('body') && msg.body.hasOwnProperty('identity')) {
+        _this._identity = msg.body.identity;
+      }
+      msg.identity = _this._identity;
+    }
+
+    let contextUrl = msg.from.split('/subscription')[0];
+
+    _this._resumeObservers(contextUrl).then(function (result) {
+      if (!result) {
+        _this._processNewSubscription(msg, true);
+      } else {
+        let changesAddress = result.url + "/changes";
+        _this._alreadyListening.push(changesAddress);
+        _this._bus.addListener(changesAddress, (event) => {
+          _this._eb.send(event.to, event.body.value, function (reply_err, reply) {
+            if (reply_err == null) {
+              console.log("[VertxAppProtoStub] Received reply from change ", reply);
+            }
+          });
+        });
+        // required to handle updates
+        if (_this._updating ) {
+          _this._processNewSubscription(msg, false);
+        }
+      }
+    }).catch(function (error) {
+      //debugger;
+    });
+
+
+
+    let msgResponse = {
+      id: msg.id,
+      type: 'response',
+      from: msg.to,
+      to: msg.from,
+      body: {
+        code: 200
+      }
+    };
+    _this._bus.postMessage(msgResponse);
+
+
+  }
+
+  _processNewSubscription(msg, newObserver) {
+    let _this = this;
+    console.log('[VertxAppProtoStub._processNewSubscription] ', msg);
+
+
+    function subscriptionFunctionHandler(error, messageFROMsubscription) {
+
+      let response = { body: { code: 200 } };
+      messageFROMsubscription.reply(response);
+      console.log('[VertxAppProtoStub] subscription message: ', messageFROMsubscription);
+      let messageToSubscribe = messageFROMsubscription.body;
+      if (messageToSubscribe.to.includes('/subscription')) {
+        let schema_url = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Context';
+        let contextUrl = messageToSubscribe.to.split("/subscription")[0];
+
+        // should resume observers, if dont have go to _setUpObserver
+
+        if (newObserver) {
+          _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+            console.log('[VertxAppProtoStub] _setUpObserver result ', result);
+            if (result) {
+              let response = { body: { code: 200 } };
+              messageFROMsubscription.reply(response);
+            } else {
+              let response = { body: { code: 406 } };
+              messageFROMsubscription.reply(response);
+            }
+          });
+        } else {
+
+          let response = { body: { code: 200 } };
+          messageFROMsubscription.reply(response);
+
+        }
+
+        /*
+                _this._setUpObserver(messageToSubscribe.body.identity, contextUrl, schema_url).then(function (result) {
+                  if (result) {
+                    let response = { body: { code: 200 } };
+                    messageFROMsubscription.reply(response);
+                  } else {
+                    let response = { body: { code: 406 } };
+                    messageFROMsubscription.reply(response);
+                  }
+                });*/
+      }
+    }
+
+
+    // handle message subscribe before invite Vertx
+    let subsHandler = msg.from;
+    _this._registeredHandlers[subsHandler] = subscriptionFunctionHandler;
+    _this._eb.registerHandler(subsHandler, subscriptionFunctionHandler);
+
+    // check if identity exists
+    //Message to invite Vertx to Subscribe a Reporter
+    let userURL;
+    let guid;
+    if (msg.body.identity) {
+      userURL = msg.body.identity.userProfile.userURL;
+      guid = msg.body.identity.userProfile.guid;
+    }
+    else {
+      userURL = msg.body.value.reporter;
+    }
+
+    // let inviteMessage = {
+    //   type: 'create',
+    //   from: msg.from,
+    //   to: msg.to,
+    //   identity: { userProfile: { userURL: userURL, guid: guid } }
+    // };
+    // if (msg.to == 'hyperty://sharing-cities-dsm/crm/tickets') {
+    //   // inviteMessage.body ={
+    //   //   ticket: {
+    //   //     created: msg.body.value.created,
+    //   //     lastModified: msg.body.value.lastModified,
+    //   //     message: msg.body.value.name
+    //   //   }
+    //   // }
+    // }
+    console.log("[VertxAppProtoStub] MSG to INVITE", msg);
+    //Invite Vertx to subscribe...
+    _this._eb.publish(msg.to, msg);
+
+
+  }
+
+  forwardToVertxRuntime(msg) {
 
     let _this = this;
-    const smartIotStubAddress = msg.to;
+    const vertxAddress = msg.to;
 
     msg.type = msg.body.type;
     delete msg.body.from;
     delete msg.body.type;
 
-    _this._eb.send(smartIotStubAddress, msg, function (reply_err, reply) {
-      console.log('[VertxAppProtoStub] smartIot Integration', reply, reply_err);
+    _this._eb.send(vertxAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] forwardToVertxRuntime', reply, reply_err);
       if (reply_err == null) {
-
 
         _this._sendReplyMsg(msg, reply.body.body);
         /*
@@ -663,11 +875,13 @@ class VertxAppProtoStub {
                 _this._setUpReporter(reply.body.identity.userProfile.userURL, schemaURL, reply.body.data, stream.resources, stream.name, reuseURL).then(function (result) {
                   if (result) {
 
-                    _this._eb.registerHandler(reuseURL, function (error, message) {
+                    function reuseFunctionHandler(error, message) {
                       console.log('[VertxAppProtoStub] received a message on : ', result, JSON.stringify(message));
                       //TODO new data on reporter,, to update? or not? should be static?
 
-                    });
+                    }
+                    _this._registeredHandlers[reuseURL] = reuseFunctionHandler;
+                    _this._eb.registerHandler(reuseURL, reuseFunctionHandler);
                   }
                 });
               } else {
@@ -762,25 +976,27 @@ class VertxAppProtoStub {
   _resumeObservers(contextUrl) {
     let _this = this;
 
+    let resumedObserver = false;
+
     return new Promise((resolve, reject) => {
+      console.log('[VertxAppProtoStub._resumeObservers] requesting for ', contextUrl);
       //debugger;
-      _this._syncher.resumeObservers({ store: true }).then((observers) => {
+      _this._syncher.resumeObservers({ store: true, resource: contextUrl }).then((observers) => {
         //debugger;
-        console.log('[VertxAppProtoStub] Resuming observer : ', observers, _this, _this._onResume);
+        console.log('[VertxAppProtoStub._resumeObservers] reply from syncManagers : ', observers);
 
         let observersList = Object.keys(observers);
         if (observersList.length > 0) {
           //debugger;
           observersList.forEach((dataObjectObserverURL) => {
-            console.log('[VertxAppProtoStub].syncher.resumeObserver: ', dataObjectObserverURL);
-            if (contextUrl == dataObjectObserverURL) {
-              resolve(observers[dataObjectObserverURL]);
+            if (contextUrl === dataObjectObserverURL) {
+              //              console.log('[VertxAppProtoStub] resuming: ', observers[dataObjectObserverURL]);
+              resumedObserver = observers[dataObjectObserverURL];
             }
           });
-        } else {
-          resolve(false);
         }
-        resolve(false);
+        console.log('[VertxAppProtoStub._resumeObservers] resuming: ', resumedObserver);
+        resolve(resumedObserver);
 
       }).catch((reason) => {
         console.info('[GroupChatManager] Resume Observer | ', reason);
@@ -804,7 +1020,8 @@ class VertxAppProtoStub {
           expires: 3600,
           reporter: identityURL,
           reuseURL: reuseURL,
-          domain_registration: false
+          domain_registration: false,
+          domain_routing: false
         }
         //debugger;
         _this._syncher.create(objectDescURL, [], data, true, false, name, null, input)
@@ -814,11 +1031,11 @@ class VertxAppProtoStub {
               event.accept();
               console.log('[VertxAppProtoStub] new subs', event);
             });
-            resolve(reporter);
+            return resolve(reporter);
 
           }).catch(function (err) {
             console.error('[VertxAppProtoStub] err', err);
-            resolve(null);
+            return resolve(null);
           });
       } else {
 
@@ -826,9 +1043,13 @@ class VertxAppProtoStub {
         _this._resumeReporters(name, name).then(function (wallet) {
           //debugger;
           console.log('[VertxAppProtoStub._setUpReporter] Wallet resumed', wallet);
-          if (wallet != false) {
+          if (wallet) {
 
             if (isPubWallet) {
+              if (!wallet.data.hasOwnProperty('version')) { //Hack to manage updates
+                wallet.data.version = _this._version;
+                _this._updating = true;
+              }
               _this._publicWalletsReporterDataObject = wallet;
             } else {
               _this._walletReporterDataObject = wallet;
@@ -839,13 +1060,14 @@ class VertxAppProtoStub {
               event.accept();
               console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
             });
-            resolve(wallet);
+            return resolve(wallet);
 
           } else {
             _this._create(data, resources, name, identityURL, reuseURL, false).then(function (wallet) {
               console.log('[VertxAppProtoStub._setUpReporter] Wallet created', wallet);
 
               if (isPubWallet) {
+                wallet.data.version = _this._version;
                 _this._publicWalletsReporterDataObject = wallet;
               } else {
                 _this._walletReporterDataObject = wallet;
@@ -856,10 +1078,10 @@ class VertxAppProtoStub {
                 event.accept();
                 console.log('[VertxAppProtoStub._setUpReporter] new subs', event);
               });
-              resolve(wallet);
+              return resolve(wallet);
             }).catch(function (err) {
               console.error('[VertxAppProtoStub] err', err);
-              resolve(null);
+              return resolve(null);
             });
           }
         }).catch(function (error) {
@@ -892,89 +1114,57 @@ class VertxAppProtoStub {
       }
 
       input.domain_registration = domainRegistration;
+      input.domain_routing = false;
 
       console.info('[VertxAppProtoStub._create] lets create a new Wallet Object ', input);
       _this._syncher.create(_this.walletDescURL, [], init, true, false, name, null, input)
         .then((wallet) => {
           _this.wallet = wallet;
 
-          _this._onSubscription(wallet);
-          resolve(wallet);
+          //          _this._onSubscription(wallet);
+          return resolve(wallet);
 
         }).catch(function (reason) {
-          reject(reason);
+          return reject(reason);
         });
 
     });
 
   }
 
-  _onSubscription(wallet) {
-    wallet.onSubscription((event) => {
-      console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
-      event.accept();
-    });
-  }
+  /*  _onSubscription(wallet) {
+      wallet.onSubscription((event) => {
+        console.info('[VertxAppProtoStub._onSubscription] accepting: ', event);
+        event.accept();
+      });
+    }*/
 
   //let schema_url = 'hyperty-catalogue://catalogue.localhost/.well-known/dataschema/Context';
   _setUpObserver(identityToUse, contextUrl, schemaUrl) {
     let _this = this;
     //MessageBodyIdentity Constructor
     return new Promise(function (resolve) {
-      _this._syncher.subscribe(schemaUrl, contextUrl, true, false, true, false, identityToUse).then(function (obj) {
-        console.log('[VertxAppProtoStub] subscribe success', obj);
-        resolve(true);
+      console.log('[VertxAppProtoStub._setUpObserver] ctxurl', contextUrl);
+      let input = {
+        schema: schemaUrl,
+        resource: contextUrl,
+        store: true,
+        p2p: false,
+        mutual: true,
+        domain_subscription: false,
+        identity: identityToUse
+      };
+
+      _this._syncher.subscribe(input).then(function (obj) {
+        console.log('[VertxAppProtoStub._setUpObserver] subscribe success', obj);
+        return resolve(obj);
       }).catch(function (error) {
-        resolve(false);
-        console.log('[VertxAppProtoStub] error', error);
+        console.log('[VertxAppProtoStub._setUpObserver] error', error);
+        return resolve(false);
       });
     });
   }
 
-  _eventBusUsage() {
-    let _this = this;
-
-    return new Promise(function (resolve, reject) {
-      console.log('[VertxAppProtoStub] waiting for eb Open state(', _this._eb.sockJSConn.readyState, ')', _this._eb);
-
-      _this._eb.onopen = () => {
-        console.log('[VertxAppProtoStub] _this._eb-> open');
-
-        function waitForEB1() {
-          console.log('[VertxAppProtoStub] Waiting for SockJS readyState', _this._eb.sockJSConn.readyState, '(', WebSocket.OPEN, ')');
-          if (WebSocket.OPEN === _this._eb.sockJSConn.readyState) {
-            _this._configAvailableStreams().then(function () {
-
-              let toCreatePub = {
-                type: 'create',
-                to: 'hyperty://sharing-cities-dsm/wallet-manager',
-                from: _this._runtimeSessionURL,
-                identity: _this._publicWallets.identity,
-                body: { type: 'create' }
-              }
-              _this.createWalletPub(toCreatePub).then(function () {
-                clearTimeout(timer1);
-                resolve(true);
-              });
-              /*
-              _this._setUpPublicWallets().then(function (result) {
-
-              }).catch(function (error) {
-
-              });*/
-
-
-            });
-          }
-        }
-        let timer1 = setTimeout(waitForEB1, _this._timeOutValue);
-      };
-
-      _this._eb.onerror = function (e) {
-        console.log('[VertxAppProtoStub] General error: ', e); // this does happen
-      }
-    });
-  }
 
 
   /**
@@ -1007,6 +1197,54 @@ class VertxAppProtoStub {
 
     //send to vertx, and wait to a reply
   }
+
+  _heartBeat() {
+    let _this = this;
+
+    let id = setInterval(function () {
+
+      _this._sendStatusVertxRuntime();
+
+    }, _this._heartbeatRate);
+
+    // returns function to stop the heart beat
+
+    return function () {
+      clearInterval(id);
+    }
+
+  }
+
+  _sendStatusVertxRuntime() {
+    let _this = this;
+    console.log("[VertxAppProtoStub._sendStatusVertxRuntime] identity", _this._identity);
+    if (_this._identity) {
+      console.log("[VertxAppProtoStub._sendStatusVertxRuntime] update status of user");
+      let msgUpdate = {
+        to: "runtime://sharing-cities-dsm/registry",
+        type: "update",
+        identity: _this._identity,
+        body: {
+          resource: _this._identity.userProfile.guid,
+          status: 'online'
+        }
+      }
+      _this._eb.publish("runtime://sharing-cities-dsm/registry", msgUpdate);
+
+      console.log('[VertxAppProtoStub._sendStatusVertxRuntime] ', msgUpdate);
+    }
+  }
+
+  _reWriteHandlers() {
+    let _this = this;
+    Object.keys(_this._registeredHandlers).forEach(function (element) {
+      if (!_this._eb.handlers.hasOwnProperty(element)) {
+        console.log('[VertxAppProtoStub._reWriteHandlers] rewrite:', element);
+        _this._eb.registerHandler(element, _this._registeredHandlers[element]);
+      }
+    });
+  }
+
 }
 
 export default function activate(url, bus, config, factory) {

@@ -122,9 +122,14 @@ class IMSIWProtoStub {
   }
 
     _subscribe(msg) {
-        let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
+				let dataObjectUrl = msg.from.substring(0, msg.from.lastIndexOf('/'))
+				
+				let input = {
+					schema: this.schema,
+					resource: dataObjectUrl
+				};
 
-        this._syncher.subscribe(this.schema, dataObjectUrl)
+        this._syncher.subscribe(input)
 			.then(dataObjectObserver => {
 				this.dataObjectObserver = dataObjectObserver
         console.log('dataObjectObserver:' , dataObjectObserver);
