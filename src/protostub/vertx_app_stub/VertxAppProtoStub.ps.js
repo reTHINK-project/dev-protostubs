@@ -641,7 +641,7 @@ class VertxAppProtoStub {
           });
         });
         // required to handle updates
-        if (_this._updating ) {
+        if (_this._updating) {
           _this._processNewSubscription(msg, false);
         }
       }
@@ -1046,7 +1046,9 @@ class VertxAppProtoStub {
           if (wallet) {
 
             if (isPubWallet) {
-              if (!wallet.data.hasOwnProperty('version')) { //Hack to manage updates
+              if (!wallet.data.hasOwnProperty('version') ||
+                (wallet.data.hasOwnProperty('version') && wallet.data.version === '27.11.2018') ||
+                (wallet.data.hasOwnProperty('version') && wallet.data.version < _this._version)) { //Hack to manage updates
                 wallet.data.version = _this._version;
                 _this._updating = true;
               }

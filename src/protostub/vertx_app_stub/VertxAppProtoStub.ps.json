@@ -17,7 +17,7 @@
         }
       },
     "timeoutValue": 500,
-    "version": "27.11.2018"
+    "version": 0.8
   },
   "constraints": {
         "browser": true
