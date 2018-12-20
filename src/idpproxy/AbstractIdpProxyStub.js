@@ -111,6 +111,18 @@ class AbstractIdpProxyProtoStub {
           function (error) { _this.replyMessage(msg, error, 401); }
         );
         break;
+      case 'revokeAccessToken':
+        //     console.info('getAccessToken');
+        IdpProxy.revokeAccessToken(_this.config, params.token).then(
+          function (value) {
+            console.info('OIDC.revokeAccessToken result: ', value);
+//            value.input = accessTokenInput(value.input);
+            _this.replyMessage(msg, value);
+          },
+
+          function (error) { _this.replyMessage(msg, error, 401); }
+        );
+        break;
       default:
         break;
     }
