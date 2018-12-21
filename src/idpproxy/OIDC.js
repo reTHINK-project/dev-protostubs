@@ -11,6 +11,7 @@ let accessTokenEndpoint;
 let refreshAccessTokenEndpoint;
 let domain;
 let accessTokenAuthorisationEndpoint;
+let revokeAccessTokenEndpoint;
 
 export let getExpiresAtJSON = (function (json) {
   let expires = json.hasOwnProperty('expires_in') ? json.expires_in : false
@@ -487,7 +488,7 @@ export let IdpProxy = {
 
       if (!refresh) reject('[OIDC.revokeAccessToken] refresh token not available in the access token', token);
 
-      sendHTTPRequest('POST', revokeAccessTokenEndpoint(token)).then(function (info) {
+      sendHTTPRequest('POST', revokeAccessTokenEndpoint(token.accessToken)).then(function (info) {
 
         console.info('[OIDC.revokeAccessToken] response: ', info);
 
