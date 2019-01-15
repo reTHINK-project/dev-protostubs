@@ -1,12 +1,12 @@
 import { IdpProxy } from "../OAUTH"
-import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./MobieInfo"
+import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./StravaInfo"
 //import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
-* Mobie Identity Provider Proxy Protocol Stub
+* Strava Identity Provider Proxy Protocol Stub
 */
-class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
+class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
 
   /**
   * Constructor of the IdpProxy Stub
@@ -17,11 +17,11 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
   constructor(runtimeProtoStubURL, bus, config) {
-    config.domain = 'mobie.pt';
-    config.idpUrl = 'domain-idp://mobie.pt';
+    config.domain = 'strava.com';
+    config.idpUrl = 'domain-idp://strava.com';
     config.idpProxy = IdpProxy;
 //    config.idpInfo = googleInfo;
-    config.apiInfo = mobieAPIInfo;
+    config.apiInfo = APIInfo;
     config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
     config.accessTokenEndpoint = accessTokenEndpoint;
     config.refreshAccessTokenEndpoint = refreshAccessTokenEndpoint;
@@ -45,7 +45,7 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
  */
 export default function activate(url, bus, config) {
   return {
-    name: 'MobieIdpProxyProtoStub',
-    instance: new MobieIdpProxyProtoStub(url, bus, config)
+    name: 'StravaIdpProxyProtoStub',
+    instance: new StravaIdpProxyProtoStub(url, bus, config)
   };
 }
