@@ -375,6 +375,7 @@ class VertxAppProtoStub {
               _this._walletReporterDataObject.data.accounts = reply2.body.wallet.accounts;
               _this._walletReporterDataObject.data.ranking = reply2.body.wallet.ranking;
               _this._walletReporterDataObject.data['bonus-credit'] = reply2.body.wallet['bonus-credit'];
+              _this._walletReporterDataObject.data.balance = reply2.body.wallet.balance;
 
 
               let addressChanges = reply2.body.wallet.address + '/changes';
