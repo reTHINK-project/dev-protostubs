@@ -5,7 +5,7 @@ let redirectURI = location.protocol + '//' + location.hostname + (location.port 
 
 
 export let APIInfo = {
-  "clientID": "24124",
+  "clientID": "31749",
   "authorisationEndpoint": "https://www.strava.com/api/v3/oauth/authorize?",
   "tokenEndpoint": "https://www.strava.com/oauth/token?",
   "revokeEndpoint": "https://www.strava.com/oauth/deauthorize?",
@@ -15,7 +15,7 @@ export let APIInfo = {
 //  "state": "state",
   "domain": "strava.com",
 //  'grant_type': "authorization_code",
-  'secret': "ff4848fd0f605db8fe46f8080ac2fc185045b79e"
+  'secret': "609d170afb49ed6d1ca6d57e0d68760a5685806f"
 };
 
 
@@ -25,7 +25,7 @@ export function authorisationEndpoint(nonce) {
     + 'redirect_uri=' + redirectURI
     + '&response_type=' + APIInfo.type
     + '&client_id=' + APIInfo.clientID
-//    + '&scope=' + APIInfo.scope
+    + '&scope=' + APIInfo.scope
 //    + '&access_type=' + APIInfo.accessType
     + '&state=' + nonce;
   console.log('[StravaInfo.authorisationEndpoint] ', url);
@@ -80,7 +80,7 @@ export function accessTokenAuthorisationEndpoint(nonce) {
     + 'redirect_uri=' + redirectURI
     + '&response_type=' + APIInfo.type
     + '&client_id=' + APIInfo.clientID
-//    + '&scope=' + APIInfo.scope
+    + '&scope=' + APIInfo.scope
 //    + '&access_type=' + APIInfo.accessType
     + '&state=' + nonce;
   console.log('[StravaInfo.accessTokenAuthorisationEndpoint] ', url);

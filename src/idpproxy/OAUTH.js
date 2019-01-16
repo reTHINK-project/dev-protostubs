@@ -134,6 +134,8 @@ let getAccessTokenWithCodeToken = (function (resources, login) {
 
     sendHTTPRequest('POST', accessTokenEndpoint(code, resources)).then(function (info) {
 
+    console.info('[OAUTH2.getAccessTokenWithCodeToken] HTTP response: ', info);
+
       if (info.hasOwnProperty('access_token')) {
         let expires = getExpires(info);
         let refresh = info.hasOwnProperty('refresh_token') ? info.refresh_token : false;
@@ -330,10 +332,9 @@ export let IdpProxy = {
   /**
   * Function to get an Access Token
   *
-  * @param  {idpInfo}      Object information about IdP endpoints
-  * @param  {contents} The contents includes information about the identity received
-  * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
+  * @param  {config} Object information about OAUTH server endpoints
   * @param  {login} optional login result
+  * @param  {resources} Object resources to be authorised
   * @return {Promise} returns a promise with an identity assertion
   */
 
