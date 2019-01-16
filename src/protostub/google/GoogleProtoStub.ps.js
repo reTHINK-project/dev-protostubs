@@ -26,6 +26,11 @@ import FitnessProtoStub from "../fitness/FitnessProtoStub";
 
 class GoogleProtoStub extends FitnessProtoStub {
 
+
+  constructor(runtimeProtoStubURL, bus, config, factory) {
+    super(runtimeProtoStubURL, bus, config, factory, 'GoogleProtoStub');
+  }
+
   querySessions(startTime, lastModified) {
     let _this = this;
     if (startTime !== lastModified) {
@@ -52,32 +57,12 @@ class GoogleProtoStub extends FitnessProtoStub {
           case 8:
             // walking/running
             console.log("[GoogleProtoStub] walking/running distance (m): ", distance);
-            _this.reporter.data.values = [
-              {
-                type: "user_walking_context",
-                name: "walking distance in meters",
-                unit: "meter",
-                value: distance,
-                startTime: startISO,
-                endTime: endTime
-              }
-              //_this.reporter.data.values[1]
-            ];
+            writeToReporter('walk', distance, startISO, endTime);
             break;
           case 1:
             // biking
             console.log("[GoogleProtoStub] biking distance (m): ", distance);
-            _this.reporter.data.values = [
-              //_this.reporter.data.values[0],
-              {
-                type: "user_biking_context",
-                name: "biking distance in meters",
-                unit: "meter",
-                value: distance,
-                startTime: startISO,
-                endTime: endTime
-              }
-            ];
+            writeToReporter('bike', distance, startISO, endTime);
             break;
           default:
             break;
@@ -93,75 +78,6 @@ class GoogleProtoStub extends FitnessProtoStub {
       console.error("[GoogleProtoStub.querySessions] error: ", onError);
 
     });
-
-    /*
-    xhr.open("GET", "https://www.googleapis.com/fitness/v1/users/me/sessions?startTime=" + startTime + "&endTime=" + endTime);
-    xhr.setRequestHeader("Authorization", "Bearer " + token);
-    xhr.setRequestHeader("Cache-Control", "no-cache");
-    xhr.send(null);
-
-    xhr.addEventListener("readystatechange", function () {
-
-      if (this.readyState === 4) {
-        const response = JSON.parse(this.responseText);
-        console.log("[GoogleProtoStub] sessions: ", response);
-        for (let index = 0; index < response.session.length; index++) {
-
-
-          const currentSession = response.session[index];
-          const activityType = currentSession["activityType"];
-          const start = currentSession["startTimeMillis"];
-          const end = Number(currentSession["endTimeMillis"]);
-          // const modified = currentSession["modifiedTimeMillis"];
-
-          if (end < endTimeMillis && end > startTimeMillis) {
-            // get distance for session
-            _this.getDistanceForActivity(start, end).then(distance => {
-              const startISO = new Date(Number(start)).toISOString();
-              const endISO = new Date(Number(end)).toISOString();
-              switch (activityType) {
-                case 7:
-                case 8:
-                  // walking/running
-                  _this.reporter.data.values = [
-                    {
-                      type: "user_walking_context",
-                      name: "walking distance in meters",
-                      unit: "meter",
-                      value: distance,
-                      startTime: startISO,
-                      endTime: endISO
-                    }
-                    //_this.reporter.data.values[1]
-                  ];
-                  break;
-                case 1:
-                  // biking
-                  _this.reporter.data.values = [
-                    //_this.reporter.data.values[0],
-                    {
-                      type: "user_biking_context",
-                      name: "biking distance in meters",
-                      unit: "meter",
-                      value: distance,
-                      startTime: startISO,
-                      endTime: endISO
-                    }
-                  ];
-                  break;
-                default:
-                  break;
-              }
-            });
-          }
-        }
-      }
-    });
-
-    */
-
-
-
   }
 
   getDistanceForActivities(start, end) {

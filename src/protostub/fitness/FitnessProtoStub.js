@@ -5,9 +5,10 @@ export default class FitnessProtoStub {
    * @param  {string} runtimeProtoStubURL - URL used internally for message delivery point. Not used for MessageNode deliver.
    * @param  {MiniBus} bus - MiniBus used to send/receive messages. Normally connected to the MessageBus.
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
-   * @return {StravaProtoStub}
+   * @return {FitnessProtoStub}
    */
-    constructor(runtimeProtoStubURL, bus, config, factory) {
+    constructor(runtimeProtoStubURL, bus, config, factory, name) {
+        this._stubName = name;
         if (!runtimeProtoStubURL)
             throw new Error("The runtimeProtoStubURL is a needed parameter");
         if (!bus) throw new Error("The bus is a needed parameter");
@@ -18,7 +19,7 @@ export default class FitnessProtoStub {
             throw new Error("The config.runtimeURL is a needed parameter");
 
         let _this = this;
-        console.log("[StravaProtoStub] Strava PROTOSTUB", _this);
+        console.log(`${this._stubName} PROTOSTUB`, _this);
         this._id = 0;
 
         this._runtimeProtoStubURL = runtimeProtoStubURL;
@@ -38,7 +39,7 @@ export default class FitnessProtoStub {
         const dataObjectName = "user_activity";
 
         bus.addListener("*", msg => {
-            console.log("[StravaProtoStub] new Message  : ", msg);
+            console.log(`${_this._stubName} new Message  : `, msg);
             if (msg.identity) {
                 _this._identity = msg.identity;
             }
@@ -96,7 +97,7 @@ export default class FitnessProtoStub {
 
             if (_this._accessToken && !_this.started && msg.type === 'create') {
                 _this._resumeReporters(dataObjectName, msg.to).then(function (reporter) {
-                    console.log('StravaProtoStub]._resumeReporters (result)  ', reporter);
+                    console.log(`[${_this._stubName}._resumeReporters (result)  `, reporter);
                     if (reporter == false) {
                         _this._setUpReporter(_this._identity, objectSchema, initialData, ["context"], dataObjectName, msg.to)
                             .then(function (reporter) {
@@ -145,14 +146,14 @@ export default class FitnessProtoStub {
 
         reporter.onSubscription(function (event) {
             event.accept();
-            console.log("[StravaProtoStub] new subs", event);
+            console.log(`${_this._stubName} new subs`, event);
             if (!_this.hasStartedQuerying) {
                 _this.hasStartedQuerying = true;
                 startQuerying();
             }
         });
 
-        console.log("[StravaProtoStub] User activity DO created: ", reporter);
+        console.log(`${_this._stubName} User activity DO created: `, reporter);
         reporter.inviteObservers([_this._userActivityVertxHypertyURL]);
 
     }
@@ -178,12 +179,12 @@ export default class FitnessProtoStub {
             _this._syncher
                 .create(objectDescURL, [], data, true, false, name, identity, input)
                 .then(reporter => {
-                    console.log("[StravaProtoStub] REPORTER RETURNED", reporter);
+                    console.log(`${_this._stubName} REPORTER RETURNED`, reporter);
 
                     resolve(reporter);
                 })
                 .catch(function (err) {
-                    console.error("[StravaProtoStub] err", err);
+                    console.error(`${_this._stubName} err`, err);
                     resolve(null);
                 });
         });
@@ -193,15 +194,15 @@ export default class FitnessProtoStub {
         let _this = this;
         return new Promise((resolve, reject) => {
             _this._syncher.resumeReporters({ store: true, reporter: reporterURL }).then((reporters) => {
-                console.log('[StravaProtoStub] Reporters resumed', reporters);
+                console.log(`[${_this._stubName} Reporters resumed`, reporters);
                 let reportersList = Object.keys(reporters);
 
                 if (reportersList.length > 0) {
 
                     reportersList.forEach((dataObjectReporterURL) => {
 
-                        console.log('[StravaProtoStub] ', dataObjectReporterURL);
-                        console.log('[StravaProtoStub] ', reporters[dataObjectReporterURL]);
+                        console.log(`[${_this._stubName}`, dataObjectReporterURL);
+                        console.log(`[${_this._stubName}`, reporters[dataObjectReporterURL]);
 
                         if (reporterURL == reporters[dataObjectReporterURL].metadata.reporter && reporters[dataObjectReporterURL].metadata.name == name) {
                             return resolve(reporters[dataObjectReporterURL]);
@@ -212,13 +213,47 @@ export default class FitnessProtoStub {
                     return resolve(false);
                 }
             }).catch((reason) => {
-                console.info('[StravaProtoStub] Reporters:', reason);
+                console.info(`[${_this._stubName} Reporters:`, reason);
             });
         });
+    }   
+
+    querySessions(startTime, lastModified){
+
     }
 
-    querySessions(start, end) {
+    writeToReporter(activityType, distance, startISO, endTime) {
 
+        switch (activityType) {
+            case 'bike':
+                this.reporter.data.values = [
+                    {
+                        type: "user_biking_context",
+                        name: "biking distance in meters",
+                        unit: "meter",
+                        value: distance,
+                        startTime: startISO,
+                        endTime: endTime
+                    }
+                ];
+                break;
+            case 'walk':
+                this.reporter.data.values = [
+                    {
+                        type: "user_walking_context",
+                        name: "walking distance in meters",
+                        unit: "meter",
+                        value: distance,
+                        startTime: startISO,
+                        endTime: endTime
+                    }
+                ];
+                break;
+
+            default:
+                break;
+        }
+        
     }
 
     refreshAccessToken(startTime, lastModified, domain) {
@@ -241,7 +276,7 @@ export default class FitnessProtoStub {
             }
 
             _this._bus.postMessage(msg, (reply) => {
-                console.log('[GoogleProtoStub.refreshAccessToken] reply ', reply);
+                console.log(`[${_this._stubName}.refreshAccessToken] reply `, reply);
                 if (reply.body.hasOwnProperty('value')) {
                     _this._accessToken = reply.body.value;
                     _this.querySessions(startTime, lastModified);
@@ -265,7 +300,7 @@ export default class FitnessProtoStub {
 
     _sendStatus(value, reason) {
         let _this = this;
-        console.log("[GoogleProtoStub status changed] to ", value);
+        console.log(`[GoogleProtoStub status changed] to `, value);
         _this._state = value;
         let msg = {
             type: "update",

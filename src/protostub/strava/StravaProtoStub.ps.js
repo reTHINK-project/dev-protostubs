@@ -27,9 +27,23 @@ import FitnessProtoStub from "../fitness/FitnessProtoStub";
 class StravaProtoStub extends FitnessProtoStub {
 
 
-  querySessions(start, end) {
+  constructor(runtimeProtoStubURL, bus, config, factory) {
+    super(runtimeProtoStubURL, bus, config, factory, 'StravaProtoStub');
+  }
+
+  querySessions(startTime, lastModified) {
+    if (startTime !== lastModified) {
+      startTime = lastModified;
+    }
 
     var data = null;
+
+    const endDate = new Date();
+    const endTime = endDate.toISOString();
+    const endTimeMillis = endDate.getTime();
+    const startTimeMillis = new Date(startTime).getTime();
+    const startISO = new Date(startTimeMillis).toISOString();
+
 
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -37,42 +51,21 @@ class StravaProtoStub extends FitnessProtoStub {
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState === 4) {
         const activities = JSON.parse(this.responseText);
-
+        console.log("[StravaProtoStub] activities: ", activities);
+        
         activities.map(activity => {
 
           const { type: activityType, distance, start_date, elapsed_time } = activity;
-          console.log(activityType);
-          const startISO = new Date(start_date).toISOString();
           switch (activityType) {
             case "Run":
               // walking/running
               console.log("[StravaProtoStub] walking/running distance (m): ", distance);
-              // _this.reporter.data.values = [
-              //     {
-              //         type: "user_walking_context",
-              //         name: "walking distance in meters",
-              //         unit: "meter",
-              //         value: distance,
-              //         startTime: startISO,
-              //         endTime: endTime
-              //     }
-              //     //_this.reporter.data.values[1]
-              // ];
+              writeToReporter('walk', distance, startISO, endTime);
               break;
             case "Ride":
               // biking
               console.log("[StravaProtoStub] biking distance (m): ", distance);
-              // _this.reporter.data.values = [
-              //     //_this.reporter.data.values[0],
-              //     {
-              //         type: "user_biking_context",
-              //         name: "biking distance in meters",
-              //         unit: "meter",
-              //         value: distance,
-              //         startTime: startISO,
-              //         endTime: endTime
-              //     }
-              // ];
+              writeToReporter('bike', distance, startISO, endTime);
               break;
             default:
               break;
@@ -82,72 +75,11 @@ class StravaProtoStub extends FitnessProtoStub {
       }
     });
 
-    xhr.open("GET", "https://www.strava.com/api/v3/athlete/activities");
+    xhr.open("GET", `https://www.strava.com/api/v3/athlete/activities?after=${startTimeMillis}&before=${endTimeMillis}`);
     xhr.setRequestHeader("Authorization", "Bearer 3da3d0e1675f44b17b820f7dedcfa159a87302f9");
     xhr.setRequestHeader("cache-control", "no-cache");
     xhr.setRequestHeader("Postman-Token", "32054eea-5a88-4543-8238-c0814d3e567e");
-
     xhr.send(data);
-  }
-
-  refreshAccessToken(startTime, lastModified) {
-    let _this = this;
-    return new Promise((resolve, reject) => {
-
-      let msg = {
-        type: 'execute',
-        from: _this._runtimeProtoStubURL,
-        to: _this._runtimeSessionURL + '/idm',
-        body: {
-
-          method: 'refreshAccessToken',
-
-          params: {
-            resources: ['user_activity_context'],
-            domain: 'Strava.com'
-          }
-        }
-      }
-
-      _this._bus.postMessage(msg, (reply) => {
-        console.log('[StravaProtoStub.refreshAccessToken] reply ', reply);
-        if (reply.body.hasOwnProperty('value')) {
-          _this._accessToken = reply.body.value;
-          _this.querySessions(startTime, lastModified);
-          resolve();
-        } else reject(reply.body);
-      });
-    });
-  }
-
-  /**
-   * Get the configuration for this ProtoStub
-   * @return {Object} - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
-   */
-  get config() {
-    return this._config;
-  }
-
-  get runtimeSession() {
-    return this._runtimeSessionURL;
-  }
-
-  _sendStatus(value, reason) {
-    let _this = this;
-    console.log("[StravaProtoStub status changed] to ", value);
-    _this._state = value;
-    let msg = {
-      type: "update",
-      from: _this._runtimeProtoStubURL,
-      to: _this._runtimeProtoStubURL + "/status",
-      body: {
-        value: value
-      }
-    };
-    if (reason) {
-      msg.body.desc = reason;
-    }
-    _this._bus.postMessage(msg);
   }
 
 }
