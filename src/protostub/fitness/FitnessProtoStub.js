@@ -135,7 +135,6 @@ export default class FitnessProtoStub {
                 }
                 _this.querySessions(startTime, lastModified);
             }, _this.config.sessions_query_interval);
-
             _this.started = true;
         }
 
@@ -159,9 +158,8 @@ export default class FitnessProtoStub {
     }
 
     stopWorking() {
-        let _this = this;
         clearInterval(this.startInterval);
-        _this.started = false;
+        this.started = false;
     }
 
     _setUpReporter(identity, objectDescURL, data, resources, name, reporterURL) {
@@ -216,44 +214,36 @@ export default class FitnessProtoStub {
                 console.info(`[${_this._stubName} Reporters:`, reason);
             });
         });
-    }   
+    }
 
-    querySessions(startTime, lastModified){
+    querySessions(startTime, lastModified) {
 
     }
 
     writeToReporter(activityType, distance, startISO, endTime) {
 
-        switch (activityType) {
-            case 'bike':
-                this.reporter.data.values = [
-                    {
-                        type: "user_biking_context",
-                        name: "biking distance in meters",
-                        unit: "meter",
-                        value: distance,
-                        startTime: startISO,
-                        endTime: endTime
-                    }
-                ];
-                break;
-            case 'walk':
-                this.reporter.data.values = [
-                    {
-                        type: "user_walking_context",
-                        name: "walking distance in meters",
-                        unit: "meter",
-                        value: distance,
-                        startTime: startISO,
-                        endTime: endTime
-                    }
-                ];
-                break;
-
-            default:
-                break;
+        let type, name;
+        if (activityType === 'bike') {
+            type = "user_biking_context";
+            name = "biking distance in meters";
         }
-        
+        else if (activityType === 'walk') {
+            type = "user_walking_context";
+            name = "walking distance in meters";
+        }
+
+        this.reporter.data.values = [
+            {
+                type: type,
+                name: name,
+                unit: "meter",
+                value: distance,
+                startTime: startISO,
+                endTime: endTime
+            }
+        ];
+
+
     }
 
     refreshAccessToken(startTime, lastModified, domain) {
@@ -287,9 +277,9 @@ export default class FitnessProtoStub {
     }
 
     /**
-   * Get the configuration for this ProtoStub
-   * @return {Object} - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
-   */
+    * Get the configuration for this ProtoStub
+    * @return {Object} - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
+    */
     get config() {
         return this._config;
     }

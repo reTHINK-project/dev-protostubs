@@ -21,7 +21,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-//import { Syncher } from "service-framework/dist/Syncher";
 import FitnessProtoStub from "../fitness/FitnessProtoStub";
 
 class StravaProtoStub extends FitnessProtoStub {
@@ -38,34 +37,37 @@ class StravaProtoStub extends FitnessProtoStub {
 
     var data = null;
 
-    const endDate = new Date();
-    const endTime = endDate.toISOString();
-    const endTimeMillis = endDate.getTime();
     const startTimeMillis = new Date(startTime).getTime();
-    const startISO = new Date(startTimeMillis).toISOString();
-
-
+    const endTimeMillis = new Date().getTime();
+    
+    
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
-
+    
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState === 4) {
         const activities = JSON.parse(this.responseText);
         console.log("[StravaProtoStub] activities: ", activities);
         
         activities.map(activity => {
+          
+          // start, end
+          const { type, distance, start_date, elapsed_time } = activity;
+          const startDate = new Date(start_date);
+          const startISO = startDate.toISOString();
+          const endMillis = startDate.getTime() + elapsed_time * 1000;
+          const endISO = new Date(endMillis).toISOString();
 
-          const { type: activityType, distance, start_date, elapsed_time } = activity;
-          switch (activityType) {
+          switch (type) {
             case "Run":
               // walking/running
               console.log("[StravaProtoStub] walking/running distance (m): ", distance);
-              writeToReporter('walk', distance, startISO, endTime);
+              writeToReporter('walk', distance, startISO, endISO);
               break;
             case "Ride":
               // biking
               console.log("[StravaProtoStub] biking distance (m): ", distance);
-              writeToReporter('bike', distance, startISO, endTime);
+              writeToReporter('bike', distance, startISO, endISO);
               break;
             default:
               break;
@@ -76,9 +78,8 @@ class StravaProtoStub extends FitnessProtoStub {
     });
 
     xhr.open("GET", `https://www.strava.com/api/v3/athlete/activities?after=${startTimeMillis}&before=${endTimeMillis}`);
-    xhr.setRequestHeader("Authorization", "Bearer 3da3d0e1675f44b17b820f7dedcfa159a87302f9");
+    xhr.setRequestHeader("Authorization", `Bearer ${this._accessToken}`);
     xhr.setRequestHeader("cache-control", "no-cache");
-    xhr.setRequestHeader("Postman-Token", "32054eea-5a88-4543-8238-c0814d3e567e");
     xhr.send(data);
   }
 
