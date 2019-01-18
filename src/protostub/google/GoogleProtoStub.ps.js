@@ -57,12 +57,12 @@ class GoogleProtoStub extends FitnessProtoStub {
           case 8:
             // walking/running
             console.log("[GoogleProtoStub] walking/running distance (m): ", distance);
-            writeToReporter('walk', distance, startISO, endTime);
+            _this.writeToReporter('walk', distance, startISO, endTime);
             break;
           case 1:
             // biking
             console.log("[GoogleProtoStub] biking distance (m): ", distance);
-            writeToReporter('bike', distance, startISO, endTime);
+            _this.writeToReporter('bike', distance, startISO, endTime);
             break;
           default:
             break;

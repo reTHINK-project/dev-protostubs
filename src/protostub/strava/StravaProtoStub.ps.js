@@ -31,6 +31,7 @@ class StravaProtoStub extends FitnessProtoStub {
   }
 
   querySessions(startTime, lastModified) {
+    let _this = this;
     if (startTime !== lastModified) {
       startTime = lastModified;
     }
@@ -62,12 +63,12 @@ class StravaProtoStub extends FitnessProtoStub {
             case "Run":
               // walking/running
               console.log("[StravaProtoStub] walking/running distance (m): ", distance);
-              writeToReporter('walk', distance, startISO, endISO);
+              _this.writeToReporter('walk', distance, startISO, endISO);
               break;
             case "Ride":
               // biking
               console.log("[StravaProtoStub] biking distance (m): ", distance);
-              writeToReporter('bike', distance, startISO, endISO);
+              _this.writeToReporter('bike', distance, startISO, endISO);
               break;
             default:
               break;
