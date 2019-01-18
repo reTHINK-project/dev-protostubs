@@ -19,7 +19,7 @@ export default class FitnessProtoStub {
             throw new Error("The config.runtimeURL is a needed parameter");
 
         let _this = this;
-        console.log(`${this._stubName} PROTOSTUB`, _this);
+        console.log(`[${this._stubName}] PROTOSTUB`, _this);
         this._id = 0;
 
         this._runtimeProtoStubURL = runtimeProtoStubURL;
@@ -290,7 +290,7 @@ export default class FitnessProtoStub {
 
     _sendStatus(value, reason) {
         let _this = this;
-        console.log(`[GoogleProtoStub status changed] to `, value);
+        console.log(`[[${this._stubName}] status changed] to `, value);
         _this._state = value;
         let msg = {
             type: "update",

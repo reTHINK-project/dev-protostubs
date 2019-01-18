@@ -69,7 +69,7 @@ class GoogleProtoStub extends FitnessProtoStub {
         }
       }
     }, (error) => {
-      if (error.hasOwnProperty('errorCode') && error.errorCode === 401)
+      if (error.hasOwnProperty('errorCode') && error.code === 401)
         return _this.refreshAccessToken(startTime, lastModified, 'google.com');
       else throw error;
 
