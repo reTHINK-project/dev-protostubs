@@ -37,8 +37,8 @@ class StravaProtoStub extends FitnessProtoStub {
 
     var data = null;
 
-    const startTimeMillis = new Date(startTime).getTime();
-    const endTimeMillis = new Date().getTime();
+    const startTimeSeconds = Math.round(new Date(startTime).getTime() / 1000);
+    const endTimeSeconds = Math.round(new Date().getTime() / 1000);
     
     
     var xhr = new XMLHttpRequest();
@@ -77,7 +77,7 @@ class StravaProtoStub extends FitnessProtoStub {
       }
     });
 
-    xhr.open("GET", `https://www.strava.com/api/v3/athlete/activities?after=${startTimeMillis}&before=${endTimeMillis}`);
+    xhr.open("GET", `https://www.strava.com/api/v3/athlete/activities?after=${startTimeSeconds}&before=${endTimeSeconds}`);
     xhr.setRequestHeader("Authorization", `Bearer ${this._accessToken}`);
     xhr.setRequestHeader("cache-control", "no-cache");
     xhr.send(data);
