@@ -40,18 +40,22 @@ class StravaProtoStub extends FitnessProtoStub {
 
     const startTimeSeconds = Math.round(new Date(startTime).getTime() / 1000);
     const endTimeSeconds = Math.round(new Date().getTime() / 1000);
-    
-    
+
+
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
-    
+
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState === 4) {
-        const activities = JSON.parse(this.responseText);
-        console.log("[StravaProtoStub] activities: ", activities);
-        
-        activities.map(activity => {
-          
+        const response = JSON.parse(this.responseText);
+        console.log("[StravaProtoStub] response: ", response);
+
+        if (this.status === 401) {
+          return _this.refreshAccessToken(startTime, lastModified, 'strava.com');
+        }
+
+        response.map(activity => {
+
           // start, end
           const { type, distance, start_date, elapsed_time } = activity;
           const startDate = new Date(start_date);
