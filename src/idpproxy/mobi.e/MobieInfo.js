@@ -9,7 +9,7 @@ export let mobieAPIInfo = {
 //  "authorisationEndpoint": "http://sc.ceiia.pagekite.me/dsmauth?",
 //  "tokenEndpoint": "http://sc.ceiia.pagekite.me/dsmauth/token/?",
   "tokenEndpoint": "https://sharingcities.mobinteli.com/dsmauth/token/?",
-  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth?",
+  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth/?",
   "revokeEndpoint": "https://sharingcities.mobinteli.com/dsmauth/revoke?",
 //  "accessType": "offline",
   "type": "code",
