@@ -199,7 +199,7 @@ class VertxAppProtoStub {
             }*/
 
 
-            let toCreatePub = {
+          /*  let toCreatePub = {
               type: 'create',
               to: 'hyperty://sharing-cities-dsm/wallet-manager',
               from: _this._runtimeSessionURL,
@@ -208,7 +208,8 @@ class VertxAppProtoStub {
             }
             _this.createWalletPub(toCreatePub).then(function () {
               resolve();
-            });
+            });*/
+            resolve();
           });
         };
 
@@ -345,7 +346,7 @@ class VertxAppProtoStub {
                   wallet: reply2.body.wallet,
                   code: 200,
                   reporter_url: result.url,
-                  publics_url: _this._publicWalletsReporterDataObject.url,
+                //  publics_url: _this._publicWalletsReporterDataObject.url,
                   role: reply2.body.role
                 }
               };
@@ -464,21 +465,28 @@ class VertxAppProtoStub {
       msg.from = hypertyURL;
       delete msg.body;
 
+      console.log("[VertxAppProtoStub] msg create pub wallet", JSON.stringify(msg));
       _this._eb.send(walletManagerAddress, msg, function (reply_err, reply) {
 
         if (reply_err == null) {
           //  2 - call create() method on reporter (send as reply)
-          console.log("[VertxAppProtoStub] Received reply ", reply, '\nfrom msg', msg);
+          console.log("[VertxAppProtoStub] Received reply pub ", reply, '\nfrom msg', msg);
 
           _this._setUpReporter(reply.body.identity.userProfile.userURL, null, { wallets: [] }, ['wallet'], reply.body.identity.userProfile.userURL, null, true, true).then(function (result) {
 
             if (result != null) {
 
               // TODO 3 - send 200 OK to wallet manager
-              let responseMsg = {};
+              let responseMsg = {
+                id: msg.id,
+                type: 'response',
+                from: msg.to,
+                to: hypertyURL,
+              };
               responseMsg.body = {};
               responseMsg.body.value = result.data;
               responseMsg.body.code = 200;
+              responseMsg.body.publics_url = result.url;
 
               reply.reply(responseMsg, function (reply_err, reply2) {
 
@@ -514,7 +522,9 @@ class VertxAppProtoStub {
                 _this._registeredHandlers[pubWalletsHandler] = pubWalletsFunctionHandler;
                 _this._eb.registerHandler(pubWalletsHandler, pubWalletsFunctionHandler);
 
-                console.log('[VertxAppProtoStub] sending reply back to wallet JS', responseMsg);
+                console.log('[VertxAppProtoStub] sending reply back to wallet JS pubwallet', responseMsg);
+                responseMsg = JSON.parse(JSON.stringify(responseMsg));
+                _this._bus.postMessage(responseMsg);
                 return resolve(true);
 
               });
@@ -531,6 +541,8 @@ class VertxAppProtoStub {
 
 
   _SubscriptionManager(msg) {
+
+    console.log('[VertxAppProtoStub] handling messages', JSON.stringify(msg));
     console.log('[VertxAppProtoStub] handling messages', msg);
     let _this = this;
 
@@ -590,11 +602,23 @@ class VertxAppProtoStub {
 
         });
       }
-
+      /*  let toCreatePub = {
+          type: 'create',
+          to: 'hyperty://sharing-cities-dsm/wallet-manager',
+          from: _this._runtimeSessionURL,
+          identity: _this._publicWallets.identity,
+          body: { type: 'create', resource:'public-wallet' }
+        }
+        _this.createWalletPub(toCreatePub).then(function () {
+          resolve();
+        });*/
       if (msg.body.type === 'create') {
         if (msg.body.resource == 'wallet') {
           _this.createWallet(msg);
-        } else {
+        } else if (msg.body.resource == 'public-wallet') {
+          msg.identity = _this._publicWallets.identity;
+          _this.createWalletPub(msg)
+        } else  {
           _this.forwardToVertxRuntime(msg);
         }
       } else if (msg.body.type === 'delete') {
