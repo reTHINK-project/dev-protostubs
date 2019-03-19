@@ -623,7 +623,8 @@ class VertxAppProtoStub {
         }
       } else if (msg.body.type === 'delete' || (msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr' && msg.body.type === 'subscribe')) {
         if(msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr') {
-          msg.to = 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription'
+          msg.to = 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription';
+          msg.identity = msg.body.body.identity;
         }
         _this.forwardToVertxRuntime(msg);
       } else if (msg.body.type === 'update') {
