@@ -621,7 +621,10 @@ class VertxAppProtoStub {
         } else  {
           _this.forwardToVertxRuntime(msg);
         }
-      } else if (msg.body.type === 'delete' || (msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription' && msg.body.type === 'subscribe')) {
+      } else if (msg.body.type === 'delete' || (msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr' && msg.body.type === 'subscribe')) {
+        if(msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr') {
+          msg.to = 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription'
+        }
         _this.forwardToVertxRuntime(msg);
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
