@@ -244,8 +244,8 @@ class VertxAppProtoStub {
         let response = { body: { code: 200 } };
         message.reply(response);
 
-        message.body.from = _this._runtimeProtoStubURL;
-        delete message.body.id;
+        //message.body.from = _this._runtimeProtoStubURL;
+        //delete message.body.id;
         _this._bus.postMessage(message.body);
       } else {
         console.log('[VertxAppProtoStub._setGUIDHandler] error message');
