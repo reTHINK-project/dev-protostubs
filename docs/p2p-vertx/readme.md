@@ -28,6 +28,10 @@ Has a listener at minibus and processes received messages:
 * `type = create` and `from = <runtimeUrl/sm>`: These are invitation messages that are forwarded to "Subscription Manager"
 * all other messages (*to be confirmed*) are posted at Vertx Event BUS with `sendMessage()` to `message.to` address with callback to handle replied message which are posted in the reTHINK Minibus as response messages.
 
+**Vertx Event Bus CGUID Handler**
+
+Has a Vertx event bus handler set at CGUID to make the bridge with rethink msg bus i.e. `minibus.postMessage(receivedMsg)` where `receivedMsg` is the message received from the vertx event bus.
+
 **Reporter**
 
 
