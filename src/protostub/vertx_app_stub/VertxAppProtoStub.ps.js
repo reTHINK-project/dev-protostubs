@@ -244,6 +244,8 @@ class VertxAppProtoStub {
         let response = { body: { code: 200 } };
         message.reply(response);
 
+        message.body.from = _this._runtimeProtoStubURL;
+        delete message.body.id;
         _this._bus.postMessage(message.body);
       } else {
         console.log('[VertxAppProtoStub._setGUIDHandler] error message');
@@ -625,8 +627,11 @@ class VertxAppProtoStub {
         if(msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr') {
           msg.to = 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription';
           msg.identity = msg.body.body.identity;
+          _this.forwardSubscribeToVertxRuntime(msg);
+        } else {
+          _this.forwardToVertxRuntime(msg);
         }
-        _this.forwardToVertxRuntime(msg);
+
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
       }
@@ -781,6 +786,23 @@ class VertxAppProtoStub {
 
 
   }
+
+  forwardSubscribeToVertxRuntime (msg){
+
+    let _this = this;
+    const vertxAddress = msg.to;
+    msg.type = msg.body.type;
+
+    _this._eb.send(vertxAddress, msg, function (reply_err, reply) {
+      console.log('[VertxAppProtoStub] forwardToVertxRuntime', reply, reply_err);
+      if (reply_err == null) {
+        _this._sendReplyMsg(msg, reply.body.body);
+      } else {
+        console.log('[VertxAppProtoStub] no reply', msg);
+      }
+    });
+  }
+
 
   forwardToVertxRuntime(msg) {
 
