@@ -77,7 +77,7 @@ class VertxAppProtoStub {
     this._publicWalletsReporterDataObject = null;
     this._alreadyListening = [];
     this._dataObjectsURL = {};
-    this._heartbeatRate = 90000;
+    this._heartbeatRate = 10000;
     this._status = 'created';
     this._registeredHandlers = {};
 
