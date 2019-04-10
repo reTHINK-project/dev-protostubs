@@ -68,7 +68,8 @@ class VertxProtoStub {
           if (!msg.body) {
             msg.body = {};
           }
-          msg.body.via = this._runtimeProtoStubURL;
+//          msg.body.via = this._runtimeProtoStubURL;
+          msg.body.via = this._runtimeSessionURL;
           console.log('[VertxProtoStub: ProtoStub -> MN]', msg);
           _this._sock.send(JSON.stringify(msg));
         }
@@ -207,7 +208,9 @@ class VertxProtoStub {
   }
 
   _filter(msg) {
-    if (msg.body && msg.body.via === this._runtimeProtoStubURL) {
+    console.log('[VertxProtoStub._filter] msg via: ', msg.body.via,' protostubUrl: ', this._runtimeSessionURL);
+
+    if (msg.body && msg.body.via === this._runtimeSessionURL) {
       return false;
     } else {
       return true;
@@ -218,8 +221,8 @@ class VertxProtoStub {
   _deliver(msg) {
     if (!msg.body) msg.body = {};
 
-    msg.body.via = this._runtimeProtoStubURL;
-    console.log('[VertxProtoStub: MN -> ProtoStub]', msg);
+    msg.body.via = this._runtimeSessionURL;
+    console.log('[VertxProtoStub._deliver]', msg);
     this._bus.postMessage(msg);
   }
 
