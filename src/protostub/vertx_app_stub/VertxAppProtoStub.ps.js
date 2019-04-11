@@ -627,10 +627,9 @@ class VertxAppProtoStub {
         if(msg.to === 'hyperty://sharing-cities-dsm/offline-sub-mgr') {
           msg.to = 'hyperty://sharing-cities-dsm/offline-sub-mgr/subscription';
           msg.identity = msg.body.body.identity;
-          _this.forwardSubscribeToVertxRuntime(msg);
-        } else {
-          _this.forwardToVertxRuntime(msg);
         }
+        _this.forwardSubscribeAndDeleteToVertxRuntime(msg);
+
 
       } else if (msg.body.type === 'update') {
         _this.updateResource(msg);
@@ -787,7 +786,7 @@ class VertxAppProtoStub {
 
   }
 
-  forwardSubscribeToVertxRuntime (msg){
+  forwardSubscribeAndDeleteToVertxRuntime (msg){
 
     let _this = this;
     const vertxAddress = msg.to;
