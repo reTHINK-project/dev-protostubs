@@ -1,5 +1,5 @@
 import { IdpProxy } from "./IdpProxy"
-import { edpInfo, authEndpoint, accessTokenInput, revokeEndpoint } from "./EdpInfo"
+import { edpInfo, authEndpoint, accessTokenInput, accessTokenErrorMsg, revokeEndpoint } from "./EdpInfo"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
@@ -24,6 +24,7 @@ class EdpIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authEndpoint = authEndpoint;
     config.accessTokenInput = accessTokenInput;
     config.accessTokenEndpoint = authEndpoint;
+    config.accessTokenErrorMsg = accessTokenErrorMsg;
     super(runtimeProtoStubURL, bus, config);
   }
 }

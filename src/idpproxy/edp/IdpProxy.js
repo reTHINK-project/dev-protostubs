@@ -143,7 +143,7 @@ export let IdpProxy = {
 
           resolve( accessTokenResult(client_id, accessToken, expires, login) );
         } else {
-          reject( {consent: consent, isValid: isValid});
+          reject( config.accessTokenErrorMsg(isValid, consent));
         }
 
 
