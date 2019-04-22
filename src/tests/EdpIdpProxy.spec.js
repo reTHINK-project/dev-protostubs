@@ -77,7 +77,7 @@ describe('IdP Proxy test', function() {
   });
 
   it('get Access Token', function (done) {
-    this.timeout(20000);
+    this.timeout(50000);
 
     // replace window.open to get reference to opened windows
     var windows = [];

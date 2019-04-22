@@ -5,8 +5,8 @@ module.exports = function(config) {
     files: [
       // './src/tests/*.spec.js',
 //      './src/tests/MobieIdpProxy.spec.js'
-      './src/tests/StravaIdpProxy.spec.js'
-//      './src/tests/EdpIdpProxy.spec.js'
+//      './src/tests/StravaIdpProxy.spec.js'
+      './src/tests/EdpIdpProxy.spec.js'
     ],
     // to avoid DISCONNECTED messages
     browserDisconnectTimeout : 100000, // default 2000
