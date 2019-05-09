@@ -298,7 +298,12 @@ class VertxProtoStub {
         }
 
         delete _this._sock;
+        console.error('[VertxProtoStub.onClose] ', reason);
+        
         _this._sendStatus('disconnected', reason);
+        _this._reOpen = true;
+        _this._open(callback);
+
       };
     } else {
       _this._waitReady(callback);
