@@ -72,6 +72,9 @@ class VertxProtoStub {
           msg.body.via = this._runtimeSessionURL;
           console.log('[VertxProtoStub: ProtoStub -> MN]', msg);
           _this._sock.send(JSON.stringify(msg));
+          
+          console.log('[VertxProtoStub] sock.readyState after send() ', _this._sock.readyState);
+
         }
       });
     });
