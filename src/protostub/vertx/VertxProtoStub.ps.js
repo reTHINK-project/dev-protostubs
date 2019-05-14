@@ -73,13 +73,16 @@ class VertxProtoStub {
           console.log('[VertxProtoStub: ProtoStub -> MN]', msg);
           _this._sock.send(JSON.stringify(msg));
           
-          console.log('[VertxProtoStub] sock.readyState after send() ', _this._sock.readyState);
+          console.log('[VertxProtoStub] sock.readyState ', _this._sock.readyState);
+          console.log('[VertxProtoStub] sock.bufferedAmount ', _this._sock.bufferedAmount);
 
         }
       });
     });
 
     _this._sendStatus('created');
+    _this._open(() => {});
+
   }
 
   /**
