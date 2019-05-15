@@ -3,7 +3,8 @@
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws"
+    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws",
+    "maxBuffer": 1000
   },
   "constraints": {
     "browser": true

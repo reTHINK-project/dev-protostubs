@@ -59,19 +59,19 @@ class VertxProtoStub {
     this._config = config;
 
     this._runtimeSessionURL = config.runtimeURL;
+    this._maxBuffer = config.maxBuffer;
     this._reOpen = false;
 
     bus.addListener('*', (msg) => {
       console.log('[VertxProtoStub] outgoing message: ', msg);
       _this._open(() => {
         if (_this._filter(msg)) {
-          if (!msg.body) {
-            msg.body = {};
-          }
 //          msg.body.via = this._runtimeProtoStubURL;
           msg.body.via = this._runtimeSessionURL;
           console.log('[VertxProtoStub: ProtoStub -> MN]', msg);
-          _this._sock.send(JSON.stringify(msg));
+          _this._sendData( () => {
+            _this._sock.send(JSON.stringify(msg));
+          } );
           
           console.log('[VertxProtoStub] sock.readyState ', _this._sock.readyState);
           console.log('[VertxProtoStub] sock.bufferedAmount ', _this._sock.bufferedAmount);
@@ -121,7 +121,6 @@ class VertxProtoStub {
   //todo: add documentation
   _sendOpen(callback) {
     let _this = this;
-
 
     this._sendStatus('in-progress');
 
@@ -213,10 +212,27 @@ class VertxProtoStub {
     }
   }
 
+  _sendData(callback) {
+    let _this = this;
+
+    if (_this._sock.bufferedAmount < _this._maxBuffer) {
+      callback();
+    } else {
+      setTimeout(() => {
+        console.warn('[VertxProtoStub._sendData] Buffer Overloaded ', _this._sock.bufferedAmount,' trying again ...');
+        _this._sendData(callback);
+      });
+    }
+  }
+
   _filter(msg) {
+    if (!msg.body) {
+      msg.body = {};
+    }
+
     console.log('[VertxProtoStub._filter] msg via: ', msg.body.via,' protostubUrl: ', this._runtimeSessionURL);
 
-    if (msg.body && msg.body.via === this._runtimeSessionURL) {
+    if (msg.body.via && msg.body.via === this._runtimeSessionURL) {
       return false;
     } else {
       return true;
