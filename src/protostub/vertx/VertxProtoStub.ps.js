@@ -72,7 +72,7 @@ class VertxProtoStub {
           _this._sendData( () => {
             _this._sock.send(JSON.stringify(msg));
           } );
-          
+
           console.log('[VertxProtoStub] sock.readyState ', _this._sock.readyState);
           console.log('[VertxProtoStub] sock.bufferedAmount ', _this._sock.bufferedAmount);
 
@@ -321,7 +321,7 @@ class VertxProtoStub {
 
         delete _this._sock;
         console.error('[VertxProtoStub.onClose] ', reason);
-        
+
         _this._sendStatus('disconnected', reason);
         _this._reOpen = true;
         _this._open(callback);
