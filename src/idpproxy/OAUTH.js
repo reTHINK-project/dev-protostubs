@@ -9,6 +9,7 @@ let domain;
 let accessTokenEndpoint;
 let accessTokenAuthorisationEndpoint;
 let refreshAccessTokenEndpoint;
+let revokeAccessTokenEndpoint;
 
 export let getExpiresAtJSON = (function (json) {
   let expires = json.hasOwnProperty('expires_in') ? json.expires_in : false
@@ -132,6 +133,8 @@ let getAccessTokenWithCodeToken = (function (resources, login) {
     if (!code) reject('[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ', login);
 
     sendHTTPRequest('POST', accessTokenEndpoint(code, resources)).then(function (info) {
+
+    console.info('[OAUTH2.getAccessTokenWithCodeToken] HTTP response: ', info);
 
       if (info.hasOwnProperty('access_token')) {
         let expires = getExpires(info);
@@ -329,10 +332,9 @@ export let IdpProxy = {
   /**
   * Function to get an Access Token
   *
-  * @param  {idpInfo}      Object information about IdP endpoints
-  * @param  {contents} The contents includes information about the identity received
-  * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
+  * @param  {config} Object information about OAUTH server endpoints
   * @param  {login} optional login result
+  * @param  {resources} Object resources to be authorised
   * @return {Promise} returns a promise with an identity assertion
   */
 
@@ -405,8 +407,49 @@ export let IdpProxy = {
 
       reject(e);
     });
+  },
+
+/**
+    * Function to remove an Access Token
+    *
+    * @param  {config} JSON oauth API configuration
+    * @param  {config} string access token to be revoked
+    * @return {Promise} returns a promise with an identity assertion
+    */
+
+   revokeAccessToken: (config, token) => {
+    console.log('[OAUTH2.revokeAccessToken:config]', config);
+    //    console.log('[OIDC.generateAssertion:contents]', contents);
+    //    console.log('[OIDC.generateAssertion:origin]', origin);
+    console.log('[OAUTH2.revokeAccessToken: token]', token);
+    //    let i = idpInfo;
+    revokeAccessTokenEndpoint = config.revokeAccessTokenEndpoint;
+    domain = config.domain;
+
+    let _this = this;
+    //start the login phase
+    return new Promise(function (resolve, reject) {
+      // the user is loggedin, try to extract the Access Token and its expires
+
+      let refresh = token.refresh;
+
+      if (!refresh) reject('[OAUTH2.revokeAccessToken] refresh token not available in the access token', token);
+
+      sendHTTPRequest('POST', revokeAccessTokenEndpoint(token.accessToken)).then(function (info) {
+
+        console.info('[OAUTH2.revokeAccessToken] response: ', info);
+
+        resolve(true);
+      }, function (error) {
+        reject(error);
+      });
+
+      //      });
+
+    }, function (e) {
+
+      reject(e);
+    });
   }
-
-
 };
 

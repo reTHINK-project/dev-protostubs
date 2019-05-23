@@ -2,35 +2,15 @@
 Mainly used to authorise access to Mobi.e plataform through OAuth 2.0 protocol
  */
 let redirectURI = location.protocol + '//' + location.hostname + (location.port !== '' ? ':' + location.port : '');
-/*
-export let googleInfo = {
-  "clientID": "808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com",
-  "issuer": "https://accounts.google.com",
-  "tokenEndpoint": "https://www.googleapis.com/oauth2/v4/token?",
-  "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
-  "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
-  "userinfo": "https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
-  "tokenInfo": "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=",
-  "accessType": "online",
-  "type": "token id_token",
-  "scope": "openid%20email%20profile",
-  "state": "state",
-  "domain": "google.com"
-};
-*/
 
 
 export let mobieAPIInfo = {
   "clientID": "DSMSHARCITIES",
-//  "issuer": "https://accounts.google.com",
-  "authorisationEndpoint": "http://sc.ceiia.pagekite.me/dsmauth?",
-  "tokenEndpoint": "http://sc.ceiia.pagekite.me/dsmauth/token/?",
-//  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth?",
+//  "authorisationEndpoint": "http://sc.ceiia.pagekite.me/dsmauth?",
+//  "tokenEndpoint": "http://sc.ceiia.pagekite.me/dsmauth/token/?",
+  "tokenEndpoint": "https://sharingcities.mobinteli.com/dsmauth/token/?",
+  "authorisationEndpoint": "https://sharingcities.mobinteli.com/dsmauth/?",
   "revokeEndpoint": "https://sharingcities.mobinteli.com/dsmauth/revoke?",
-//  "jwksUri": "https://www.googleapis.com/oauth2/v3/certs?",
-//  "authorisationEndpoint": "https://accounts.google.com/o/oauth2/auth?",
-//  "userinfo": "https://www.googleapis.com/oauth2/v3/userinfo?access_token=",
-//  "tokenInfo": "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=",
 //  "accessType": "offline",
   "type": "code",
 // TODO - scope is read from message (support multiple Google APIs)

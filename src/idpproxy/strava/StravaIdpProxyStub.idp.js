@@ -1,11 +1,12 @@
-import { IdpProxy } from "./IdpProxy"
-import { edpInfo, authEndpoint, accessTokenInput, accessTokenErrorMsg, revokeEndpoint } from "./EdpInfo"
+import { IdpProxy } from "../OAUTH"
+import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./StravaInfo"
+//import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
 /**
-* Google Identity Provider Proxy Protocol Stub
+* Strava Identity Provider Proxy Protocol Stub
 */
-class EdpIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
+class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
 
   /**
   * Constructor of the IdpProxy Stub
@@ -16,15 +17,19 @@ class EdpIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
   constructor(runtimeProtoStubURL, bus, config) {
-    config.domain = 'edpdistribuicao.pt';
-    config.idpUrl = 'domain-idp://edpdistribuicao.pt';
+    config.domain = 'strava.com';
+    config.idpUrl = 'domain-idp://strava.com';
     config.idpProxy = IdpProxy;
-    config.idpInfo = edpInfo;
-    config.apiInfo = edpInfo;
-    config.authEndpoint = authEndpoint;
+//    config.idpInfo = googleInfo;
+    config.apiInfo = APIInfo;
+    config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
+    config.accessTokenEndpoint = accessTokenEndpoint;
+    config.refreshAccessTokenEndpoint = refreshAccessTokenEndpoint;
     config.accessTokenInput = accessTokenInput;
-    config.accessTokenEndpoint = authEndpoint;
-    config.accessTokenErrorMsg = accessTokenErrorMsg;
+    config.revokeAccessTokenEndpoint = revokeAccessTokenEndpoint;
+    config.authorisationEndpoint = authorisationEndpoint;
+//    config.convertUserProfile = convertUserProfile;
+//    config.mapping = mapping;
     super(runtimeProtoStubURL, bus, config);
   }
 }
@@ -40,7 +45,7 @@ class EdpIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
  */
 export default function activate(url, bus, config) {
   return {
-    name: 'EdpIdpProxyProtoStub',
-    instance: new EdpIdpProxyProtoStub(url, bus, config)
+    name: 'StravaIdpProxyProtoStub',
+    instance: new StravaIdpProxyProtoStub(url, bus, config)
   };
 }

@@ -1,5 +1,5 @@
 import { IdpProxy } from "../OAUTH"
-import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint } from "./MobieInfo"
+import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./MobieInfo"
 //import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
@@ -26,6 +26,7 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.accessTokenEndpoint = accessTokenEndpoint;
     config.refreshAccessTokenEndpoint = refreshAccessTokenEndpoint;
     config.accessTokenInput = accessTokenInput;
+    config.revokeAccessTokenEndpoint = revokeAccessTokenEndpoint;
     config.authorisationEndpoint = authorisationEndpoint;
 //    config.convertUserProfile = convertUserProfile;
 //    config.mapping = mapping;

@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "vertx3-eventbus-client": "3.5.2",
+    "vertx3-eventbus-client": "^3.5.2",
     "urijs": "^1.19.0"
   }
 }
