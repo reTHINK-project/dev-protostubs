@@ -17,7 +17,10 @@ class AbstractIdpProxyProtoStub {
   * @param  {Message.Message}                           busPostMessage     configuration
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor() {
+  }
+
+  _init(runtimeProtoStubURL, bus, config) {
     let _this = this;
     _this.runtimeProtoStubURL = runtimeProtoStubURL;
     _this.messageBus = bus;

@@ -3,6 +3,20 @@ import { googleInfo, googleAPIInfo, accessTokenAuthorisationEndpoint, accessToke
 import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
+const idpProxyDescriptor = {
+  "name": "GoogleIdpProxyProtoStub",
+  "language": "javascript",
+  "description": "IDPProxy for google idp",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "google.com"
+}
+
+
 /**
 * Google Identity Provider Proxy Protocol Stub
 */
@@ -16,7 +30,11 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {Message.Message}                           busPostMessage     configuration
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
-  constructor(runtimeProtoStubURL, bus, config) {
+ constructor() {
+  super();
+
+ }
+  _start(runtimeProtoStubURL, bus, config) {
     config.domain = 'google.com';
     config.idpUrl = 'domain-idp://google.com';
     config.idpProxy = IdpProxy;
@@ -30,8 +48,16 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authorisationEndpoint = authorisationEndpoint;
     config.convertUserProfile = convertUserProfile;
     config.mapping = mapping;
-    super(runtimeProtoStubURL, bus, config);
+    _init(runtimeProtoStubURL, bus, config);
   }
+
+  get descriptor() {
+  return idpProxyDescriptor;
+}
+
+get name(){
+  return idpProxyDescriptor.name;
+}
 }
 
 // export default IdpProxyProtoStub;
@@ -43,9 +69,11 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default function activate(url, bus, config) {
+export default GoogleIdpProxyProtoStub;
+
+/*  export default function activate(url, bus, config) {
   return {
     name: 'GoogleIdpProxyProtoStub',
     instance: new GoogleIdpProxyProtoStub(url, bus, config)
   };
-}
+}*/

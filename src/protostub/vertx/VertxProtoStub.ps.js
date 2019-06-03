@@ -21,6 +21,23 @@
 * limitations under the License.
 **/
 
+const protostubDescriptor = {
+  "name": "VertxProtoStub",
+  "language": "javascript",
+  "description": "Protostub to exchange messages with vertx",
+  "signature": "",
+  "configuration": {
+    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws",
+    "maxBuffer": 1000000
+  },
+  "constraints": {
+    "browser": true
+  },
+  "interworking": false,
+  "objectName": "default"
+};
+
+
 class VertxProtoStub {
   /* private
     _continuousOpen: boolean
@@ -41,7 +58,12 @@ class VertxProtoStub {
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
    * @return {VertxProtoStub}
    */
-  constructor(runtimeProtoStubURL, bus, config) {
+  constructor() {
+
+  }
+
+
+    _start(runtimeProtoStubURL, bus, config) {
     if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
     if (!bus) throw new Error('The bus is a needed parameter');
     if (!config) throw new Error('The config is a needed parameter');
@@ -83,6 +105,14 @@ class VertxProtoStub {
     _this._sendStatus('created');
     _this._open(() => {});
 
+  }
+
+  get descriptor() {
+    return protostubDescriptor;
+  }
+
+  get name(){
+    return protostubDescriptor.name;
   }
 
   /**
@@ -333,12 +363,14 @@ class VertxProtoStub {
   }
 }
 
-export default function activate(url, bus, config) {
+export default VertxProtoStub;
+
+/*export default function activate(url, bus, config) {
   return {
     name: 'VertxProtoStub',
     instance: new VertxProtoStub(url, bus, config)
   };
-}
+}*/
 
 /**
 * Callback used to send messages
