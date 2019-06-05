@@ -35,6 +35,7 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
 
  }
   _start(runtimeProtoStubURL, bus, config) {
+    console.log('[GoogleIdpProxyProtoStub._start] ');
     config.domain = 'google.com';
     config.idpUrl = 'domain-idp://google.com';
     config.idpProxy = IdpProxy;
@@ -48,7 +49,7 @@ class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authorisationEndpoint = authorisationEndpoint;
     config.convertUserProfile = convertUserProfile;
     config.mapping = mapping;
-    _init(runtimeProtoStubURL, bus, config);
+    super._init(runtimeProtoStubURL, bus, config);
   }
 
   get descriptor() {

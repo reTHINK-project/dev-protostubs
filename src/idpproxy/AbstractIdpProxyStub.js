@@ -18,6 +18,7 @@ class AbstractIdpProxyProtoStub {
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
   constructor() {
+    console.log('[AbstractIdpProxy] constructor');
   }
 
   _init(runtimeProtoStubURL, bus, config) {
@@ -30,7 +31,6 @@ class AbstractIdpProxyProtoStub {
     accessTokenInput = config.accessTokenInput;
 
 
-    console.log('[AbstractIdpProxy] constructor');
 
     _this.messageBus.addListener('*', function (msg) {
       if (msg.to === config.idpUrl) {
