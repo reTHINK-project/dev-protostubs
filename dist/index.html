@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <title>SystemJS example with moment.js</title>
+    <meta charset="UTF-8">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js"></script>
+
+    <script>
+        var url1 = "https://localhost:8080/.well-known/idp-proxy/google.com.idp.js";
+        var url2 = "https://localhost:8080/.well-known/protocolstub/default.ps.js";
+
+        System.import(url2).then(function (result) {
+
+            var instance = new result.default();
+            console.log('import result ' + instance.name);
+
+            System.import(url1).then(function (result2) {
+
+                var instance2 = new result2.default();
+                console.log('import2 result2 ' + instance2.name);
+
+            }).catch(function (reason) {
+                console.error(reason);
+            });
+
+
+
+        }).catch(function (reason) {
+            console.error(reason);
+        });
+
+/*        System.import('http://localhost:8080/test.js')
+                .then(function(test) {
+                    document.body.appendChild(
+                        document.createTextNode(test)
+                    );
+                })
+                .catch(function(e) {
+                    console.error(e)
+                });*/
+
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
