@@ -7,38 +7,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js"></script>
 
     <script>
-        var url1 = "https://localhost:8080/.well-known/idp-proxy/google.com.idp.js";
-        var url2 = "https://localhost:8080/.well-known/protocolstub/default.ps.js";
 
-        System.import(url2).then(function (result) {
+        window.onload = function () {
+            var url1 = "http://localhost:8080/.well-known/idp-proxy/google.com.idp.js";
+            var url2 = "http://localhost:8080/.well-known/protocolstub/default.ps.js";
+            var url3 = "http://localhost:8080/.well-known/protocolstub/localhost.ps.js";
 
-            var instance = new result.default();
-            console.log('import result ' + instance.name);
+            var _this = this;
 
-            System.import(url1).then(function (result2) {
+            var load = function (url) {
 
-                var instance2 = new result2.default();
-                console.log('import2 result2 ' + instance2.name);
+                return new Promise(function (resolve, reject) {
+                    System.import(url).then(function (result) {
 
-            }).catch(function (reason) {
-                console.error(reason);
-            });
+                        var instance = new result.default();
+                        resolve(instance);
+
+                    }).catch(function (reason) {
+                        console.error(reason);
+                        reject();
+                    });
+
+                });
+
+            }
+
+            load(url1).then(function (module) {
+                console.log('import2 result ' + module.name);
+
+            })
 
 
+            load(url2).then(function (module) {
+                console.log('import2 result ' + module.name);
 
-        }).catch(function (reason) {
-            console.error(reason);
-        });
+                load(url3).then(function (module) {
+                    console.log('import3 result ' + module.name);
 
-/*        System.import('http://localhost:8080/test.js')
-                .then(function(test) {
-                    document.body.appendChild(
-                        document.createTextNode(test)
-                    );
                 })
-                .catch(function(e) {
-                    console.error(e)
-                });*/
+
+            })
+
+
+
+        };
 
     </script>
 </head>
