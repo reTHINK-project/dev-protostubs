@@ -99,6 +99,19 @@ let idp = {
   }
 };
 
+const idpProxyDescriptor = {
+  "name": "MicrosoftProxyStub",
+  "language": "javascript",
+  "description": "IDPProxy for microsoft idp",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": false,
+  "objectName": "microsoft.com"
+}
+
 /**
 * Identity Provider Proxy Protocol Stub
 */
@@ -112,8 +125,9 @@ class MicrosoftProxyStub {
   * @param  {Message.Message}                           busPostMessage     configuration
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
- constructor(runtimeProtoStubURL, bus, config) {
-   let _this = this;
+ constructor() {}
+ _start(runtimeProtoStubURL, bus, config) {
+    let _this = this;
    _this.runtimeProtoStubURL = runtimeProtoStubURL;
    _this.messageBus = bus;
    _this.config = config;
@@ -126,6 +140,13 @@ class MicrosoftProxyStub {
    });
    _this._sendStatus('created');
  }
+ get descriptor() {
+  return idpProxyDescriptor;
+}
+
+get name(){
+  return idpProxyDescriptor.name;
+}
 
   /**
   * Function that see the intended method in the message received and call the respective function
@@ -205,9 +226,11 @@ class MicrosoftProxyStub {
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default function activate(url, bus, config) {
+export default MicrosoftProxyStub;
+
+/*export default function activate(url, bus, config) {
   return {
     name: 'MicrosoftProxyStub',
     instance: new MicrosoftProxyStub(url, bus, config)
   };
-}
+}*/

@@ -9,19 +9,31 @@
     <script>
 
         window.onload = function () {
-            var url1 = "http://localhost:8080/.well-known/idp-proxy/google.com.idp.js";
-            var url2 = "http://localhost:8080/.well-known/protocolstub/default.ps.js";
-            var url3 = "http://localhost:8080/.well-known/protocolstub/localhost.ps.js";
+            var url1 = "https://localhost:8080/.well-known/idp-proxy/google.com.idp.js";
+            var url2 = "https://localhost:8080/.well-known/protocolstub/default.ps.js";
+            var url3 = "https://localhost:8080/.well-known/idp-proxy/EdpIdpProxyStub.idp.js";
+            var url4 = "https://google.com/.well-known/protocolstub/localhost.ps.js";
 
             var _this = this;
 
-            var load = function (url) {
+            var instance;
+
+            var load = function (url, clonedSystem) {
 
                 return new Promise(function (resolve, reject) {
-                    System.import(url).then(function (result) {
+                    clonedSystem.import(url).then(function (result) {
 
-                        var instance = new result.default();
-                        resolve(instance);
+                        var mod = clonedSystem.get(url);
+                        sharedSystem.set(url, mod);
+
+                        /*
+
+                        return sharedSystem.import(url).then(function (myLib) {*/
+                            instance = new mod.default();
+                            resolve(instance);
+
+//                        });
+
 
                     }).catch(function (reason) {
                         console.error(reason);
@@ -32,21 +44,43 @@
 
             }
 
-            load(url1).then(function (module) {
+            var system1 = new System.constructor();
+            var system2 = new System.constructor();
+            var system3 = new System.constructor();
+            var sharedSystem = new System.constructor();
+
+            load(url2, system2).then(function (module) {
                 console.log('import2 result ' + module.name);
 
-            })
+            }).catch(function (reason) {
+                load(url2, system2).then(function (module) {
+                    console.log('import2 result ' + module.name);
+
+                }).catch(function(reason) {
+                    console.error('import2 error ' + reason);
+
+                })
+            });
 
 
-            load(url2).then(function (module) {
-                console.log('import2 result ' + module.name);
+            load(url1, system1).then(function (module) {
+                console.log('import1 result ' + module.name);
 
-                load(url3).then(function (module) {
+
+                load(url3, system3).then(function (module) {
                     console.log('import3 result ' + module.name);
 
                 })
 
-            })
+            }).catch(function (reason) {
+                load(url2, system2).then(function (module) {
+                    console.log('import3 result ' + module.name);
+
+                }).catch(function(reason) {
+                    console.error('import2 error ' + reason);
+
+                })
+            });
 
 
 

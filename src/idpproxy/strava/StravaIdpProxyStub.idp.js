@@ -3,6 +3,20 @@ import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authori
 //import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
+
+const idpProxyDescriptor = {
+  "name": "StravaIdpProxyProtoStub",
+   "language": "javascript",
+  "description": "IDPProxy for Strava athletes plataform",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "strava.com"
+}
+
 /**
 * Strava Identity Provider Proxy Protocol Stub
 */
@@ -16,7 +30,10 @@ class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {Message.Message}                           busPostMessage     configuration
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
-  constructor(runtimeProtoStubURL, bus, config) {
+ constructor() {  
+   super();
+ }
+ _start(runtimeProtoStubURL, bus, config) {
     config.domain = 'strava.com';
     config.idpUrl = 'domain-idp://strava.com';
     config.idpProxy = IdpProxy;
@@ -30,9 +47,17 @@ class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authorisationEndpoint = authorisationEndpoint;
 //    config.convertUserProfile = convertUserProfile;
 //    config.mapping = mapping;
-    super(runtimeProtoStubURL, bus, config);
+    super._init(runtimeProtoStubURL, bus, config);
   }
-}
+
+  get descriptor() {
+    return idpProxyDescriptor;
+  }
+  
+  get name(){
+    return idpProxyDescriptor.name;
+  }
+  }
 
 // export default IdpProxyProtoStub;
 
@@ -43,9 +68,11 @@ class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default function activate(url, bus, config) {
+export default StravaIdpProxyProtoStub;
+
+/*export default function activate(url, bus, config) {
   return {
     name: 'StravaIdpProxyProtoStub',
     instance: new StravaIdpProxyProtoStub(url, bus, config)
   };
-}
+}*/

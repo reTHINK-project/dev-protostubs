@@ -3,6 +3,19 @@ import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, au
 //import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
 
+const idpProxyDescriptor = {
+  "name": "MobieIdpProxyProtoStub",
+  "language": "javascript",
+  "description": "IDPProxy for Mobi.e plataform",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "mobie.pt"
+}
+
 /**
 * Mobie Identity Provider Proxy Protocol Stub
 */
@@ -16,7 +29,11 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
   * @param  {Message.Message}                           busPostMessage     configuration
   * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
   */
-  constructor(runtimeProtoStubURL, bus, config) {
+ constructor() {
+  super();
+}
+
+_start(runtimeProtoStubURL, bus, config) {
     config.domain = 'mobie.pt';
     config.idpUrl = 'domain-idp://mobie.pt';
     config.idpProxy = IdpProxy;
@@ -30,9 +47,16 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authorisationEndpoint = authorisationEndpoint;
 //    config.convertUserProfile = convertUserProfile;
 //    config.mapping = mapping;
-    super(runtimeProtoStubURL, bus, config);
+    super._init(runtimeProtoStubURL, bus, config);
   }
-}
+  get descriptor() {
+    return idpProxyDescriptor;
+  }
+  
+  get name(){
+    return idpProxyDescriptor.name;
+  }
+  }
 
 // export default IdpProxyProtoStub;
 
@@ -43,9 +67,11 @@ class MobieIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default function activate(url, bus, config) {
+export default MobieIdpProxyProtoStub;
+
+/*export default function activate(url, bus, config) {
   return {
     name: 'MobieIdpProxyProtoStub',
     instance: new MobieIdpProxyProtoStub(url, bus, config)
   };
-}
+}*/

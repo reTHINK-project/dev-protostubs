@@ -1,5 +1,19 @@
 let domain = 'rethink-project.eu'
 
+const idpProxyDescriptor = {
+	"name": "IMSIWProxyStub",
+	  "language": "javascript",
+	"description": "IDPProxy rethink-project.eu description",
+	"signature": "",
+	"configuration": {},
+	"constraints": {
+	  "browser": true,
+	  "onlyAccessToken": true
+	},
+	"interworking": true,
+	"objectName": "rethink-project.eu"
+  }
+  
 /**
  * Identity Provider Proxy Protocol Stub
  */
@@ -13,8 +27,9 @@ class IMSIWProxyStub {
 	 * @param  {Message.Message}                           busPostMessage     configuration
 	 * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
 	 */
-	constructor(runtimeProtoStubURL, bus, config) {
-		this.runtimeProtoStubURL = runtimeProtoStubURL
+	constructor() {}
+	_start(runtimeProtoStubURL, bus, config) {
+			this.runtimeProtoStubURL = runtimeProtoStubURL
 		this.messageBus = bus
 		this.config = config
 
@@ -28,6 +43,14 @@ class IMSIWProxyStub {
 		this._sendStatus('created')
 	}
 
+	get descriptor() {
+		return idpProxyDescriptor;
+	  }
+	  
+	  get name(){
+		return idpProxyDescriptor.name;
+	  }
+	  
 	_sendStatus(value, reason) {
 		let _this = this
 
@@ -134,10 +157,13 @@ class IMSIWProxyStub {
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default function activate(url, bus, config) {
+
+export default IMSIWProxyStub;
+
+/*export default function activate(url, bus, config) {
 	return {
 		name: 'IMSIWProxyStub',
 		instance: new IMSIWProxyStub(url, bus, config)
 	}
-}
+}*/
 

@@ -20,7 +20,7 @@ const idpProxyDescriptor = {
 /**
 * Google Identity Provider Proxy Protocol Stub
 */
-class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
+export default class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
 
   /**
   * Constructor of the IdpProxy Stub
@@ -70,7 +70,7 @@ get name(){
  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
  * @return {Object} Object with name and instance of ProtoStub
  */
-export default GoogleIdpProxyProtoStub;
+//export default GoogleIdpProxyProtoStub;
 
 /*  export default function activate(url, bus, config) {
   return {

@@ -7,7 +7,8 @@ export default class FitnessProtoStub {
    * @param  {Object} config - Mandatory fields are: "url" of the MessageNode address and "runtimeURL".
    * @return {FitnessProtoStub}
    */
-    constructor(runtimeProtoStubURL, bus, config, factory, name) {
+  constructor() {}
+  _init(runtimeProtoStubURL, bus, config, factory, name) {
         this._stubName = name;
         if (!runtimeProtoStubURL)
             throw new Error("The runtimeProtoStubURL is a needed parameter");
@@ -114,7 +115,14 @@ export default class FitnessProtoStub {
             }
         });
     }
-
+    get descriptor() {
+        return protostubDescriptor;
+      }
+    
+      get name(){
+        return protostubDescriptor.name;
+      }
+    
     startWorking(reporter, resumedReporter) {
         let _this = this;
         _this.reporter = reporter;
