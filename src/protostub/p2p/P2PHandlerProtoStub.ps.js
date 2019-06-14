@@ -25,7 +25,7 @@
 // TODO: integrate the status eventing
 
 //import {Syncher} from 'service-framework/dist/Syncher';
-import ConnectionController from './ConnectionController';
+import ConnectionController from './ConnectionController.js';
 
 const protostubDescriptor = {
   "name": "P2PHandlerStub",

@@ -23,7 +23,7 @@
 **/
 
 //import {Syncher} from 'service-framework/dist/Syncher';
-import ConnectionController from './ConnectionController';
+import ConnectionController from './ConnectionController.js';
 
 // TODO: integrate the status eventing
 

@@ -11,8 +11,9 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js',
     library: '[name]',
-    libraryTarget: 'umd',
-    umdNamedDefine: true
+    libraryTarget: 'system'
+//    libraryTarget: 'umd',
+//    umdNamedDefine: true
   },
   devtool: process.env.MODE === 'dev' ? 'inline-eval-cheap-source-map' : false,
   module: {

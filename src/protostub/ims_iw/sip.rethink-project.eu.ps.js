@@ -23,7 +23,7 @@
 
 //import { Syncher } from 'service-framework/dist/Syncher'
 //import { Discovery } from 'service-framework/dist/Discovery'
-import ConnectionController from './ConnectionController'
+import ConnectionController from './ConnectionController.js'
 //import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
 const protostubDescriptor = {

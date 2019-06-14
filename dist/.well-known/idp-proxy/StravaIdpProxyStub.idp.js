@@ -1,1 +1,77 @@
-!function(e,n){"object"==typeof exports&&"object"==typeof module?module.exports=n():"function"==typeof define&&define.amd?define("activate",[],n):"object"==typeof exports?exports.activate=n():e.activate=n()}("undefined"!=typeof self?self:this,function(){return function(e){var n={};function t(o){if(n[o])return n[o].exports;var r=n[o]={i:o,l:!1,exports:{}};return e[o].call(r.exports,r,r.exports,t),r.l=!0,r.exports}return t.m=e,t.c=n,t.d=function(e,n,o){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:o})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,n){return Object.prototype.hasOwnProperty.call(e,n)},t.p="",t(t.s=0)}([function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var o=t(1),r=t(2),s=t(3);function i(e){return(i="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function c(e,n){for(var t=0;t<n.length;t++){var o=n[t];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}function a(e,n){return!n||"object"!==i(n)&&"function"!=typeof n?function(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}(e):n}function u(e,n,t){return(u="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,n,t){var o=function(e,n){for(;!Object.prototype.hasOwnProperty.call(e,n)&&null!==(e=f(e)););return e}(e,n);if(o){var r=Object.getOwnPropertyDescriptor(o,n);return r.get?r.get.call(t):r.value}})(e,n,t||e)}function f(e){return(f=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)})(e)}function l(e,n){return(l=Object.setPrototypeOf||function(e,n){return e.__proto__=n,e})(e,n)}var p={name:"StravaIdpProxyProtoStub",language:"javascript",description:"IDPProxy for Strava athletes plataform",signature:"",configuration:{},constraints:{browser:!0},interworking:!0,objectName:"strava.com"},d=function(e){function n(){return function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,n),a(this,f(n).call(this))}return function(e,n){if("function"!=typeof n&&null!==n)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(n&&n.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),n&&l(e,n)}(n,s["a"]),function(e,n,t){n&&c(e.prototype,n),t&&c(e,t)}(n,[{key:"_start",value:function(e,t,s){s.domain="strava.com",s.idpUrl="domain-idp://strava.com",s.idpProxy=o.a,s.apiInfo=r.a,s.accessTokenAuthorisationEndpoint=r.b,s.accessTokenEndpoint=r.c,s.refreshAccessTokenEndpoint=r.f,s.accessTokenInput=r.d,s.revokeAccessTokenEndpoint=r.g,s.authorisationEndpoint=r.e,u(f(n.prototype),"_init",this).call(this,e,t,s)}},{key:"descriptor",get:function(){return p}},{key:"name",get:function(){return p.name}}]),n}();n.default=d},function(e,n,t){"use strict";t.d(n,"a",function(){return k});var o,r,s,i,c,a,u,f;function l(e,n){n=n.replace(/[\[]/,"\\[").replace(/[\]]/,"\\]");var t=new RegExp("[\\#&?]"+n+"=([^&#]*)").exec(e);return null===t?"":t[1]}function p(e,n){var t=new XMLHttpRequest;return"withCredentials"in t?t.open(e,n,!0):"undefined"!=typeof XDomainRequest?(t=new XDomainRequest).open(e,n):t=null,new Promise(function(e,n){t?(t.onreadystatechange=function(o){if(console.log("[OAUTH2.sendHTTPRequest] response ",o),4===t.readyState)if(200===t.status){var r=JSON.parse(t.responseText);e(r)}else 400===t.status?n("There was an error processing the token"):401===t.status?n("Not Authorised"):n("something else other than 200 was returned")},t.send()):n("CORS not supported")})}var d=function(e,n,t){return new Promise(function(r,s){p("GET",o(t)).then(function(o){console.log("[OAUTH2.generateAssertion] obtained user profile ",o);var s=btoa(JSON.stringify({tokenID:t.access_token,tokenIDJSON:o,publicKey:e}));console.log("[OAUTH2.generateAssertion] atob assertion:",atob(s));var c={assertion:s,idp:{domain:i,protocol:"OAUTH2"},expires:n,userProfile:o};console.log("[OAUTH2.generateAssertion] returning: ",JSON.stringify(c)),r(c)})})},g=function(e){var n=l(e,"expires_in");return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),n},h=function(e,n,t,o,r){var s={domain:i,resources:e,accessToken:n,expires:t,input:o};return r&&(s.refresh=r),s},k={validateAssertion:function(e,n,t){return console.info("[OAUTH2.validateAssertion] assertion: ",atob(n)),o=e.userInfoEndpoint,i=e.domain,new Promise(function(t,o){var r=atob(n),s=JSON.parse(r);p("GET",e.validateAssertionEndpoint({access_token:s.tokenID,input:s.tokenIDJSON})).then(function(n){JSON.stringify(n)===JSON.stringify(s.tokenIDJSON)?t({identity:e.convertUserProfile(n).id,contents:s.publicKey}):o("invalid")}).catch(function(e){o(e)})})},generateAssertion:function(e,n,t,c){console.log("[OAUTH2.generateAssertion:config]",e),console.log("[OAUTH2.generateAssertion:contents]",n),console.log("[OAUTH2.generateAssertion:origin]",t),console.log("[OAUTH2.generateAssertion:hint]",c),o=e.userInfoEndpoint,r=e.tokenEndpoint,s=e.authorisationEndpoint,i=e.domain;return new Promise(function(e,t){if(c){var o=l(c,"expires_in");o?o+=Math.floor(Date.now()/1e3):o=31536e5+Math.floor(Date.now()/1e3);var i=l(c,"access_token");e(i?d(n,o,{access_token:i}):function(e,n,t){return new Promise(function(o,s){var i=l(t,"code");i||s("[OAUTH2.generateAssertionWithCode] code not returned by the authentication: ",t),p("POST",r(i)).then(function(t){t.hasOwnProperty("access_token")?o(d(e,n,t)):s("[OAUTH2.generateAssertionWithCode] access token not returned in the exchange code result: ",t)},function(e){s(e)})})}(n,o,c))}else t({name:"IdPLoginError",loginUrl:s(n)})},function(e){reject(e)})},getAccessTokenAuthorisationEndpoint:function(e,n){console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:config]",e),console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:resources]",n),a=e.accessTokenAuthorisationEndpoint;return new Promise(function(e,t){e(a(n))},function(e){reject(e)})},getAccessToken:function(e,n,t){console.log("[OAUTH2.getAccessToken:config]",e),console.log("[OAUTH2.getAccessToken:login]",t),c=e.accessTokenEndpoint,i=e.domain;return new Promise(function(e,o){var r=g(t),s=l(t,"access_token");e(s?h(n,s,r,t):function(e,n){return new Promise(function(t,o){var r=l(n,"code");r||o("[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ",n),p("POST",c(r,e)).then(function(n){if(console.info("[OAUTH2.getAccessTokenWithCodeToken] HTTP response: ",n),n.hasOwnProperty("access_token")){var r=g(n),s=!!n.hasOwnProperty("refresh_token")&&n.refresh_token;t(h(e,n.access_token,r,n,s))}else o("[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ",n)},function(e){o(e)})})}(n,t))},function(e){reject(e)})},refreshAccessToken:function(e,n){console.log("[OAUTH2.refreshAccessToken:config]",e),console.log("[OAUTH2.refreshAccessToken:outdated token]",n),u=e.refreshAccessTokenEndpoint,i=e.domain;return new Promise(function(e,t){var o=n.refresh;o||t("[OAUTH2.refreshAccessToken] refresh token not available in the access token",n),p("POST",u(o)).then(function(r){if(console.info("[OAUTH2.refreshAccessToken] response: ",r),r.hasOwnProperty("access_token")){var s=function(e){var n=!!e.hasOwnProperty("expires_in")&&e.expires_in;return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),Number(n)}(r);e(h(n.resources,r.access_token,s,r,o))}else t("[OAUTH2.refreshAccessToken] new access token not returned in the response: ",r)},function(e){t(e)})},function(e){reject(e)})},revokeAccessToken:function(e,n){console.log("[OAUTH2.revokeAccessToken:config]",e),console.log("[OAUTH2.revokeAccessToken: token]",n),f=e.revokeAccessTokenEndpoint,i=e.domain;return new Promise(function(e,t){n.refresh||t("[OAUTH2.revokeAccessToken] refresh token not available in the access token",n),p("POST",f(n.accessToken)).then(function(n){console.info("[OAUTH2.revokeAccessToken] response: ",n),e(!0)},function(e){t(e)})},function(e){reject(e)})}}},function(e,n,t){"use strict";t.d(n,"a",function(){return i}),n.e=function(e){var n=i.authorisationEndpoint+"redirect_uri="+s+"&response_type="+i.type+"&client_id="+i.clientID+"&scope="+i.scope+"&state="+e;return console.log("[StravaInfo.authorisationEndpoint] ",n),n},n.c=function(e,n){return i.tokenEndpoint+"client_id="+i.clientID+"&code="+e+"&grant_type=authorization_code&client_secret="+i.secret+"&redirect_uri="+s},n.f=function(e){return i.tokenEndpoint+"client_id="+i.clientID+"&refresh_token="+e+"&grant_type=refresh_token&client_secret="+i.secret},n.g=function(e){return i.revokeEndpoint+"&token="+e},n.b=function(e){var n=i.authorisationEndpoint+"redirect_uri="+s+"&response_type="+i.type+"&client_id="+i.clientID+"&scope="+i.scope+"&state="+e;return console.log("[StravaInfo.accessTokenAuthorisationEndpoint] ",n),n},n.d=function(e){return{info:e}};var o,r,s=location.protocol+"//"+location.hostname+(""!==location.port?":"+location.port:"");location.hostname.indexOf("alticelabs.com")>-1?(o="31748",r="521567cbdf0e4f7ab17ad7cce536022bd8cccf87"):(o="24124",r="ff4848fd0f605db8fe46f8080ac2fc185045b79e");var i={clientID:o,authorisationEndpoint:"https://www.strava.com/api/v3/oauth/authorize?",tokenEndpoint:"https://www.strava.com/oauth/token?",revokeEndpoint:"https://www.strava.com/oauth/deauthorize?",type:"code",scope:"read_all,activity:read_all",domain:"strava.com",secret:r}},function(e,n,t){"use strict";function o(e,n){for(var t=0;t<n.length;t++){var o=n[t];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}var r,s,i,c=function(){function e(){!function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,e),console.log("[AbstractIdpProxy] constructor")}return function(e,n,t){n&&o(e.prototype,n),t&&o(e,t)}(e,[{key:"_init",value:function(e,n,t){var o=this;o.runtimeProtoStubURL=e,o.messageBus=n,o.config=t,r=t.idpProxy,s=t.convertUserProfile,i=t.accessTokenInput,o.messageBus.addListener("*",function(e){e.to===t.idpUrl&&o.requestToIdp(e)}),o._sendStatus("created")}},{key:"requestToIdp",value:function(e){var n=this,t=e.body.params;switch(console.info("[AbstractIdpProxyProtoStub] receiving request: ",e),e.body.method){case"generateAssertion":r.generateAssertion(n.config,t.contents,t.origin,t.usernameHint).then(function(t){t.userProfile=s(t.userProfile),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"validateAssertion":r.validateAssertion(n.config,t.assertion,t.origin).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t)});break;case"refreshAssertion":r.refreshAssertion(t.identity).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t,value,401)});break;case"getAccessTokenAuthorisationEndpoint":r.getAccessTokenAuthorisationEndpoint(n.config,t.resources).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"getAccessToken":r.getAccessToken(n.config,t.resources,t.login).then(function(t){console.info("OIDC.getAccessToken result: ",t),t.input=i(t.input),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"refreshAccessToken":r.refreshAccessToken(n.config,t.token).then(function(t){console.info("OIDC.refreshAccessToken result: ",t),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"revokeAccessToken":r.revokeAccessToken(n.config,t.token).then(function(t){console.info("OIDC.revokeAccessToken result: ",t),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)})}}},{key:"replyMessage",value:function(e,n){var t=arguments.length>2&&void 0!==arguments[2]?arguments[2]:200,o={id:e.id,type:"response",to:e.from,from:e.to,body:{code:t}};t<300?o.body.value=n:o.body.description=n,console.log("[AbstractIdpProxyProtoStub.replyMessage] ",o),this.messageBus.postMessage(o)}},{key:"_sendStatus",value:function(e,n){console.log("[AbstractIdpProxyProtoStub.sendStatus] ",e),this._state=e;var t={type:"update",from:this.runtimeProtoStubURL,to:this.runtimeProtoStubURL+"/status",body:{value:e}};n&&(t.body.desc=n),this.messageBus.postMessage(t)}}]),e}();n.a=c}]).default});
+import { IdpProxy } from "../OAUTH.js";
+import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./StravaInfo.js"; //import { convertUserProfile } from "./GoogleConverter"
+
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js";
+const idpProxyDescriptor = {
+  "name": "StravaIdpProxyProtoStub",
+  "language": "javascript",
+  "description": "IDPProxy for Strava athletes plataform",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "strava.com"
+  /**
+  * Strava Identity Provider Proxy Protocol Stub
+  */
+
+};
+
+class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
+  /**
+  * Constructor of the IdpProxy Stub
+  * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
+  *
+  * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+  * @param  {Message.Message}                           busPostMessage     configuration
+  * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+  */
+  constructor() {
+    super();
+  }
+
+  _start(runtimeProtoStubURL, bus, config) {
+    config.domain = 'strava.com';
+    config.idpUrl = 'domain-idp://strava.com';
+    config.idpProxy = IdpProxy; //    config.idpInfo = googleInfo;
+
+    config.apiInfo = APIInfo;
+    config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
+    config.accessTokenEndpoint = accessTokenEndpoint;
+    config.refreshAccessTokenEndpoint = refreshAccessTokenEndpoint;
+    config.accessTokenInput = accessTokenInput;
+    config.revokeAccessTokenEndpoint = revokeAccessTokenEndpoint;
+    config.authorisationEndpoint = authorisationEndpoint; //    config.convertUserProfile = convertUserProfile;
+    //    config.mapping = mapping;
+
+    super._init(runtimeProtoStubURL, bus, config);
+  }
+
+  get descriptor() {
+    return idpProxyDescriptor;
+  }
+
+  get name() {
+    return idpProxyDescriptor.name;
+  }
+
+} // export default IdpProxyProtoStub;
+
+/**
+ * To activate this protocol stub, using the same method for all protostub.
+ * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+ * @param  {Message.Message}                           busPostMessage     configuration
+ * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+ * @return {Object} Object with name and instance of ProtoStub
+ */
+
+
+export default StravaIdpProxyProtoStub;
+/*export default function activate(url, bus, config) {
+  return {
+    name: 'StravaIdpProxyProtoStub',
+    instance: new StravaIdpProxyProtoStub(url, bus, config)
+  };
+}*/

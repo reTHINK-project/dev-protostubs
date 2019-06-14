@@ -1,1 +1,126 @@
-!function(e,n){"object"==typeof exports&&"object"==typeof module?module.exports=n():"function"==typeof define&&define.amd?define("activate",[],n):"object"==typeof exports?exports.activate=n():e.activate=n()}("undefined"!=typeof self?self:this,function(){return function(e){var n={};function o(t){if(n[t])return n[t].exports;var r=n[t]={i:t,l:!1,exports:{}};return e[t].call(r.exports,r,r.exports,o),r.l=!0,r.exports}return o.m=e,o.c=n,o.d=function(e,n,t){o.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:t})},o.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return o.d(n,"a",n),n},o.o=function(e,n){return Object.prototype.hasOwnProperty.call(e,n)},o.p="",o(o.s=0)}([function(e,n,o){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var t=o(1),r=o(2),s=o(3);function i(e){return(i="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function c(e,n){for(var o=0;o<n.length;o++){var t=n[o];t.enumerable=t.enumerable||!1,t.configurable=!0,"value"in t&&(t.writable=!0),Object.defineProperty(e,t.key,t)}}function a(e,n){return!n||"object"!==i(n)&&"function"!=typeof n?function(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}(e):n}function u(e,n,o){return(u="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,n,o){var t=function(e,n){for(;!Object.prototype.hasOwnProperty.call(e,n)&&null!==(e=f(e)););return e}(e,n);if(t){var r=Object.getOwnPropertyDescriptor(t,n);return r.get?r.get.call(o):r.value}})(e,n,o||e)}function f(e){return(f=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)})(e)}function l(e,n){return(l=Object.setPrototypeOf||function(e,n){return e.__proto__=n,e})(e,n)}var p={name:"FacebookIdpProxyProtoStub",language:"javascript",description:"IDPProxy for Facebook idp",signature:"",configuration:{},constraints:{browser:!0},interworking:!1,objectName:"facebook.com"},d=function(e){function n(){return function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,n),a(this,f(n).call(this))}return function(e,n){if("function"!=typeof n&&null!==n)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(n&&n.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),n&&l(e,n)}(n,s["a"]),function(e,n,o){n&&c(e.prototype,n),o&&c(e,o)}(n,[{key:"_start",value:function(e,o,s){s.idpUrl="domain-idp://facebook.com",s.domain="facebook.com",s.idpProxy=t.a,s.convertUserProfile=r.b,s.userInfoEndpoint=r.c,s.authorisationEndpoint=r.a,s.validateAssertionEndpoint=r.d,u(f(n.prototype),"_init",this).call(this,e,o,s)}},{key:"descriptor",get:function(){return p}},{key:"name",get:function(){return p.name}}]),n}();n.default=d},function(e,n,o){"use strict";o.d(n,"a",function(){return k});var t,r,s,i,c,a,u,f;function l(e,n){n=n.replace(/[\[]/,"\\[").replace(/[\]]/,"\\]");var o=new RegExp("[\\#&?]"+n+"=([^&#]*)").exec(e);return null===o?"":o[1]}function p(e,n){var o=new XMLHttpRequest;return"withCredentials"in o?o.open(e,n,!0):"undefined"!=typeof XDomainRequest?(o=new XDomainRequest).open(e,n):o=null,new Promise(function(e,n){o?(o.onreadystatechange=function(t){if(console.log("[OAUTH2.sendHTTPRequest] response ",t),4===o.readyState)if(200===o.status){var r=JSON.parse(o.responseText);e(r)}else 400===o.status?n("There was an error processing the token"):401===o.status?n("Not Authorised"):n("something else other than 200 was returned")},o.send()):n("CORS not supported")})}var d=function(e,n,o){return new Promise(function(r,s){p("GET",t(o)).then(function(t){console.log("[OAUTH2.generateAssertion] obtained user profile ",t);var s=btoa(JSON.stringify({tokenID:o.access_token,tokenIDJSON:t,publicKey:e}));console.log("[OAUTH2.generateAssertion] atob assertion:",atob(s));var c={assertion:s,idp:{domain:i,protocol:"OAUTH2"},expires:n,userProfile:t};console.log("[OAUTH2.generateAssertion] returning: ",JSON.stringify(c)),r(c)})})},g=function(e){var n=l(e,"expires_in");return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),n},h=function(e,n,o,t,r){var s={domain:i,resources:e,accessToken:n,expires:o,input:t};return r&&(s.refresh=r),s},k={validateAssertion:function(e,n,o){return console.info("[OAUTH2.validateAssertion] assertion: ",atob(n)),t=e.userInfoEndpoint,i=e.domain,new Promise(function(o,t){var r=atob(n),s=JSON.parse(r);p("GET",e.validateAssertionEndpoint({access_token:s.tokenID,input:s.tokenIDJSON})).then(function(n){JSON.stringify(n)===JSON.stringify(s.tokenIDJSON)?o({identity:e.convertUserProfile(n).id,contents:s.publicKey}):t("invalid")}).catch(function(e){t(e)})})},generateAssertion:function(e,n,o,c){console.log("[OAUTH2.generateAssertion:config]",e),console.log("[OAUTH2.generateAssertion:contents]",n),console.log("[OAUTH2.generateAssertion:origin]",o),console.log("[OAUTH2.generateAssertion:hint]",c),t=e.userInfoEndpoint,r=e.tokenEndpoint,s=e.authorisationEndpoint,i=e.domain;return new Promise(function(e,o){if(c){var t=l(c,"expires_in");t?t+=Math.floor(Date.now()/1e3):t=31536e5+Math.floor(Date.now()/1e3);var i=l(c,"access_token");e(i?d(n,t,{access_token:i}):function(e,n,o){return new Promise(function(t,s){var i=l(o,"code");i||s("[OAUTH2.generateAssertionWithCode] code not returned by the authentication: ",o),p("POST",r(i)).then(function(o){o.hasOwnProperty("access_token")?t(d(e,n,o)):s("[OAUTH2.generateAssertionWithCode] access token not returned in the exchange code result: ",o)},function(e){s(e)})})}(n,t,c))}else o({name:"IdPLoginError",loginUrl:s(n)})},function(e){reject(e)})},getAccessTokenAuthorisationEndpoint:function(e,n){console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:config]",e),console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:resources]",n),a=e.accessTokenAuthorisationEndpoint;return new Promise(function(e,o){e(a(n))},function(e){reject(e)})},getAccessToken:function(e,n,o){console.log("[OAUTH2.getAccessToken:config]",e),console.log("[OAUTH2.getAccessToken:login]",o),c=e.accessTokenEndpoint,i=e.domain;return new Promise(function(e,t){var r=g(o),s=l(o,"access_token");e(s?h(n,s,r,o):function(e,n){return new Promise(function(o,t){var r=l(n,"code");r||t("[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ",n),p("POST",c(r,e)).then(function(n){if(console.info("[OAUTH2.getAccessTokenWithCodeToken] HTTP response: ",n),n.hasOwnProperty("access_token")){var r=g(n),s=!!n.hasOwnProperty("refresh_token")&&n.refresh_token;o(h(e,n.access_token,r,n,s))}else t("[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ",n)},function(e){t(e)})})}(n,o))},function(e){reject(e)})},refreshAccessToken:function(e,n){console.log("[OAUTH2.refreshAccessToken:config]",e),console.log("[OAUTH2.refreshAccessToken:outdated token]",n),u=e.refreshAccessTokenEndpoint,i=e.domain;return new Promise(function(e,o){var t=n.refresh;t||o("[OAUTH2.refreshAccessToken] refresh token not available in the access token",n),p("POST",u(t)).then(function(r){if(console.info("[OAUTH2.refreshAccessToken] response: ",r),r.hasOwnProperty("access_token")){var s=function(e){var n=!!e.hasOwnProperty("expires_in")&&e.expires_in;return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),Number(n)}(r);e(h(n.resources,r.access_token,s,r,t))}else o("[OAUTH2.refreshAccessToken] new access token not returned in the response: ",r)},function(e){o(e)})},function(e){reject(e)})},revokeAccessToken:function(e,n){console.log("[OAUTH2.revokeAccessToken:config]",e),console.log("[OAUTH2.revokeAccessToken: token]",n),f=e.revokeAccessTokenEndpoint,i=e.domain;return new Promise(function(e,o){n.refresh||o("[OAUTH2.revokeAccessToken] refresh token not available in the access token",n),p("POST",f(n.accessToken)).then(function(n){console.info("[OAUTH2.revokeAccessToken] response: ",n),e(!0)},function(e){o(e)})},function(e){reject(e)})}}},function(e,n,o){"use strict";n.b=function(e){console.log("[FaceboolUserProfileConverter] ",e),e.name=e.first_name+" "+e.last_name,e.userURL="user://facebook.com/"+e.name,e.picture=e.picture.data.url,e.hasOwnProperty("preferred_username")||(e.preferred_username=e.last_name);return e},n.c=function(e){return r.userinfo+e.access_token},n.a=function(e){var n=r.authorisationEndpoint+"redirect_uri="+t+"&response_type="+r.type+"&client_id="+r.clientID+"&granted_scopes="+r.granted_scopes+"&nonce="+e+"&state="+e;return console.log("[Slack.authorisationEndpoint] ",n),n},n.d=function(e){return r.userinfo+e.access_token};var t=location.protocol+"//"+location.hostname+(""!==location.port?":"+location.port:""),r={clientID:"516850078685290",authorisationEndpoint:"https://www.facebook.com/v2.11/dialog/oauth?",userinfo:"https://graph.facebook.com/v2.2/me/?fields=id,first_name,last_name,name,picture,email&access_token=",type:"token",granted_scopes:"email,public_profile",state:"state",domain:"facebook.com"}},function(e,n,o){"use strict";function t(e,n){for(var o=0;o<n.length;o++){var t=n[o];t.enumerable=t.enumerable||!1,t.configurable=!0,"value"in t&&(t.writable=!0),Object.defineProperty(e,t.key,t)}}var r,s,i,c=function(){function e(){!function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,e),console.log("[AbstractIdpProxy] constructor")}return function(e,n,o){n&&t(e.prototype,n),o&&t(e,o)}(e,[{key:"_init",value:function(e,n,o){var t=this;t.runtimeProtoStubURL=e,t.messageBus=n,t.config=o,r=o.idpProxy,s=o.convertUserProfile,i=o.accessTokenInput,t.messageBus.addListener("*",function(e){e.to===o.idpUrl&&t.requestToIdp(e)}),t._sendStatus("created")}},{key:"requestToIdp",value:function(e){var n=this,o=e.body.params;switch(console.info("[AbstractIdpProxyProtoStub] receiving request: ",e),e.body.method){case"generateAssertion":r.generateAssertion(n.config,o.contents,o.origin,o.usernameHint).then(function(o){o.userProfile=s(o.userProfile),n.replyMessage(e,o)},function(o){n.replyMessage(e,o,401)});break;case"validateAssertion":r.validateAssertion(n.config,o.assertion,o.origin).then(function(o){n.replyMessage(e,o)},function(o){n.replyMessage(e,o)});break;case"refreshAssertion":r.refreshAssertion(o.identity).then(function(o){n.replyMessage(e,o)},function(o){n.replyMessage(e,o,value,401)});break;case"getAccessTokenAuthorisationEndpoint":r.getAccessTokenAuthorisationEndpoint(n.config,o.resources).then(function(o){n.replyMessage(e,o)},function(o){n.replyMessage(e,o,401)});break;case"getAccessToken":r.getAccessToken(n.config,o.resources,o.login).then(function(o){console.info("OIDC.getAccessToken result: ",o),o.input=i(o.input),n.replyMessage(e,o)},function(o){n.replyMessage(e,o,401)});break;case"refreshAccessToken":r.refreshAccessToken(n.config,o.token).then(function(o){console.info("OIDC.refreshAccessToken result: ",o),n.replyMessage(e,o)},function(o){n.replyMessage(e,o,401)});break;case"revokeAccessToken":r.revokeAccessToken(n.config,o.token).then(function(o){console.info("OIDC.revokeAccessToken result: ",o),n.replyMessage(e,o)},function(o){n.replyMessage(e,o,401)})}}},{key:"replyMessage",value:function(e,n){var o=arguments.length>2&&void 0!==arguments[2]?arguments[2]:200,t={id:e.id,type:"response",to:e.from,from:e.to,body:{code:o}};o<300?t.body.value=n:t.body.description=n,console.log("[AbstractIdpProxyProtoStub.replyMessage] ",t),this.messageBus.postMessage(t)}},{key:"_sendStatus",value:function(e,n){console.log("[AbstractIdpProxyProtoStub.sendStatus] ",e),this._state=e;var o={type:"update",from:this.runtimeProtoStubURL,to:this.runtimeProtoStubURL+"/status",body:{value:e}};n&&(o.body.desc=n),this.messageBus.postMessage(o)}}]),e}();n.a=c}]).default});
+"use strict";
+
+System.register(["../OAUTH.js", "./Facebook.js", "../AbstractIdpProxyStub.js"], function (_export, _context) {
+  "use strict";
+
+  var IdpProxy, convertUserProfile, userInfoEndpoint, authorisationEndpoint, validateAssertionEndpoint, AbstractIdpProxyProtoStub, idpProxyDescriptor, FacebookIdpProxyProtoStub;
+
+  function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+  function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+  function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+  function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+  function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+  function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+  return {
+    setters: [function (_OAUTHJs) {
+      IdpProxy = _OAUTHJs.IdpProxy;
+    }, function (_FacebookJs) {
+      convertUserProfile = _FacebookJs.convertUserProfile;
+      userInfoEndpoint = _FacebookJs.userInfoEndpoint;
+      authorisationEndpoint = _FacebookJs.authorisationEndpoint;
+      validateAssertionEndpoint = _FacebookJs.validateAssertionEndpoint;
+    }, function (_AbstractIdpProxyStubJs) {
+      AbstractIdpProxyProtoStub = _AbstractIdpProxyStubJs.default;
+    }],
+    execute: function () {
+      idpProxyDescriptor = {
+        "name": "FacebookIdpProxyProtoStub",
+        "language": "javascript",
+        "description": "IDPProxy for Facebook idp",
+        "signature": "",
+        "configuration": {},
+        "constraints": {
+          "browser": true
+        },
+        "interworking": false,
+        "objectName": "facebook.com"
+        /**
+        * Google Identity Provider Proxy Protocol Stub
+        */
+
+      };
+
+      FacebookIdpProxyProtoStub =
+      /*#__PURE__*/
+      function (_AbstractIdpProxyProt) {
+        _inherits(FacebookIdpProxyProtoStub, _AbstractIdpProxyProt);
+
+        /**
+        * Constructor of the IdpProxy Stub
+        * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
+        *
+        * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+        * @param  {Message.Message}                           busPostMessage     configuration
+        * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+        */
+        function FacebookIdpProxyProtoStub() {
+          _classCallCheck(this, FacebookIdpProxyProtoStub);
+
+          return _possibleConstructorReturn(this, _getPrototypeOf(FacebookIdpProxyProtoStub).call(this));
+        }
+
+        _createClass(FacebookIdpProxyProtoStub, [{
+          key: "_start",
+          value: function _start(runtimeProtoStubURL, bus, config) {
+            config.idpUrl = 'domain-idp://facebook.com';
+            config.domain = 'facebook.com';
+            config.idpProxy = IdpProxy; //     config.idpInfo = facebookInfo;
+
+            config.convertUserProfile = convertUserProfile;
+            config.userInfoEndpoint = userInfoEndpoint;
+            config.authorisationEndpoint = authorisationEndpoint;
+            config.validateAssertionEndpoint = validateAssertionEndpoint;
+
+            _get(_getPrototypeOf(FacebookIdpProxyProtoStub.prototype), "_init", this).call(this, runtimeProtoStubURL, bus, config);
+          }
+        }, {
+          key: "descriptor",
+          get: function get() {
+            return idpProxyDescriptor;
+          }
+        }, {
+          key: "name",
+          get: function get() {
+            return idpProxyDescriptor.name;
+          }
+        }]);
+
+        return FacebookIdpProxyProtoStub;
+      }(AbstractIdpProxyProtoStub); // export default IdpProxyProtoStub;
+
+      /**
+       * To activate this protocol stub, using the same method for all protostub.
+       * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+       * @param  {Message.Message}                           busPostMessage     configuration
+       * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+       * @return {Object} Object with name and instance of ProtoStub
+       */
+
+
+      _export("default", FacebookIdpProxyProtoStub);
+      /*export default function activate(url, bus, config) {
+        return {
+          name: 'FacebookIdpProxyProtoStub',
+          instance: new FacebookIdpProxyProtoStub(url, bus, config)
+        };
+      }*/
+
+    }
+  };
+});

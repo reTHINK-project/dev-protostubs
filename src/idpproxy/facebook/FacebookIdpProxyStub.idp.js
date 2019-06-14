@@ -1,8 +1,8 @@
-import { IdpProxy } from "../OAUTH"
+import { IdpProxy } from "../OAUTH.js"
 //import {facebookInfo} from "./FacebookInfo"
 import { convertUserProfile, userInfoEndpoint,
-   authorisationEndpoint, validateAssertionEndpoint } from "./Facebook"
-import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
+   authorisationEndpoint, validateAssertionEndpoint } from "./Facebook.js"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 const idpProxyDescriptor = {
   "name": "FacebookIdpProxyProtoStub",

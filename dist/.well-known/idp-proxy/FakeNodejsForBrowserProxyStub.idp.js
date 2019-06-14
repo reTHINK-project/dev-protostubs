@@ -1,1 +1,225 @@
-!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define("activate",[],t):"object"==typeof exports?exports.activate=t():e.activate=t()}("undefined"!=typeof self?self:this,function(){return function(e){var t={};function n(o){if(t[o])return t[o].exports;var s=t[o]={i:o,l:!1,exports:{}};return e[o].call(s.exports,s,s.exports,n),s.l=!0,s.exports}return n.m=e,n.c=t,n.d=function(e,t,o){n.o(e,t)||Object.defineProperty(e,t,{configurable:!1,enumerable:!0,get:o})},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=0)}([function(e,t,n){"use strict";function o(e,t){for(var n=0;n<t.length;n++){var o=t[n];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}Object.defineProperty(t,"__esModule",{value:!0}),t.default=function(e,t,n){return{name:"NodejsProxyStub",instance:new i(e,t,n)}};var s=function(e,t){return console.log("validateAssertionProxyNODEJSFAKEBrowser:assertion",e),new Promise(function(t,n){var o=atob(e),s=JSON.parse(o).tokenID.split("."),r=JSON.parse(atob(s[1]));t({identity:r.email,contents:r.nonce})})},r=function(e,t,n){return console.log("[IDPROXY.generateAssertionFAKE_BROWSER:contents]",e),console.log("[IDPROXY.generateAssertionFAKE_BROWSER:origin]",t),console.log("[IDPROXY.generateAssertionFAKE_BROWSER:hint]",n),new Promise(function(e,t){return console.log("generateMessageResponse:"),e(generateMessageResponse)})},i=function(){function e(t,n,o){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),console.log("FAKE NODEJS constructor");var s=this;s.runtimeProtoStubURL=t,s.messageBus=n,s.config=o,s.messageBus.addListener("*",function(e){"domain-idp://nodejs-idp"===e.to&&s.requestToIdp(e)}),s._sendStatus("created")}return function(e,t,n){t&&o(e.prototype,t),n&&o(e,n)}(e,[{key:"requestToIdp",value:function(e){var t=this,n=e.body.params;switch(e.body.method){case"generateAssertion":r(n.contents,n.origin,n.usernameHint).then(function(n){t.replyMessage(e,n)},function(n){t.replyMessage(e,n)});break;case"validateAssertion":s(n.assertion,n.origin).then(function(n){t.replyMessage(e,n)},function(n){t.replyMessage(e,n)})}}},{key:"replyMessage",value:function(e,t){var n={id:e.id,type:"response",to:e.from,from:e.to,body:{code:200,value:t}};this.messageBus.postMessage(n)}},{key:"_sendStatus",value:function(e,t){console.log("[NodeJS.sendStatus] ",e),this._state=e;var n={type:"update",from:this.runtimeProtoStubURL,to:this.runtimeProtoStubURL+"/status",body:{value:e}};t&&(n.body.desc=t),this.messageBus.postMessage(n)}}]),e}()}]).default});
+"use strict";
+
+System.register([], function (_export, _context) {
+  "use strict";
+
+  var identities, nIdentity, googleInfo, idp, NodejsProxyStub;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  function activate(url, bus, config) {
+    return {
+      name: 'NodejsProxyStub',
+      instance: new NodejsProxyStub(url, bus, config)
+    };
+  }
+
+  _export("default", activate);
+
+  return {
+    setters: [],
+    execute: function () {
+      identities = {};
+      nIdentity = 0; //import fetch from 'node-fetch';
+      //let fetch = require("node-fetch");
+      //const https = require('https');
+      //let btoa = require('btoa');
+      //let atob = require('atob');
+
+      googleInfo = {
+        clientSecret: 'Xx4rKucb5ZYTaXlcZX9HLfZW',
+        clientID: '808329566012-tqr8qoh111942gd2kg007t0s8f277roi.apps.googleusercontent.com',
+        redirectURI: 'https://localhost',
+        issuer: 'https://accounts.google.com',
+        tokenEndpoint: 'https://www.googleapis.com/oauth2/v4/token?',
+        jwksUri: 'https://www.googleapis.com/oauth2/v3/certs?',
+        authorisationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth?',
+        userinfo: 'https://www.googleapis.com/oauth2/v3/userinfo?access_token=',
+        tokenInfo: 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=',
+        accessType: 'offline',
+        type: 'code',
+        scope: 'openid%20email%20profile',
+        state: 'state'
+      };
+      idp = {
+        /**
+        * Function to validate an identity Assertion received
+        * TODO add details of the implementation, and improve the implementation
+        *
+        * @param  {assertion}    Identity Assertion to be validated
+        * @param  {origin}       Origin parameter that identifies the origin of the RTCPeerConnection
+        * @return {Promise}      Returns a promise with the identity assertion validation result
+        */
+        validateAssertion: function validateAssertion(assertion, origin) {
+          console.log('validateAssertionProxyNODEJSFAKEBrowser:assertion', assertion); //TODO check the values with the hash received
+
+          return new Promise(function (resolve, reject) {
+            // atob may need to be required for nodejs
+            // var atob = require('atob');
+            var decodedContent = atob(assertion);
+            var content = JSON.parse(decodedContent);
+            var idTokenSplited = content.tokenID.split('.');
+            var idToken = JSON.parse(atob(idTokenSplited[1]));
+            resolve({
+              identity: idToken.email,
+              contents: idToken.nonce
+            });
+          });
+        },
+
+        /**
+        * Function to generate an identity Assertion
+        * TODO add details of the implementation, and improve implementation
+        *
+        * @param  {contents} The contents includes information about the identity received
+        * @param  {origin} Origin parameter that identifies the origin of the RTCPeerConnection
+        * @param  {usernameHint} optional usernameHint parameter
+        * @return {Promise} returns a promise with an identity assertion
+        */
+        generateAssertion: function generateAssertion(contents, origin, hint) {
+          console.log('[IDPROXY.generateAssertionFAKE_BROWSER:contents]', contents);
+          console.log('[IDPROXY.generateAssertionFAKE_BROWSER:origin]', origin);
+          console.log('[IDPROXY.generateAssertionFAKE_BROWSER:hint]', hint);
+          return new Promise(function (resolve, reject) {
+            console.log('generateMessageResponse:');
+            return resolve(generateMessageResponse);
+          });
+        }
+        /**
+        * Identity Provider Proxy Protocol Stub
+        */
+
+      };
+
+      NodejsProxyStub =
+      /*#__PURE__*/
+      function () {
+        /**
+        * Constructor of the IdpProxy Stub
+        * The constructor add a listener in the messageBus received and start a web worker with the received idpProxy
+        *
+        * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+        * @param  {Message.Message}                           busPostMessage     configuration
+        * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+        */
+        function NodejsProxyStub(runtimeProtoStubURL, bus, config) {
+          _classCallCheck(this, NodejsProxyStub);
+
+          console.log('FAKE NODEJS constructor');
+
+          var _this = this;
+
+          _this.runtimeProtoStubURL = runtimeProtoStubURL;
+          _this.messageBus = bus;
+          _this.config = config;
+
+          _this.messageBus.addListener('*', function (msg) {
+            //TODO add the respective listener
+            if (msg.to === 'domain-idp://nodejs-idp') {
+              _this.requestToIdp(msg);
+            }
+          });
+
+          _this._sendStatus('created');
+        }
+        /**
+        * Function that see the intended method in the message received and call the respective function
+        *
+        * @param {message}  message received in the messageBus
+        */
+
+
+        _createClass(NodejsProxyStub, [{
+          key: "requestToIdp",
+          value: function requestToIdp(msg) {
+            var _this = this;
+
+            var params = msg.body.params;
+
+            switch (msg.body.method) {
+              case 'generateAssertion':
+                idp.generateAssertion(params.contents, params.origin, params.usernameHint).then(function (value) {
+                  _this.replyMessage(msg, value);
+                }, function (error) {
+                  _this.replyMessage(msg, error);
+                });
+                break;
+
+              case 'validateAssertion':
+                idp.validateAssertion(params.assertion, params.origin).then(function (value) {
+                  _this.replyMessage(msg, value);
+                }, function (error) {
+                  _this.replyMessage(msg, error);
+                });
+                break;
+
+              default:
+                break;
+            }
+          }
+          /**
+            * This function receives a message and a value. It replies the value to the sender of the message received
+            *
+            * @param  {message}   message received
+            * @param  {value}     value to include in the new message to send
+            */
+
+        }, {
+          key: "replyMessage",
+          value: function replyMessage(msg, value) {
+            var _this = this;
+
+            var message = {
+              id: msg.id,
+              type: 'response',
+              to: msg.from,
+              from: msg.to,
+              body: {
+                code: 200,
+                value: value
+              }
+            };
+
+            _this.messageBus.postMessage(message);
+          }
+        }, {
+          key: "_sendStatus",
+          value: function _sendStatus(value, reason) {
+            var _this = this;
+
+            console.log('[NodeJS.sendStatus] ', value);
+            _this._state = value;
+            var msg = {
+              type: 'update',
+              from: _this.runtimeProtoStubURL,
+              to: _this.runtimeProtoStubURL + '/status',
+              body: {
+                value: value
+              }
+            };
+
+            if (reason) {
+              msg.body.desc = reason;
+            }
+
+            _this.messageBus.postMessage(msg);
+          }
+        }]);
+
+        return NodejsProxyStub;
+      }();
+      /**
+       * To activate this protocol stub, using the same method for all protostub.
+       * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+       * @param  {Message.Message}                           busPostMessage     configuration
+       * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+       * @return {Object} Object with name and instance of ProtoStub
+       */
+
+    }
+  };
+});

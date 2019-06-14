@@ -1,1 +1,134 @@
-!function(e,n){"object"==typeof exports&&"object"==typeof module?module.exports=n():"function"==typeof define&&define.amd?define("activate",[],n):"object"==typeof exports?exports.activate=n():e.activate=n()}("undefined"!=typeof self?self:this,function(){return function(e){var n={};function t(o){if(n[o])return n[o].exports;var r=n[o]={i:o,l:!1,exports:{}};return e[o].call(r.exports,r,r.exports,t),r.l=!0,r.exports}return t.m=e,t.c=n,t.d=function(e,n,o){t.o(e,n)||Object.defineProperty(e,n,{configurable:!1,enumerable:!0,get:o})},t.n=function(e){var n=e&&e.__esModule?function(){return e.default}:function(){return e};return t.d(n,"a",n),n},t.o=function(e,n){return Object.prototype.hasOwnProperty.call(e,n)},t.p="",t(t.s=0)}([function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var o=t(1),r=t(2),s=t(3);function i(e){return(i="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function c(e,n){for(var t=0;t<n.length;t++){var o=n[t];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}function a(e,n){return!n||"object"!==i(n)&&"function"!=typeof n?function(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}(e):n}function u(e,n,t){return(u="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,n,t){var o=function(e,n){for(;!Object.prototype.hasOwnProperty.call(e,n)&&null!==(e=f(e)););return e}(e,n);if(o){var r=Object.getOwnPropertyDescriptor(o,n);return r.get?r.get.call(t):r.value}})(e,n,t||e)}function f(e){return(f=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)})(e)}function l(e,n){return(l=Object.setPrototypeOf||function(e,n){return e.__proto__=n,e})(e,n)}var p={name:"MobieIdpProxyProtoStub",language:"javascript",description:"IDPProxy for Mobi.e plataform",signature:"",configuration:{},constraints:{browser:!0},interworking:!0,objectName:"mobie.pt"},d=function(e){function n(){return function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,n),a(this,f(n).call(this))}return function(e,n){if("function"!=typeof n&&null!==n)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(n&&n.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),n&&l(e,n)}(n,s["a"]),function(e,n,t){n&&c(e.prototype,n),t&&c(e,t)}(n,[{key:"_start",value:function(e,t,s){s.domain="mobie.pt",s.idpUrl="domain-idp://mobie.pt",s.idpProxy=o.a,s.apiInfo=r.e,s.accessTokenAuthorisationEndpoint=r.a,s.accessTokenEndpoint=r.b,s.refreshAccessTokenEndpoint=r.f,s.accessTokenInput=r.c,s.revokeAccessTokenEndpoint=r.g,s.authorisationEndpoint=r.d,u(f(n.prototype),"_init",this).call(this,e,t,s)}},{key:"descriptor",get:function(){return p}},{key:"name",get:function(){return p.name}}]),n}();n.default=d},function(e,n,t){"use strict";t.d(n,"a",function(){return k});var o,r,s,i,c,a,u,f;function l(e,n){n=n.replace(/[\[]/,"\\[").replace(/[\]]/,"\\]");var t=new RegExp("[\\#&?]"+n+"=([^&#]*)").exec(e);return null===t?"":t[1]}function p(e,n){var t=new XMLHttpRequest;return"withCredentials"in t?t.open(e,n,!0):"undefined"!=typeof XDomainRequest?(t=new XDomainRequest).open(e,n):t=null,new Promise(function(e,n){t?(t.onreadystatechange=function(o){if(console.log("[OAUTH2.sendHTTPRequest] response ",o),4===t.readyState)if(200===t.status){var r=JSON.parse(t.responseText);e(r)}else 400===t.status?n("There was an error processing the token"):401===t.status?n("Not Authorised"):n("something else other than 200 was returned")},t.send()):n("CORS not supported")})}var d=function(e,n,t){return new Promise(function(r,s){p("GET",o(t)).then(function(o){console.log("[OAUTH2.generateAssertion] obtained user profile ",o);var s=btoa(JSON.stringify({tokenID:t.access_token,tokenIDJSON:o,publicKey:e}));console.log("[OAUTH2.generateAssertion] atob assertion:",atob(s));var c={assertion:s,idp:{domain:i,protocol:"OAUTH2"},expires:n,userProfile:o};console.log("[OAUTH2.generateAssertion] returning: ",JSON.stringify(c)),r(c)})})},g=function(e){var n=l(e,"expires_in");return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),n},h=function(e,n,t,o,r){var s={domain:i,resources:e,accessToken:n,expires:t,input:o};return r&&(s.refresh=r),s},k={validateAssertion:function(e,n,t){return console.info("[OAUTH2.validateAssertion] assertion: ",atob(n)),o=e.userInfoEndpoint,i=e.domain,new Promise(function(t,o){var r=atob(n),s=JSON.parse(r);p("GET",e.validateAssertionEndpoint({access_token:s.tokenID,input:s.tokenIDJSON})).then(function(n){JSON.stringify(n)===JSON.stringify(s.tokenIDJSON)?t({identity:e.convertUserProfile(n).id,contents:s.publicKey}):o("invalid")}).catch(function(e){o(e)})})},generateAssertion:function(e,n,t,c){console.log("[OAUTH2.generateAssertion:config]",e),console.log("[OAUTH2.generateAssertion:contents]",n),console.log("[OAUTH2.generateAssertion:origin]",t),console.log("[OAUTH2.generateAssertion:hint]",c),o=e.userInfoEndpoint,r=e.tokenEndpoint,s=e.authorisationEndpoint,i=e.domain;return new Promise(function(e,t){if(c){var o=l(c,"expires_in");o?o+=Math.floor(Date.now()/1e3):o=31536e5+Math.floor(Date.now()/1e3);var i=l(c,"access_token");e(i?d(n,o,{access_token:i}):function(e,n,t){return new Promise(function(o,s){var i=l(t,"code");i||s("[OAUTH2.generateAssertionWithCode] code not returned by the authentication: ",t),p("POST",r(i)).then(function(t){t.hasOwnProperty("access_token")?o(d(e,n,t)):s("[OAUTH2.generateAssertionWithCode] access token not returned in the exchange code result: ",t)},function(e){s(e)})})}(n,o,c))}else t({name:"IdPLoginError",loginUrl:s(n)})},function(e){reject(e)})},getAccessTokenAuthorisationEndpoint:function(e,n){console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:config]",e),console.log("[OAUTH2.getAccessTokenAuthorisationEndpoint:resources]",n),a=e.accessTokenAuthorisationEndpoint;return new Promise(function(e,t){e(a(n))},function(e){reject(e)})},getAccessToken:function(e,n,t){console.log("[OAUTH2.getAccessToken:config]",e),console.log("[OAUTH2.getAccessToken:login]",t),c=e.accessTokenEndpoint,i=e.domain;return new Promise(function(e,o){var r=g(t),s=l(t,"access_token");e(s?h(n,s,r,t):function(e,n){return new Promise(function(t,o){var r=l(n,"code");r||o("[OAUTH2.getAccessTokenWithCodeToken] code not returned by the login result: ",n),p("POST",c(r,e)).then(function(n){if(console.info("[OAUTH2.getAccessTokenWithCodeToken] HTTP response: ",n),n.hasOwnProperty("access_token")){var r=g(n),s=!!n.hasOwnProperty("refresh_token")&&n.refresh_token;t(h(e,n.access_token,r,n,s))}else o("[OAUTH2.getAccessTokenWithCodeToken] access token not returned in the exchange code result: ",n)},function(e){o(e)})})}(n,t))},function(e){reject(e)})},refreshAccessToken:function(e,n){console.log("[OAUTH2.refreshAccessToken:config]",e),console.log("[OAUTH2.refreshAccessToken:outdated token]",n),u=e.refreshAccessTokenEndpoint,i=e.domain;return new Promise(function(e,t){var o=n.refresh;o||t("[OAUTH2.refreshAccessToken] refresh token not available in the access token",n),p("POST",u(o)).then(function(r){if(console.info("[OAUTH2.refreshAccessToken] response: ",r),r.hasOwnProperty("access_token")){var s=function(e){var n=!!e.hasOwnProperty("expires_in")&&e.expires_in;return n?n+=Math.floor(Date.now()/1e3):n=31536e5+Math.floor(Date.now()/1e3),Number(n)}(r);e(h(n.resources,r.access_token,s,r,o))}else t("[OAUTH2.refreshAccessToken] new access token not returned in the response: ",r)},function(e){t(e)})},function(e){reject(e)})},revokeAccessToken:function(e,n){console.log("[OAUTH2.revokeAccessToken:config]",e),console.log("[OAUTH2.revokeAccessToken: token]",n),f=e.revokeAccessTokenEndpoint,i=e.domain;return new Promise(function(e,t){n.refresh||t("[OAUTH2.revokeAccessToken] refresh token not available in the access token",n),p("POST",f(n.accessToken)).then(function(n){console.info("[OAUTH2.revokeAccessToken] response: ",n),e(!0)},function(e){t(e)})},function(e){reject(e)})}}},function(e,n,t){"use strict";t.d(n,"e",function(){return r}),n.d=function(e){var n=r.authorisationEndpoint+"redirect_uri="+o+"&response_type="+r.type+"&client_id="+r.clientID+"&state="+e+"&BU=MOBI.E";return console.log("[MobieInfo.authorisationEndpoint] ",n),n},n.b=function(e,n){return r.tokenEndpoint+"client_id="+r.clientID+"&code="+e+"&grant_type=authorization_code&user_id="+n+"&client_secret="+r.secret+"&redirect_uri="+o},n.f=function(e){return r.tokenEndpoint+"client_id="+r.clientID+"&refresh_token="+e+"&grant_type=refresh_token&client_secret="+r.secret},n.g=function(e){return r.revokeEndpoint+"&token="+e},n.a=function(e){var n=r.authorisationEndpoint+"redirect_uri="+o+"&response_type="+r.type+"&client_id="+r.clientID+"&state="+e+"&BU=MOBI.E";return console.log("[MobieInfo.accessTokenAuthorisationEndpoint] ",n),n},n.c=function(e){return{info:e}};var o=location.protocol+"//"+location.hostname+(""!==location.port?":"+location.port:""),r={clientID:"DSMSHARCITIES",tokenEndpoint:"https://sharingcities.mobinteli.com/dsmauth/token/?",authorisationEndpoint:"https://sharingcities.mobinteli.com/dsmauth/?",revokeEndpoint:"https://sharingcities.mobinteli.com/dsmauth/revoke?",type:"code",domain:"mobie.pt",secret:"secretKey"}},function(e,n,t){"use strict";function o(e,n){for(var t=0;t<n.length;t++){var o=n[t];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}var r,s,i,c=function(){function e(){!function(e,n){if(!(e instanceof n))throw new TypeError("Cannot call a class as a function")}(this,e),console.log("[AbstractIdpProxy] constructor")}return function(e,n,t){n&&o(e.prototype,n),t&&o(e,t)}(e,[{key:"_init",value:function(e,n,t){var o=this;o.runtimeProtoStubURL=e,o.messageBus=n,o.config=t,r=t.idpProxy,s=t.convertUserProfile,i=t.accessTokenInput,o.messageBus.addListener("*",function(e){e.to===t.idpUrl&&o.requestToIdp(e)}),o._sendStatus("created")}},{key:"requestToIdp",value:function(e){var n=this,t=e.body.params;switch(console.info("[AbstractIdpProxyProtoStub] receiving request: ",e),e.body.method){case"generateAssertion":r.generateAssertion(n.config,t.contents,t.origin,t.usernameHint).then(function(t){t.userProfile=s(t.userProfile),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"validateAssertion":r.validateAssertion(n.config,t.assertion,t.origin).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t)});break;case"refreshAssertion":r.refreshAssertion(t.identity).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t,value,401)});break;case"getAccessTokenAuthorisationEndpoint":r.getAccessTokenAuthorisationEndpoint(n.config,t.resources).then(function(t){n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"getAccessToken":r.getAccessToken(n.config,t.resources,t.login).then(function(t){console.info("OIDC.getAccessToken result: ",t),t.input=i(t.input),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"refreshAccessToken":r.refreshAccessToken(n.config,t.token).then(function(t){console.info("OIDC.refreshAccessToken result: ",t),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)});break;case"revokeAccessToken":r.revokeAccessToken(n.config,t.token).then(function(t){console.info("OIDC.revokeAccessToken result: ",t),n.replyMessage(e,t)},function(t){n.replyMessage(e,t,401)})}}},{key:"replyMessage",value:function(e,n){var t=arguments.length>2&&void 0!==arguments[2]?arguments[2]:200,o={id:e.id,type:"response",to:e.from,from:e.to,body:{code:t}};t<300?o.body.value=n:o.body.description=n,console.log("[AbstractIdpProxyProtoStub.replyMessage] ",o),this.messageBus.postMessage(o)}},{key:"_sendStatus",value:function(e,n){console.log("[AbstractIdpProxyProtoStub.sendStatus] ",e),this._state=e;var t={type:"update",from:this.runtimeProtoStubURL,to:this.runtimeProtoStubURL+"/status",body:{value:e}};n&&(t.body.desc=n),this.messageBus.postMessage(t)}}]),e}();n.a=c}]).default});
+"use strict";
+
+System.register(["../OAUTH.js", "./MobieInfo.js", "../AbstractIdpProxyStub.js"], function (_export, _context) {
+  "use strict";
+
+  var IdpProxy, mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint, AbstractIdpProxyProtoStub, idpProxyDescriptor, MobieIdpProxyProtoStub;
+
+  function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+  function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+  function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+  function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+  function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+  function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+  return {
+    setters: [function (_OAUTHJs) {
+      IdpProxy = _OAUTHJs.IdpProxy;
+    }, function (_MobieInfoJs) {
+      mobieAPIInfo = _MobieInfoJs.mobieAPIInfo;
+      accessTokenAuthorisationEndpoint = _MobieInfoJs.accessTokenAuthorisationEndpoint;
+      accessTokenEndpoint = _MobieInfoJs.accessTokenEndpoint;
+      authorisationEndpoint = _MobieInfoJs.authorisationEndpoint;
+      accessTokenInput = _MobieInfoJs.accessTokenInput;
+      mapping = _MobieInfoJs.mapping;
+      refreshAccessTokenEndpoint = _MobieInfoJs.refreshAccessTokenEndpoint;
+      revokeAccessTokenEndpoint = _MobieInfoJs.revokeAccessTokenEndpoint;
+    }, function (_AbstractIdpProxyStubJs) {
+      AbstractIdpProxyProtoStub = _AbstractIdpProxyStubJs.default;
+    }],
+    execute: function () {
+      idpProxyDescriptor = {
+        "name": "MobieIdpProxyProtoStub",
+        "language": "javascript",
+        "description": "IDPProxy for Mobi.e plataform",
+        "signature": "",
+        "configuration": {},
+        "constraints": {
+          "browser": true
+        },
+        "interworking": true,
+        "objectName": "mobie.pt"
+        /**
+        * Mobie Identity Provider Proxy Protocol Stub
+        */
+
+      };
+
+      MobieIdpProxyProtoStub =
+      /*#__PURE__*/
+      function (_AbstractIdpProxyProt) {
+        _inherits(MobieIdpProxyProtoStub, _AbstractIdpProxyProt);
+
+        /**
+        * Constructor of the IdpProxy Stub
+        * The constructor add a listener in the messageBus received and start a web worker with the idpProxy received
+        *
+        * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+        * @param  {Message.Message}                           busPostMessage     configuration
+        * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+        */
+        function MobieIdpProxyProtoStub() {
+          _classCallCheck(this, MobieIdpProxyProtoStub);
+
+          return _possibleConstructorReturn(this, _getPrototypeOf(MobieIdpProxyProtoStub).call(this));
+        }
+
+        _createClass(MobieIdpProxyProtoStub, [{
+          key: "_start",
+          value: function _start(runtimeProtoStubURL, bus, config) {
+            config.domain = 'mobie.pt';
+            config.idpUrl = 'domain-idp://mobie.pt';
+            config.idpProxy = IdpProxy; //    config.idpInfo = googleInfo;
+
+            config.apiInfo = mobieAPIInfo;
+            config.accessTokenAuthorisationEndpoint = accessTokenAuthorisationEndpoint;
+            config.accessTokenEndpoint = accessTokenEndpoint;
+            config.refreshAccessTokenEndpoint = refreshAccessTokenEndpoint;
+            config.accessTokenInput = accessTokenInput;
+            config.revokeAccessTokenEndpoint = revokeAccessTokenEndpoint;
+            config.authorisationEndpoint = authorisationEndpoint; //    config.convertUserProfile = convertUserProfile;
+            //    config.mapping = mapping;
+
+            _get(_getPrototypeOf(MobieIdpProxyProtoStub.prototype), "_init", this).call(this, runtimeProtoStubURL, bus, config);
+          }
+        }, {
+          key: "descriptor",
+          get: function get() {
+            return idpProxyDescriptor;
+          }
+        }, {
+          key: "name",
+          get: function get() {
+            return idpProxyDescriptor.name;
+          }
+        }]);
+
+        return MobieIdpProxyProtoStub;
+      }(AbstractIdpProxyProtoStub); // export default IdpProxyProtoStub;
+
+      /**
+       * To activate this protocol stub, using the same method for all protostub.
+       * @param  {URL.RuntimeURL}                            runtimeProtoStubURL runtimeProtoSubURL
+       * @param  {Message.Message}                           busPostMessage     configuration
+       * @param  {ProtoStubDescriptor.ConfigurationDataList} configuration      configuration
+       * @return {Object} Object with name and instance of ProtoStub
+       */
+
+
+      _export("default", MobieIdpProxyProtoStub);
+      /*export default function activate(url, bus, config) {
+        return {
+          name: 'MobieIdpProxyProtoStub',
+          instance: new MobieIdpProxyProtoStub(url, bus, config)
+        };
+      }*/
+
+    }
+  };
+});

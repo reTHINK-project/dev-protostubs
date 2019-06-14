@@ -1,11 +1,11 @@
-import { IdpProxy } from "../OAUTH"
+import { IdpProxy } from "../OAUTH.js"
 import {
   convertUserProfile, userInfoEndpoint,
   authorisationEndpoint, tokenEndpoint,
   accessTokenAuthorisationEndpoint,
   accessTokenEndpoint, accessTokenInput, validateAssertionEndpoint
-} from "./Slack"
-import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
+} from "./Slack.js"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 const idpProxyDescriptor = {
   "name": "SlackProxyStub",

@@ -22,7 +22,7 @@
  * limitations under the License.
  **/
 //import { Syncher } from "service-framework/dist/Syncher";
-import FitnessProtoStub from "../fitness/FitnessProtoStub";
+import FitnessProtoStub from "../fitness/FitnessProtoStub.js";
 
 const protostubDescriptor = {
   "name": "GoogleProtoStub",

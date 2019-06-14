@@ -1,7 +1,7 @@
-import { IdpProxy } from "../OAUTH"
-import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./MobieInfo"
+import { IdpProxy } from "../OAUTH.js"
+import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./MobieInfo.js"
 //import { convertUserProfile } from "./GoogleConverter"
-import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 const idpProxyDescriptor = {
   "name": "MobieIdpProxyProtoStub",

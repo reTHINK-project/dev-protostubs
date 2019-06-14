@@ -1,7 +1,7 @@
-import { IdpProxy } from "../OAUTH"
-import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./StravaInfo"
+import { IdpProxy } from "../OAUTH.js"
+import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./StravaInfo.js"
 //import { convertUserProfile } from "./GoogleConverter"
-import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 
 const idpProxyDescriptor = {

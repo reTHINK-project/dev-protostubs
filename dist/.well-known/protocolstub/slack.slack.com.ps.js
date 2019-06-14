@@ -1,1 +1,1057 @@
-!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define("activate",[],t):"object"==typeof exports?exports.activate=t():e.activate=t()}("undefined"!=typeof self?self:this,function(){return function(e){var t={};function n(o){if(t[o])return t[o].exports;var s=t[o]={i:o,l:!1,exports:{}};return e[o].call(s.exports,s,s.exports,n),s.l=!0,s.exports}return n.m=e,n.c=t,n.d=function(e,t,o){n.o(e,t)||Object.defineProperty(e,t,{configurable:!1,enumerable:!0,get:o})},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=3)}([function(e,t,n){var o=n(1);e.exports=function(e,t){return Object.keys(o).forEach(n=>{var o=n.split("."),s=o.shift();void 0===e[s]&&(e[s]={}),function e(s){var r=o.shift();0===o.length?s[r]=t.bind({},n):(void 0===s[r]&&(s[r]={}),e(s[r]))}(e[s])}),e}},function(e,t){e.exports={"api.test":[],"apps.permissions.info":["token"],"apps.permissions.request":["token","scopes","trigger_id"],"auth.revoke":["token"],"auth.test":["token"],"bots.info":["token"],"channels.archive":["token","channel"],"channels.create":["token","name"],"channels.history":["token","channel"],"channels.info":["token","channel"],"channels.invite":["token","channel","user"],"channels.join":["token","name"],"channels.kick":["token","channel","user"],"channels.leave":["token","channel"],"channels.list":["token"],"channels.mark":["token","channel","ts"],"channels.rename":["token","channel","name"],"channels.replies":["token","channel","thread_ts"],"channels.setPurpose":["token","channel","purpose"],"channels.setTopic":["token","channel","topic"],"channels.unarchive":["token","channel"],"chat.delete":["token","channel","ts"],"chat.meMessage":["token","channel","text"],"chat.postEphemeral":["token","channel","text","user"],"chat.postMessage":["token","channel","text"],"chat.unfurl":["token","channel","ts","unfurls"],"chat.update":["token","channel","text","ts"],"conversations.archive":["token","channel"],"conversations.close":["token","channel"],"conversations.create":["token","name"],"conversations.history":["token","channel"],"conversations.info":["token","channel"],"conversations.invite":["token","channel","users"],"conversations.join":["token","channel"],"conversations.kick":["token","channel","user"],"conversations.leave":["token","channel"],"conversations.list":["token"],"conversations.members":["token","channel"],"conversations.open":["token"],"conversations.rename":["token","channel","name"],"conversations.replies":["token","channel","ts"],"conversations.setPurpose":["token","channel","purpose"],"conversations.setTopic":["token","channel","topic"],"conversations.unarchive":["token","channel"],"dnd.endDnd":["token"],"dnd.endSnooze":["token"],"dnd.info":["token"],"dnd.setSnooze":["token","num_minutes"],"dnd.teamInfo":["token"],"emoji.list":["token"],"files.comments.add":["token","comment","file"],"files.comments.delete":["token","file","id"],"files.comments.edit":["token","comment","file","id"],"files.delete":["token","file"],"files.info":["token","file"],"files.list":["token"],"files.revokePublicURL":["token","file"],"files.sharedPublicURL":["token","file"],"files.upload":["token"],"groups.archive":["token","channel"],"groups.create":["token","name"],"groups.createChild":["token","channel"],"groups.history":["token","channel"],"groups.info":["token","channel"],"groups.invite":["token","channel","user"],"groups.kick":["token","channel","user"],"groups.leave":["token","channel"],"groups.list":["token"],"groups.mark":["token","channel","ts"],"groups.open":["token","channel"],"groups.rename":["token","channel","name"],"groups.replies":["token","channel","thread_ts"],"groups.setPurpose":["token","channel","purpose"],"groups.setTopic":["token","channel","topic"],"groups.unarchive":["token","channel"],"im.close":["token","channel"],"im.history":["token","channel"],"im.list":["token"],"im.mark":["token","channel","ts"],"im.open":["token","user"],"im.replies":["token","channel","thread_ts"],"mpim.close":["token","channel"],"mpim.history":["token","channel"],"mpim.list":["token"],"mpim.mark":["token","channel","ts"],"mpim.open":["token","users"],"mpim.replies":["token","channel","thread_ts"],"oauth.access":["client_id","client_secret","code"],"oauth.token":["client_id","client_secret","code"],"pins.add":["token","channel"],"pins.list":["token","channel"],"pins.remove":["token","channel"],"reactions.add":["token","name"],"reactions.get":["token"],"reactions.list":["token"],"reactions.remove":["token","name"],"reminders.add":["token","text","time"],"reminders.complete":["token","reminder"],"reminders.delete":["token","reminder"],"reminders.info":["token","reminder"],"reminders.list":["token"],"rtm.connect":["token"],"rtm.start":["token"],"search.all":["token","query"],"search.files":["token","query"],"search.messages":["token","query"],"stars.add":["token"],"stars.list":["token"],"stars.remove":["token"],"team.accessLogs":["token"],"team.billableInfo":["token"],"team.info":["token"],"team.integrationLogs":["token"],"team.profile.get":["token"],"usergroups.create":["token","name"],"usergroups.disable":["token","usergroup"],"usergroups.enable":["token","usergroup"],"usergroups.list":["token"],"usergroups.update":["token","usergroup"],"usergroups.users.list":["token","usergroup"],"usergroups.users.update":["token","usergroup","users"],"users.deletePhoto":["token"],"users.getPresence":["token","user"],"users.identity":["token"],"users.info":["token","user"],"users.list":["token"],"users.setActive":["token"],"users.setPhoto":["token","image"],"users.setPresence":["token","presence"],"users.profile.get":["token"],"users.profile.set":["token"]}},function(e,t,n){let o=n(5),s=encodeURIComponent,r=e=>Object.keys(e).map(t=>s(t)+"="+s(e[t])).join("&");async function a(e,t,n){try{var s=o(e,t);if(s)throw s;Object.keys(t).forEach(function(e){"object"==typeof t[e]&&(t[e]=JSON.stringify(t[e]))});var a={method:"POST",headers:new Headers({"Content-Type":"application/x-www-form-urlencoded"}),body:r(t)},i=await fetch(`https://slack.com/api/${e}`,a),c=await i.json();c.error?n(Error(c.error)):n(null,c)}catch(e){n(e)}}e.exports=function(e,t,n){if(!n)return new Promise(function(n,o){a(e,t,function(e,t){e?o(e):n(t)})});a(e,t,n)}},function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),n.d(t,"default",function(){return i});var o=n(4),s=n.n(o);function r(e,t){for(var n=0;n<t.length;n++){var o=t[n];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}var a={name:"SlackProtoStub",language:"javascript",description:"Protostub to exchange messages with slack",signature:"",configuration:{},constraints:{browser:!0},interworking:!0,objectName:"slack.slack.com"},i=function(){function e(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e)}return function(e,t,n){t&&r(e.prototype,t),n&&r(e,n)}(e,[{key:"_start",value:function(e,t,n,o){if(!e)throw new Error("The runtimeProtoStubURL is a needed parameter");if(!t)throw new Error("The bus is a needed parameter");if(!n)throw new Error("The config is a needed parameter");console.log("[SlackProtostub] Constructor Loaded");var r=this;this._ws=null,this._toSubscribePresence=[],this._addedUsersInfo=[],this._alreadyCreated=!1,this._slack=s.a,this._usersUpdated=!1,this._subscribedList=[],this._messageHistoryControl={},this._usersList=[],this._channelsList=[],this._id=0,this._token="",this._dataObjectReporterURL,this._factory=o,this._contextReportersInfo={},this._syncher=o.createSyncher(e,t,n),this._chatManager=o.createChatManager(e,t,n,this._syncher),this._contextReporter=o.createContextReporter(e,t,n,this._syncher),this._myUrl=e,this._bus=t,this._config=n,this._runtimeSessionURL=n.runtimeURL,this._reOpen=!1,this._chatManager.onInvitation(function(e){r._onSlackInvitation(e)}),this._notificationHandler=o.createNotificationHandler(t),this._notificationHandler.onNotification("comm",function(e){r._chatManager.processNotification(e)}),t.addListener("*",function(t){if(t.from!==e)switch(console.log("[SlackProtostub] new msg ",t),t.type){case"create":r._notificationHandler.onCreate(t);break;case"delete":r._notificationHandler.onDelete(t)}}),r._sendStatus("created")}},{key:"_filter",value:function(e){return e.via!==this._myUrl}},{key:"_open",value:function(e,t){var n=this;n._session?console.log("[SlackProtostub] session already exist"):(console.log("[SlackProtostub] creating Session for token:",e),n._sendStatus("in-progress"),n._session=this._slack.rtm.connect({token:e,batch_presence_aware:1,presence_sub:!0}),console.log("[SlackProtostub] session",n._session),n._session.createdTime=(new Date).getTime()/1e3,n._session.then(function(e){console.log("[SlackProtostub] Session result",e),e.ok&&(n._ws=new WebSocket(e.url),console.log("[SlackProtostub] websocket",n._ws),console.log("[SlackProtostub] websocket url ",n._ws.url),n._ws.onmessage=function(e){var t=JSON.parse(e.data);console.log("[SlackProtostub] new msg on webSocket",t),"message"==t.type?n._handleNewMessage(t):"presence_change"==t.type?n._handlePresenceChange(t):"member_joined_channel"==t.type&&n._handleNewUser(t)},n._ws.onerror=function(e){console.log("[SlackProtostub] websocker Error",e)})}),n._sendStatus("live")),setTimeout(function(){t()})}},{key:"_resumeReporter",value:function(e){var t=this;return new Promise(function(n,o){console.log("[SlackProtostub] resuming reporter of ",e),t._syncher.resumeReporters({store:!0,reporter:e}).then(function(t){var o=Object.keys(t);console.log("[SlackProtostub] ",t,o);return o.forEach(function(o){if(t[o]._name===e&&o.startsWith("context://"))return console.log("[SlackProtostub] reporter to return",t[o]),n(t[o])}),n(!1)})})}},{key:"_onSlackInvitation",value:function(e){var t=this;e.identity.hasOwnProperty("accessToken")&&e.identity.accessToken?(this._token=e.identity.accessToken,t._open(this._token,function(){if(t._filter(e)){console.log("[SlackProtostub] After Filter",e);var n=e.schema;if(e.value.name){var o=n.split("/");"Communication"===o[o.length-1]?t._getSlackInformation(e.to,e.identity.input.user_id).then(function(n){var o=n.ownInfo,s=n.invInfo;console.log("Slack User information: ",n,e);var r=t._factory.createMessageBodyIdentity(o.name,"slack://slack.com/"+o.name+"@slack.com",o.profile.image_192,o.name,"","slack.com",void 0,o.profile),a=t._factory.createMessageBodyIdentity(s.name,"slack://slack.com/"+s.name+"@slack.com",s.profile.image_192,s.name,"","slack.com",void 0,s.profile);e.ack(200),console.log("[SlackProtostub] subscribing object",e.url,r);var i={id:s.id,name:s.name,userURL:a.userProfile.userURL,identity:a},c={id:e.identity.input.user_id,userURL:r.userProfile.userURL};if(t._alreadyCreated)if(console.log("[SlackProtostub] Already created",e),console.log(t._subscribedList.length),0!=t._subscribedList.length)t._channelStatusInfo(e,i,c);else{var l=e.to.split("//")[0]+"//slack.com/"+e.to.split("//")[1];t._createNewContextReporter(l)}else{console.log("[SlackProtostub] Not Already created",e),t._alreadyCreated=!0,t._dataObjectReporterURL=e.url;var u={user:"slack://"+o.name+"@slack.com",domain:"slack.com",id:e.identity.input.user_id,userURL:"slack://slack.com/"+o.name+"@slack.com",identity:r};t._addedUsersInfo.push(u),t._createNewContextReporter(r.userProfile.userURL).then(function(n){1==n&&t._chatManager.join(e.url,!1,r).then(function(n){t._prepareChat(n);var o={type:"presence_sub",ids:t._toSubscribePresence};console.log("[SlackProtostub] websocket sentmessage",t._ws.readyState,o),t._ws.send(JSON.stringify(o));var s={urlDataObj:e.url,schema:e.schema,subscribed:!0,identity:r,chat:n};t._subscribedList.push(s),console.log("[SlackProtostub] subscribed list",t._subscribedList),e.identity.input.user_id&&(t._id=e.identity.input.user_id),t._channelStatusInfo(e,i,c)})})}}):e.error("Invalid Scheme: "+o[o.length-1])}else e.error("Chat Name Missing")}})):e.error("Access Token Missing")}},{key:"_createNewContextReporter",value:function(e){var t=this;return new Promise(function(n,o){t._resumeReporter(e).then(function(o){console.log("[SlackProtostub] TEST creating reporter for",e),t._addedUsersInfo.forEach(function(s){if(s.userURL==e){console.log("[SlackProtostub] TEST get presense for ",s);var r={token:t._token,user:s.id};t._slack.users.getPresence(r,function(r,a){if(r)return console.error("[SlackProtostub] error",r),n(!1);if(console.log("[SlackProtostub] PRESENCE OF USER",s,a),!a.ok)return n(!1);if(t._toSubscribePresence.push(s.id),console.log("[SlackProtostub] toSubscribeArray",t._toSubscribePresence,"intext",JSON.stringify(t._toSubscribePresence)),console.log("[SlackProtostub] resumed obj",o),o)return console.log("[SlackProtostub] reporter for this userURL:",e," already exists ",o),t._contextReportersInfo[s.id]=o,n(!0);var i=t._createNewObjPresence(a.presence);console.log("[SlackProtostub] creating a new contextReporter for invitedUSER ",i,s),t._contextReporter.create(s.userURL,i,["availability_context"],s.userURL,s.userURL).then(function(e){return console.log("[SlackProtostub] CONTEXT RETURNED",e),e.onSubscription(function(e){e.accept(),console.log("[SlackProtostub] new subs",e)}),t._contextReportersInfo[s.id]=e,n(!0)}).catch(function(e){console.error("[SlackProtostub] err",e)}),console.log("[SlackProtostub] websocket readyState",t._ws.readyState)})}})}).catch(function(e){return console.log("[SlackProtostub] error",e),n(!1)})})}},{key:"_createNewObjPresence",value:function(e){return Object.assign({},{id:"_"+Math.random().toString(36).substr(2,9),values:[{value:this._getPresence(e),name:"availability",type:"availability_status",unit:"pres"}]})}},{key:"_getPresence",value:function(e){return"active"===e?"available":"unavailable"}},{key:"_getSlackInformation",value:function(e,t){var n=this;return new Promise(function(o,s){var r="https://slack.com/api/users.list?token="+n._token,a="https://slack.com/api/channels.list?token="+n._token,i=n._sendHTTPRequest("GET",r),c=n._sendHTTPRequest("GET",a);Promise.all([i,c]).then(function(s){n._usersList=s[0].members,n._channelsList=s[1].channels;var r=e.split("://")[1].split("@")[0],a=n._usersList.filter(function(e){return e.name===r})[0],i=n._usersList.filter(function(e){return e.id===t})[0];o({invInfo:a,ownInfo:i})},function(e){console.error("[SlackProtostub] ",e),s(e)})})}},{key:"_channelStatusInfo",value:function(e,t,n){var o=this,s=e.value.name.split(" ").join("-").replace(/\//gi,"-"),r=o._channelsList.filter(function(e){return e.name===s})[0],a=null;if(r){console.log("[SlackProtostub] channel exist",r);var i=!1;(a=o._channelsList.filter(function(e){return e.name===s})[0].members).forEach(function(e){e===t.id&&(i=!0)}),console.log("[SlackProtostub] channel members",a,"   ->",i);var c=0,l=0;o._subscribedList.forEach(function(t){t.urlDataObj===e.url&&(l=c),c++}),console.log("[SlackProtostub] channels",o._subscribedList,o._subscribedList.length,l),o._subscribedList[l].channelID=r.id,i||o._invite(t.id,r.id)}else o._createChannel(s,e.url).then(function(n){console.log("[SlackProtostub]  after create channel ",n),n&&o._invite(t.id,"",e.url)});o._usersUpdated?console.log("[SlackProtostub] users Already Updated"):o._addAllUsersToHyperty(a,t,n)}},{key:"_addAllUsersToHyperty",value:function(e,t,n){var o=this;o._usersUpdated=!0;var s,r=[];console.log("[SlackProtostub] lets check if users needs to be added"),e&&o._usersList.forEach(function(a){e.forEach(function(e){if(e===a.id&&t.id!=a.id&&n.id!=a.id){console.log("[SlackProtostub] to add ",a.id);var i=o._factory.createMessageBodyIdentity(a.name,"slack://slack.com/"+a.name+"@slack.com",a.profile.image_192,a.name,"","slack.com",void 0,a.profile);s={user:"slack://"+a.name+"@slack.com",domain:"slack.com",id:a.id,userURL:"slack://slack.com/"+a.name+"@slack.com",identity:i},o._addedUsersInfo.push(s),r.push(s)}})}),s={user:"slack://"+t.name+"@slack.com",domain:"slack.com",id:t.id,userURL:"slack://slack.com/"+t.name+"@slack.com",identity:t.identity},o._addedUsersInfo.push(s),r.push(s),r.forEach(function(e){console.log("[SlackProtostub] TEST joining with user",e),e.userURL!==n.userURL&&o._createNewContextReporter(e.userURL).then(function(t){1==t&&o._chatManager.join(o._dataObjectReporterURL,!1,e.identity).then(function(t){console.log("[SlackProtostub] chatmanager JOIN",t,e.userURL,n.userURL),o._prepareChat(t);var s={type:"presence_sub",ids:o._toSubscribePresence};console.log("[SlackProtostub] websocket sentmessage",o._ws.readyState,s),o._ws.send(JSON.stringify(s))}).catch(function(e){console.log("[SlackProtostub] chatmanager JOIN error",e)})})})}},{key:"_handleNewUser",value:function(e){console.log("[SlackProtostub] Handling a new user",e);var t,n=this;if(n._subscribedList.forEach(function(n){n.channelID===e.channel&&(t=n)}),t){var o=n._usersList.filter(function(t){return t.id===e.user})[0],s=n._factory.createMessageBodyIdentity(o.name,"slack://slack.com/"+o.name+"@slack.com",o.profile.image_192,o.name,"","slack.com",void 0,o.profile),r={user:"slack://"+o.name+"@slack.com",domain:"slack.com",id:e.user,userURL:"slack://slack.com/"+o.name+"@slack.com",identity:s};n._addedUsersInfo.push(r),console.log("[SlackProtostub] Joining chat",t.urlDataObj," with",s),n._createNewContextReporter(s.userProfile.userURL).then(function(e){1==e&&n._chatManager.join(t.urlDataObj,!1,s).then(function(e){n._prepareChat(e);var t={type:"presence_sub",ids:n._toSubscribePresence};console.log("[SlackProtostub] websocket sentmessage",n._ws.readyState,t),n._ws.send(JSON.stringify(t))})})}}},{key:"_handlePresenceChange",value:function(e){if(console.log("[SlackProtostub] updating presence of user"),this._contextReportersInfo[e.user]){var t=this._contextReportersInfo[e.user];t.data.values[0].value=this._getPresence(e.presence),console.log("[SlackProtostub] presence of user",e.user," updated to",t.data)}}},{key:"_handleNewMessage",value:function(e){console.log("[SlackProtostub] Handling a new message",e);var t,n="";this._subscribedList.forEach(function(o){o.channelID===e.channel&&(n=o.channelID,t=o.chat)}),console.log("[SlackProtostub] subscribed list",this._subscribedList),e.channel&&e.ts>this._session.createdTime&&(e.channel===n&&e.user!==this._id||!e.hasOwnProperty("bot_id")&&e.user===this._id&&e.channel===n)&&this._getUserInfo(e.user).then(function(n){console.log("[SlackProtostub] msg to addChild",e.text,"     identity:",n),t.send(e.text,n)})}},{key:"_getUserInfo",value:function(e){var t=this;return new Promise(function(n){t._slack.users.info({token:t._token,user:e},function(e,o){if(e)console.error("[SlackProtostub] error",e);else{console.log("[SlackProtostub getUserInfo] ",o);var s=t._factory.createMessageBodyIdentity(o.user.name,"slack://slack.com/"+o.user.name+"@slack.com",o.user.profile.image_192,o.user.name,"","slack.com");n(s)}})})}},{key:"_prepareChat",value:function(e){var t=this;console.log("[SlackProtostub] chat",e),e.onMessage(function(n){console.info("[SlackProtostub] onMessage: ",n),console.info("[SlackProtostub] Observer - Message History Control ",t._messageHistoryControl);var o,s=e.child_cseq,r=e._dataObjectObserver.url;(t._subscribedList.forEach(function(e){e.urlDataObj===r&&(o=e.channelID)}),t._messageHistoryControl.hasOwnProperty(r))?t._messageHistoryControl[r].id!==s&&(t._messageHistoryControl[r].id=s,t._deliver(n,o)):(t._messageHistoryControl[r]={id:s},t._deliver(n,o))})}},{key:"_invite",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"",n=arguments.length>2?arguments[2]:void 0;""==t&&this._subscribedList.forEach(function(e){e.urlDataObj===n&&(t=e.channelID)});var o={token:this._token,channel:t,user:e};this._slack.channels.invite(o,function(e,t){e?console.error("[SlackProtostub] error",e):console.log("[SlackProtostub] user invited with sucess",t)})}},{key:"_deliver",value:function(e,t){var n=this;if(console.log("[SlackProtostub] Msg to Deliver: ",e," on channel:",t),t&&e.value&&e.hasOwnProperty("identity")&&e.identity.hasOwnProperty("userProfile")&&e.identity.userProfile.hasOwnProperty("name")&&e.identity.userProfile.name){var o=e.identity.userProfile.name+": "+e.value.content,s={as_user:!0,token:n._token,channel:t,text:o};console.log("[SlackProtostub] (PostMessage slack api) token(",n._token,")  channel(",t,") text(",e.value.content,")"),n._slack.chat.postMessage(s,function(o,s){if(o)if("not_in_channel"==o.message){console.error("[SlackProtostub] Channel exist, but user is not on channel",o);var r=n._channelsList.filter(function(e){return e.id===t})[0],a={token:n._token,name:r.name};n._slack.channels.join(a),n._deliver(e,t)}else console.error("[SlackProtostub] error",o);else console.log("[SlackProtostub] PostMessage with Sucess",s)})}}},{key:"_createChannel",value:function(e,t){var n=this;return new Promise(function(o){var s={token:n._token,name:e};console.log("[SlackProtostub] Creating a new channel toCreate:",s,"  channelObjUrl:",t),n._slack.channels.create(s,function(e,s){if(e)console.error("[SlackProtostub] ",e);else if(s.ok){console.log("[SlackProtostub] Channel Created with Sucess ",s),console.log("[SlackProtostub] Associate a new channel ID",s.channel.id,"to urlDataObj",t);var r=0,a=0;n._subscribedList.forEach(function(e){e.urlDataObj===t&&(a=r),r++}),n._subscribedList[a].channelID=s.channel.id,console.log("[SlackProtostub] subscribed list",n._subscribedList),o(!0)}})})}},{key:"_sendHTTPRequest",value:function(e,t){return new Promise(function(n,o){var s=new XMLHttpRequest;"withCredentials"in s?s.open(e,t,!0):"undefined"!=typeof XDomainRequest?(s=new XDomainRequest).open(e,t):s=null,s?(s.onreadystatechange=function(){if(4===s.readyState)if(200===s.status){var e=JSON.parse(s.responseText);n(e)}else 400===s.status?o("There was an error processing the token"):o("something else other than 200 was returned")},s.send()):o("CORS not supported")})}},{key:"_sendStatus",value:function(e,t){console.log("[SlackProtostub status changed] to ",e),this._state=e;var n={type:"update",from:this._myUrl,to:this._myUrl+"/status",body:{value:e}};t&&(n.body.desc=t),this._bus.postMessage(n)}},{key:"descriptor",get:function(){return a}},{key:"name",get:function(){return a.name}},{key:"config",get:function(){return this._config}},{key:"runtimeSession",get:function(){return this._runtimeSessionURL}}]),e}()},function(e,t,n){let o=n(0),s=n(2),r=n(6);e.exports=o(r,s)},function(e,t,n){var o=n(1);e.exports=function(e,t){let n=o[e].filter(e=>void 0===t[e]);return!!n.length&&Error(`${e} missing params: ${n.join(", ")}`)}},function(e,t,n){var o=n(0),s=n(2);e.exports=function(e){e||(e={});return new class{constructor(){o(this,function(t,n,o){return n.token=n.token||e.token,s(t,n,o)})}}}}]).default});
+"use strict";
+
+System.register(["slack"], function (_export, _context) {
+  "use strict";
+
+  var slack, protostubDescriptor, SlackProtoStub;
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  return {
+    setters: [function (_slack) {
+      slack = _slack.default;
+    }],
+    execute: function () {
+      //import { Syncher, NotificationHandler } from 'service-framework/dist/Syncher';
+      //import IdentityManager from 'service-framework/dist/IdentityManager';
+      //import {ChatManager} from 'runtime-core/dist/ChatManager';
+      //import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
+      //import {ContextReporter} from 'service-framework/dist/ContextManager';
+      protostubDescriptor = {
+        "name": "SlackProtoStub",
+        "language": "javascript",
+        "description": "Protostub to exchange messages with slack",
+        "signature": "",
+        "configuration": {},
+        "constraints": {
+          "browser": true
+        },
+        "interworking": true,
+        "objectName": "slack.slack.com"
+      };
+
+      _export("default", SlackProtoStub =
+      /*#__PURE__*/
+      function () {
+        function SlackProtoStub() {
+          _classCallCheck(this, SlackProtoStub);
+        }
+
+        _createClass(SlackProtoStub, [{
+          key: "_start",
+          value: function _start(runtimeProtoStubURL, bus, config, factory) {
+            if (!runtimeProtoStubURL) throw new Error('The runtimeProtoStubURL is a needed parameter');
+            if (!bus) throw new Error('The bus is a needed parameter');
+            if (!config) throw new Error('The config is a needed parameter');
+            console.log('[SlackProtostub] Constructor Loaded');
+
+            var _this = this;
+
+            this._ws = null;
+            this._toSubscribePresence = [];
+            this._addedUsersInfo = [];
+            this._alreadyCreated = false;
+            this._slack = slack;
+            this._usersUpdated = false;
+            this._subscribedList = [];
+            this._messageHistoryControl = {};
+            this._usersList = []; //this._groupsList = [];
+
+            this._channelsList = []; //this._imsList = [];
+            //this._observer;
+
+            this._id = 0; //this._continuousOpen = true;
+
+            this._token = ''; //this._chatController;
+            //this._chatControllersExtra = {};
+            //this._schemaURL;
+
+            this._dataObjectReporterURL;
+            this._factory = factory;
+            this._contextReportersInfo = {};
+            this._syncher = factory.createSyncher(runtimeProtoStubURL, bus, config);
+            this._chatManager = factory.createChatManager(runtimeProtoStubURL, bus, config, this._syncher);
+            this._contextReporter = factory.createContextReporter(runtimeProtoStubURL, bus, config, this._syncher);
+            this._myUrl = runtimeProtoStubURL;
+            this._bus = bus;
+            this._config = config;
+            this._runtimeSessionURL = config.runtimeURL;
+            this._reOpen = false;
+
+            this._chatManager.onInvitation(function (event) {
+              _this._onSlackInvitation(event);
+            });
+
+            this._notificationHandler = factory.createNotificationHandler(bus);
+
+            this._notificationHandler.onNotification('comm', function (event) {
+              _this._chatManager.processNotification(event);
+            });
+
+            bus.addListener('*', function (msg) {
+              //ignore msg sent by himself
+              if (msg.from !== runtimeProtoStubURL) {
+                console.log('[SlackProtostub] new msg ', msg);
+
+                switch (msg.type) {
+                  case 'create':
+                    _this._notificationHandler.onCreate(msg);
+
+                    break;
+
+                  case 'delete':
+                    _this._notificationHandler.onDelete(msg);
+
+                    break;
+                }
+              }
+            });
+
+            _this._sendStatus('created');
+          }
+        }, {
+          key: "_filter",
+          value: function _filter(msg) {
+            if (msg.via === this._myUrl) {
+              return false;
+            } else {
+              return true;
+            }
+          }
+          /*****************************************************************************************************
+          * It Open a new Session using received token connect to a webSocket Url,
+          *  where handle all received messages on this socket
+          * @param {string} token - message with a new user added
+          *******************************************************************************************************/
+
+        }, {
+          key: "_open",
+          value: function _open(token, callback) {
+            var _this = this;
+
+            if (!_this._session) {
+              console.log('[SlackProtostub] creating Session for token:', token);
+
+              _this._sendStatus('in-progress');
+
+              _this._session = this._slack.rtm.connect({
+                token: token,
+                batch_presence_aware: 1,
+                presence_sub: true
+              });
+              console.log('[SlackProtostub] session', _this._session);
+              _this._session.createdTime = new Date().getTime() / 1000;
+
+              _this._session.then(function (result) {
+                console.log('[SlackProtostub] Session result', result);
+
+                if (result.ok) {
+                  _this._ws = new WebSocket(result.url);
+                  console.log('[SlackProtostub] websocket', _this._ws);
+                  console.log('[SlackProtostub] websocket url ', _this._ws.url);
+
+                  _this._ws.onmessage = function (event) {
+                    var msg = JSON.parse(event.data);
+                    console.log('[SlackProtostub] new msg on webSocket', msg);
+
+                    if (msg.type == 'message') {
+                      _this._handleNewMessage(msg);
+                    } else if (msg.type == 'presence_change') {
+                      _this._handlePresenceChange(msg);
+                    } else if (msg.type == 'member_joined_channel') {
+                      _this._handleNewUser(msg);
+                    }
+                  };
+
+                  _this._ws.onerror = function (error) {
+                    console.log('[SlackProtostub] websocker Error', error);
+                  };
+                }
+              });
+
+              _this._sendStatus('live');
+            } else {
+              console.log('[SlackProtostub] session already exist');
+            }
+
+            setTimeout(function () {
+              callback();
+            });
+          }
+          /*****************************************************************************************************
+          * It Resumes all reporters including contextreporters
+          * @param {string} reporterURL - message with a new user added
+          * @return {Promise<Object>} Returns a promise with a reporter DataObject
+          *******************************************************************************************************/
+
+        }, {
+          key: "_resumeReporter",
+          value: function _resumeReporter(reporterURL) {
+            var _this = this;
+
+            return new Promise(function (resolve, reject) {
+              console.log('[SlackProtostub] resuming reporter of ', reporterURL);
+
+              _this._syncher.resumeReporters({
+                store: true,
+                reporter: reporterURL
+              }).then(function (reporters) {
+                var dataObjectReporter;
+                var reportersList = Object.keys(reporters);
+                console.log('[SlackProtostub] ', reporters, reportersList);
+                var i = 0;
+                reportersList.forEach(function (key) {
+                  if (reporters[key]._name === reporterURL && key.startsWith('context://')) {
+                    console.log('[SlackProtostub] reporter to return', reporters[key]);
+                    return resolve(reporters[key]);
+                  }
+                });
+                return resolve(false);
+              });
+            });
+          }
+          /*****************************************************************************************************
+          * It is called when a event ocurred related with a invitation of a slack User
+          * @param {Object} event - Object event
+          *******************************************************************************************************/
+
+        }, {
+          key: "_onSlackInvitation",
+          value: function _onSlackInvitation(event) {
+            var _this = this;
+
+            if (event.identity.hasOwnProperty('accessToken') && event.identity.accessToken) {
+              this._token = event.identity.accessToken;
+
+              _this._open(this._token, function () {
+                if (_this._filter(event)) {
+                  console.log('[SlackProtostub] After Filter', event);
+                  var schemaUrl = event.schema;
+
+                  if (event.value.name) {
+                    var schemaSplitted = schemaUrl.split('/');
+
+                    if (schemaSplitted[schemaSplitted.length - 1] === 'Communication') {
+                      _this._getSlackInformation(event.to, event.identity.input.user_id).then(function (infoReturned) {
+                        var userInfo = infoReturned.ownInfo;
+                        var toInvInfo = infoReturned.invInfo;
+                        console.log('Slack User information: ', infoReturned, event); // username, userURL, avatar, cn, locale, idp, assertion
+
+                        var identity = _this._factory.createMessageBodyIdentity(userInfo.name, 'slack://slack.com/' + userInfo.name + '@slack.com', userInfo.profile.image_192, userInfo.name, '', 'slack.com', undefined, userInfo.profile);
+
+                        var identityToInv = _this._factory.createMessageBodyIdentity(toInvInfo.name, 'slack://slack.com/' + toInvInfo.name + '@slack.com', toInvInfo.profile.image_192, toInvInfo.name, '', 'slack.com', undefined, toInvInfo.profile);
+
+                        event.ack(200);
+                        console.log('[SlackProtostub] subscribing object', event.url, identity);
+                        var neededInfoInvited = {
+                          id: toInvInfo.id,
+                          name: toInvInfo.name,
+                          userURL: identityToInv.userProfile.userURL,
+                          identity: identityToInv
+                        };
+                        var neededOwnInfo = {
+                          id: event.identity.input.user_id,
+                          userURL: identity.userProfile.userURL
+                        };
+
+                        if (!_this._alreadyCreated) {
+                          console.log('[SlackProtostub] Not Already created', event);
+                          _this._alreadyCreated = true; //_this._schemaURL = event.schema;
+
+                          _this._dataObjectReporterURL = event.url;
+                          var userToAdd = {
+                            user: 'slack://' + userInfo.name + '@slack.com',
+                            domain: 'slack.com',
+                            id: event.identity.input.user_id,
+                            userURL: 'slack://slack.com/' + userInfo.name + '@slack.com',
+                            identity: identity
+                          };
+
+                          _this._addedUsersInfo.push(userToAdd);
+
+                          _this._createNewContextReporter(identity.userProfile.userURL).then(function (creation) {
+                            //debugger;
+                            if (creation == true) {
+                              _this._chatManager.join(event.url, false, identity).then(function (chatController) {
+                                _this._prepareChat(chatController);
+
+                                var msgQuery = {
+                                  "type": "presence_sub",
+                                  "ids": _this._toSubscribePresence
+                                };
+                                console.log('[SlackProtostub] websocket sentmessage', _this._ws.readyState, msgQuery);
+
+                                _this._ws.send(JSON.stringify(msgQuery)); //_this._createNewContextReporter(identity.userProfile.userURL);
+
+
+                                var subscription = {
+                                  urlDataObj: event.url,
+                                  schema: event.schema,
+                                  subscribed: true,
+                                  identity: identity,
+                                  chat: chatController
+                                };
+
+                                _this._subscribedList.push(subscription);
+
+                                console.log('[SlackProtostub] subscribed list', _this._subscribedList);
+
+                                if (event.identity.input.user_id) {
+                                  _this._id = event.identity.input.user_id;
+                                } //_this._channelStatusInfo(event, toInvInfo.id, event.url, toInvInfo.name, identityToInv.userProfile.userURL, event.url, identityToInv, identity.userProfile.userURL, event.identity.input.user_id);
+
+
+                                _this._channelStatusInfo(event, neededInfoInvited, neededOwnInfo);
+                              });
+                            }
+                          });
+                        } else {
+                          console.log('[SlackProtostub] Already created', event);
+                          console.log(_this._subscribedList.length);
+
+                          if (_this._subscribedList.length != 0) {
+                            _this._channelStatusInfo(event, neededInfoInvited, neededOwnInfo);
+                          } else {
+                            var testURL = event.to.split('//')[0] + '//slack.com/' + event.to.split('//')[1];
+
+                            _this._createNewContextReporter(testURL);
+                          }
+                        }
+                      });
+                    } else event.error('Invalid Scheme: ' + schemaSplitted[schemaSplitted.length - 1]);
+                  } else event.error('Chat Name Missing');
+                }
+              });
+            } else event.error('Access Token Missing');
+          }
+          /*****************************************************************************************************
+          * It creates a new contextReporter with userURL
+          * @param {string} userURL - userURL of user to create a new ContextReporter
+          *******************************************************************************************************/
+
+        }, {
+          key: "_createNewContextReporter",
+          value: function _createNewContextReporter(userURL) {
+            var _this = this;
+
+            return new Promise(function (resolve, reject) {
+              _this._resumeReporter(userURL).then(function (reporterResumed) {
+                console.log('[SlackProtostub] TEST creating reporter for', userURL);
+
+                _this._addedUsersInfo.forEach(function (currentUser) {
+                  if (currentUser.userURL == userURL) {
+                    console.log('[SlackProtostub] TEST get presense for ', currentUser);
+                    var toGetPresence = {
+                      token: _this._token,
+                      user: currentUser.id
+                    };
+
+                    _this._slack.users.getPresence(toGetPresence, function (err, data) {
+                      if (err) {
+                        console.error('[SlackProtostub] error', err);
+                        return resolve(false);
+                      } else {
+                        console.log('[SlackProtostub] PRESENCE OF USER', currentUser, data);
+
+                        if (data.ok) {
+                          _this._toSubscribePresence.push(currentUser.id);
+
+                          console.log('[SlackProtostub] toSubscribeArray', _this._toSubscribePresence, 'intext', JSON.stringify(_this._toSubscribePresence));
+                          console.log('[SlackProtostub] resumed obj', reporterResumed);
+
+                          if (!reporterResumed) {
+                            var objPresence = _this._createNewObjPresence(data.presence);
+
+                            console.log('[SlackProtostub] creating a new contextReporter for invitedUSER ', objPresence, currentUser); //debugger;
+
+                            _this._contextReporter.create(currentUser.userURL, objPresence, ['availability_context'], currentUser.userURL, currentUser.userURL).then(function (context) {
+                              console.log('[SlackProtostub] CONTEXT RETURNED', context);
+                              context.onSubscription(function (event) {
+                                event.accept();
+                                console.log('[SlackProtostub] new subs', event);
+                              });
+                              _this._contextReportersInfo[currentUser.id] = context;
+                              return resolve(true);
+                            })["catch"](function (err) {
+                              console.error('[SlackProtostub] err', err);
+                            });
+                          } else {
+                            console.log('[SlackProtostub] reporter for this userURL:', userURL, ' already exists ', reporterResumed);
+                            _this._contextReportersInfo[currentUser.id] = reporterResumed;
+                            return resolve(true);
+                          }
+
+                          console.log('[SlackProtostub] websocket readyState', _this._ws.readyState);
+                        } else {
+                          return resolve(false);
+                        }
+                      }
+                    });
+                  }
+                });
+              })["catch"](function (error) {
+                console.log('[SlackProtostub] error', error);
+                return resolve(false);
+              });
+            });
+          }
+          /*****************************************************************************************************
+          * It returns a dataobject with info of a slack User
+          * @param {string} info - status info of a slackUser
+          * @return {object} return a object related with info of a slackUser
+          *******************************************************************************************************/
+
+        }, {
+          key: "_createNewObjPresence",
+          value: function _createNewObjPresence(info) {
+            var _this = this;
+
+            return Object.assign({}, {
+              id: '_' + Math.random().toString(36).substr(2, 9),
+              // do we need this?
+              values: [{
+                value: _this._getPresence(info),
+                name: 'availability',
+                type: 'availability_status',
+                unit: 'pres'
+              }]
+            });
+          }
+        }, {
+          key: "_getPresence",
+
+          /*****************************************************************************************************
+          * It returns a string with info related with presence of a user
+          * @param {string} info - status info of a slackUser
+          * @return {string} return info of presence of a slack user
+          *******************************************************************************************************/
+          value: function _getPresence(info) {
+            var status;
+
+            if (info === "active") {
+              return 'available';
+            } else {
+              return 'unavailable';
+            }
+          }
+          /*****************************************************************************************************
+          * It get some info about channels, users, and groups of slack using token and returns info
+          * of who invite and who was invited
+          * @param {string} to - status info of a slackUser
+          * @param {string} ownID - status info of a slackUser
+          * @return {object} return object with info of who invite and who was invited
+          *******************************************************************************************************/
+
+        }, {
+          key: "_getSlackInformation",
+          value: function _getSlackInformation(to, ownID) {
+            var _this = this;
+
+            return new Promise(function (resolve, reject) {
+              var URLUsersList = 'https://slack.com/api/users.list?token=' + _this._token; //let URLGroupsList = 'https://slack.com/api/groups.list?token=' + _this._token;
+
+              var URLChannelsList = 'https://slack.com/api/channels.list?token=' + _this._token; //let URLImsList = 'https://slack.com/api/im.list?token=' + _this._token;
+
+              var UsersListPromise = _this._sendHTTPRequest('GET', URLUsersList); //let GroupsListPromise = _this._sendHTTPRequest('GET', URLGroupsList);
+
+
+              var ChannelsListPromise = _this._sendHTTPRequest('GET', URLChannelsList); //let ImsListPromise = _this._sendHTTPRequest('GET', URLImsList);
+
+
+              Promise.all([UsersListPromise, ChannelsListPromise]).then(function (result) {
+                //Promise.all([UsersListPromise, GroupsListPromise, ChannelsListPromise, ImsListPromise]).then(function(result) {
+                _this._usersList = result[0].members; //_this._groupsList = result[1].groups;
+
+                _this._channelsList = result[1].channels; //_this._imsList = result[2].ims;
+                //get userID to invite
+
+                var toSplitted = to.split('://')[1];
+                var user = toSplitted.split('@')[0];
+
+                var invInfo = _this._usersList.filter(function (value) {
+                  return value.name === user;
+                })[0];
+
+                var ownInfo = _this._usersList.filter(function (value) {
+                  return value.id === ownID;
+                })[0];
+
+                var infotoReturn = {
+                  invInfo: invInfo,
+                  ownInfo: ownInfo
+                };
+                resolve(infotoReturn);
+              }, function (error) {
+                console.error('[SlackProtostub] ', error);
+                reject(error);
+              });
+            });
+          }
+          /*****************************************************************************************************
+          * It check if channelexist, if user is on channel and check which users need to be invited
+          * @param {string} msg - message related with event received
+          * @param {Object} neededInfoInvited - info about user to be invited
+          * @param {Object} neededOwnInfo - info about user own info
+          *******************************************************************************************************/
+
+        }, {
+          key: "_channelStatusInfo",
+          value: function _channelStatusInfo(msg, neededInfoInvited, neededOwnInfo) {
+            //_channelStatusInfo(msg, userID, channelObjUrl, userName, userURL, eventURL, identityToInv, ownUserURL, ownUserID) {
+            var _this = this;
+
+            var channelName = msg.value.name.split(' ').join('-').replace(/\//gi, '-');
+
+            var channelExists = _this._channelsList.filter(function (value) {
+              return value.name === channelName;
+            })[0];
+
+            var channelMembers = null; // if channel exist, invite user, else channel need to be created and then invite user
+
+            if (channelExists) {
+              console.log('[SlackProtostub] channel exist', channelExists);
+              channelMembers = _this._channelsList.filter(function (value) {
+                return value.name === channelName;
+              })[0].members;
+              var alreadyOnChannel = false;
+              channelMembers.forEach(function (s) {
+                if (s === neededInfoInvited.id) {
+                  alreadyOnChannel = true;
+                }
+              });
+              console.log('[SlackProtostub] channel members', channelMembers, '   ->', alreadyOnChannel);
+              var count = 0;
+              var key = 0;
+
+              _this._subscribedList.forEach(function (obj) {
+                if (obj.urlDataObj === msg.url) {
+                  key = count;
+                }
+
+                count++;
+              });
+
+              console.log('[SlackProtostub] channels', _this._subscribedList, _this._subscribedList.length, key);
+              _this._subscribedList[key].channelID = channelExists.id; //debugger;
+              // if user isnt on Channel invite, else just set channelID
+
+              if (!alreadyOnChannel) {
+                _this._invite(neededInfoInvited.id, channelExists.id);
+              }
+            } else {
+              _this._createChannel(channelName, msg.url).then(function (result) {
+                console.log('[SlackProtostub]  after create channel ', result);
+
+                if (result) {
+                  _this._invite(neededInfoInvited.id, '', msg.url);
+                }
+              });
+            }
+
+            if (!_this._usersUpdated) {
+              _this._addAllUsersToHyperty(channelMembers, neededInfoInvited, neededOwnInfo); //_this._addAllUsersToHyperty(channelMembers,userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID);
+
+            } else {
+              console.log('[SlackProtostub] users Already Updated');
+            }
+          }
+          /*****************************************************************************************************
+          * It add all users to dataobject and  create contextReporters for each one
+          * @param {Object[]} channelMembers - List of channel Members
+          * @param {Object} neededInfoInvited - info about user to be invited
+          * @param {Object} neededOwnInfo - info about user own info
+          *******************************************************************************************************/
+
+        }, {
+          key: "_addAllUsersToHyperty",
+          value: function _addAllUsersToHyperty(channelMembers, neededInfoInvited, neededOwnInfo) {
+            //_addAllUsersToHyperty(channelMembers, userID, userURL, eventURL, userName, identityToInv, ownUserURL, ownUserID) {
+            var _this = this;
+
+            _this._usersUpdated = true;
+            var usersInfo = {};
+            var toADD = [];
+            var userToAdd;
+            console.log('[SlackProtostub] lets check if users needs to be added');
+
+            if (channelMembers) {
+              _this._usersList.forEach(function (currentUser) {
+                channelMembers.forEach(function (s) {
+                  //console.log('[SlackProtostub] currentUser', currentUser);
+                  if (s === currentUser.id) {
+                    if (neededInfoInvited.id != currentUser.id && neededOwnInfo.id != currentUser.id) {
+                      console.log('[SlackProtostub] to add ', currentUser.id);
+
+                      var identity = _this._factory.createMessageBodyIdentity(currentUser.name, 'slack://slack.com/' + currentUser.name + '@slack.com', currentUser.profile.image_192, currentUser.name, '', 'slack.com', undefined, currentUser.profile);
+
+                      userToAdd = {
+                        user: 'slack://' + currentUser.name + '@slack.com',
+                        domain: 'slack.com',
+                        id: currentUser.id,
+                        userURL: 'slack://slack.com/' + currentUser.name + '@slack.com',
+                        identity: identity
+                      };
+
+                      _this._addedUsersInfo.push(userToAdd);
+
+                      toADD.push(userToAdd);
+                    }
+                  }
+                });
+              });
+            }
+
+            userToAdd = {
+              user: 'slack://' + neededInfoInvited.name + '@slack.com',
+              domain: 'slack.com',
+              id: neededInfoInvited.id,
+              userURL: 'slack://slack.com/' + neededInfoInvited.name + '@slack.com',
+              identity: neededInfoInvited.identity
+            };
+
+            _this._addedUsersInfo.push(userToAdd);
+
+            toADD.push(userToAdd);
+            toADD.forEach(function (user) {
+              console.log('[SlackProtostub] TEST joining with user', user);
+
+              if (user.userURL !== neededOwnInfo.userURL) {
+                _this._createNewContextReporter(user.userURL).then(function (creation) {
+                  //debugger;
+                  if (creation == true) {
+                    _this._chatManager.join(_this._dataObjectReporterURL, false, user.identity).then(function (result) {
+                      console.log('[SlackProtostub] chatmanager JOIN', result, user.userURL, neededOwnInfo.userURL);
+
+                      _this._prepareChat(result); // if (user.userURL !== neededOwnInfo.userURL) {
+                      //   _this._createNewContextReporter(user.userURL);
+                      // }
+
+
+                      var msgQuery = {
+                        "type": "presence_sub",
+                        "ids": _this._toSubscribePresence
+                      };
+                      console.log('[SlackProtostub] websocket sentmessage', _this._ws.readyState, msgQuery);
+
+                      _this._ws.send(JSON.stringify(msgQuery));
+                    })["catch"](function (error) {
+                      console.log('[SlackProtostub] chatmanager JOIN error', error);
+                    });
+                  }
+                });
+              } else {//TODO pode faltar aqui o chatmanager join
+              }
+            });
+          }
+          /*****************************************************************************************************
+          * It handle a new user added to a Slack channel, and add him to DataObject.participants
+          * @param {Object} message - message with a new user added
+          *******************************************************************************************************/
+
+        }, {
+          key: "_handleNewUser",
+          value: function _handleNewUser(message) {
+            console.log('[SlackProtostub] Handling a new user', message);
+
+            var _this = this;
+
+            var subcribed;
+
+            _this._subscribedList.forEach(function (obj) {
+              if (obj.channelID === message.channel) {
+                subcribed = obj;
+              }
+            });
+
+            if (subcribed) {
+              var invInfo = _this._usersList.filter(function (value) {
+                return value.id === message.user;
+              })[0];
+
+              var identity = _this._factory.createMessageBodyIdentity(invInfo.name, 'slack://slack.com/' + invInfo.name + '@slack.com', invInfo.profile.image_192, invInfo.name, '', 'slack.com', undefined, invInfo.profile);
+
+              var userToAdd = {
+                user: 'slack://' + invInfo.name + '@slack.com',
+                domain: 'slack.com',
+                id: message.user,
+                userURL: 'slack://slack.com/' + invInfo.name + '@slack.com',
+                identity: identity
+              };
+
+              _this._addedUsersInfo.push(userToAdd);
+
+              console.log('[SlackProtostub] Joining chat', subcribed.urlDataObj, ' with', identity);
+
+              _this._createNewContextReporter(identity.userProfile.userURL).then(function (creation) {
+                //debugger;
+                if (creation == true) {
+                  _this._chatManager.join(subcribed.urlDataObj, false, identity).then(function (result) {
+                    _this._prepareChat(result);
+
+                    var msgQuery = {
+                      "type": "presence_sub",
+                      "ids": _this._toSubscribePresence
+                    };
+                    console.log('[SlackProtostub] websocket sentmessage', _this._ws.readyState, msgQuery);
+
+                    _this._ws.send(JSON.stringify(msgQuery)); //_this._createNewContextReporter(identity.userProfile.userURL);
+
+                  });
+                }
+              });
+            }
+          }
+          /*****************************************************************************************************
+          * It handle a new Presence change of Slack user, and change his status
+          * @param {Object} message - message with info about user and his status
+          *******************************************************************************************************/
+
+        }, {
+          key: "_handlePresenceChange",
+          value: function _handlePresenceChange(message) {
+            var _this = this;
+
+            console.log('[SlackProtostub] updating presence of user');
+
+            if (_this._contextReportersInfo[message.user]) {
+              var reporter = _this._contextReportersInfo[message.user];
+              reporter.data.values[0].value = _this._getPresence(message.presence);
+              console.log('[SlackProtostub] presence of user', message.user, ' updated to', reporter.data);
+            }
+          }
+          /*****************************************************************************************************
+          * It handle a new message received on channel, and send it to hyperty
+          * @param {Object} message - message with info about channel and text to send
+          *******************************************************************************************************/
+
+        }, {
+          key: "_handleNewMessage",
+          value: function _handleNewMessage(message) {
+            console.log('[SlackProtostub] Handling a new message', message);
+
+            var _this = this;
+
+            var channelID = '';
+            var chat;
+
+            _this._subscribedList.forEach(function (obj) {
+              if (obj.channelID === message.channel) {
+                channelID = obj.channelID;
+                chat = obj.chat;
+              }
+            });
+
+            console.log('[SlackProtostub] subscribed list', _this._subscribedList);
+
+            if (message.channel && message.ts > _this._session.createdTime) {
+              if (message.channel === channelID && message.user !== _this._id || !message.hasOwnProperty('bot_id') && message.user === _this._id && message.channel === channelID) {
+                _this._getUserInfo(message.user).then(function (identity) {
+                  console.log('[SlackProtostub] msg to addChild', message.text, '     identity:', identity);
+                  chat.send(message.text, identity);
+                });
+              }
+            }
+          }
+          /*****************************************************************************************************
+          * It retrieves information from a slack user and creates a reTHINK Identity object with it
+          * @param {string} user - slack user id
+          * @return {Promise<Object>} Returns a promise with an Identity object resolved
+          *******************************************************************************************************/
+
+        }, {
+          key: "_getUserInfo",
+          value: function _getUserInfo(user) {
+            var _this = this;
+
+            return new Promise(function (resolve) {
+              _this._slack.users.info({
+                token: _this._token,
+                user: user
+              }, function (err, data) {
+                if (err) {
+                  console.error('[SlackProtostub] error', err);
+                } else {
+                  console.log('[SlackProtostub getUserInfo] ', data);
+
+                  var identity = _this._factory.createMessageBodyIdentity(data.user.name, 'slack://slack.com/' + data.user.name + '@slack.com', data.user.profile.image_192, data.user.name, '', 'slack.com');
+
+                  resolve(identity);
+                }
+              });
+            });
+          }
+        }, {
+          key: "_prepareChat",
+          value: function _prepareChat(chat) {
+            var _this = this;
+
+            console.log('[SlackProtostub] chat', chat);
+            chat.onMessage(function (msg) {
+              console.info('[SlackProtostub] onMessage: ', msg);
+              console.info('[SlackProtostub] Observer - Message History Control ', _this._messageHistoryControl); //check if for each msg message has been delivered, and control that for when we have more than one slack user subscribed
+
+              var currentID = chat.child_cseq; // check if this child already sent messages
+
+              var channelObjUrl = chat._dataObjectObserver.url;
+              var channelID;
+
+              _this._subscribedList.forEach(function (obj) {
+                if (obj.urlDataObj === channelObjUrl) {
+                  channelID = obj.channelID;
+                }
+              });
+
+              if (_this._messageHistoryControl.hasOwnProperty(channelObjUrl)) {
+                // in that case check if the currentID its equal to oldID
+                var oldID = _this._messageHistoryControl[channelObjUrl].id;
+
+                if (oldID !== currentID) {
+                  _this._messageHistoryControl[channelObjUrl].id = currentID;
+
+                  _this._deliver(msg, channelID);
+                }
+              } else {
+                _this._messageHistoryControl[channelObjUrl] = {
+                  id: currentID
+                };
+
+                _this._deliver(msg, channelID);
+              }
+            });
+          }
+          /*****************************************************************************************************
+          * It retrieves information from a slack user and creates a reTHINK Identity object with it
+          * @param {string} idUser - slack user ID to be invited
+          * @param {string} idChannel - channelID for user will be invited
+          * @param {string} channelObjUrl - DataObjectURL from where user is invited
+          *******************************************************************************************************/
+
+        }, {
+          key: "_invite",
+          value: function _invite(idUser) {
+            var idChannel = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+            var channelObjUrl = arguments.length > 2 ? arguments[2] : undefined;
+
+            var _this = this;
+
+            if (idChannel == '') {
+              _this._subscribedList.forEach(function (obj) {
+                if (obj.urlDataObj === channelObjUrl) {
+                  idChannel = obj.channelID;
+                }
+              });
+            }
+
+            var toInvite = {
+              token: _this._token,
+              channel: idChannel,
+              user: idUser
+            };
+
+            _this._slack.channels.invite(toInvite, function (err, data) {
+              if (err) {
+                console.error('[SlackProtostub] error', err);
+              } else {
+                console.log('[SlackProtostub] user invited with sucess', data);
+              }
+            });
+          }
+          /*****************************************************************************************************
+          * It deliver a message to a slack channel
+          * @param {Object} msg - Message Object
+          * @param {String} channelID - channelID to deliver message
+          *******************************************************************************************************/
+
+        }, {
+          key: "_deliver",
+          value: function _deliver(msg, channelID) {
+            var _this = this;
+
+            console.log('[SlackProtostub] Msg to Deliver: ', msg, ' on channel:', channelID);
+
+            if (channelID && msg.value) {
+              if (msg.hasOwnProperty('identity') && msg.identity.hasOwnProperty('userProfile') && msg.identity.userProfile.hasOwnProperty('name') && msg.identity.userProfile.name) {
+                var text = '' + msg.identity.userProfile.name + ': ' + msg.value.content;
+                var message = {
+                  as_user: true,
+                  token: _this._token,
+                  channel: channelID,
+                  text: text
+                };
+                console.log('[SlackProtostub] (PostMessage slack api) token(', _this._token, ')  channel(', channelID, ') text(', msg.value.content, ')'); // call Slack postMessage method to deliver msg on slack channel
+
+                _this._slack.chat.postMessage(message, function (err, data) {
+                  if (err) {
+                    if (err.message == 'not_in_channel') {
+                      console.error('[SlackProtostub] Channel exist, but user is not on channel', err);
+
+                      var channelToJoin = _this._channelsList.filter(function (value) {
+                        return value.id === channelID;
+                      })[0];
+
+                      var objToJoin = {
+                        token: _this._token,
+                        name: channelToJoin.name
+                      };
+
+                      _this._slack.channels.join(objToJoin);
+
+                      _this._deliver(msg, channelID);
+                    } else {
+                      console.error('[SlackProtostub] error', err);
+                    }
+                  } else {
+                    console.log('[SlackProtostub] PostMessage with Sucess', data);
+                  }
+                });
+              }
+            }
+          }
+          /*****************************************************************************************************
+          * It create a new slackChannel using channelName
+          * @param {String} channelName - name to be used to create a new channel
+          * @param {String} channelObjUrl - Dataobject URL of a channel to be used to associate this channel to this dataobject
+          *******************************************************************************************************/
+
+        }, {
+          key: "_createChannel",
+          value: function _createChannel(channelName, channelObjUrl) {
+            var _this = this;
+
+            return new Promise(function (resolve) {
+              var toCreate = {
+                token: _this._token,
+                name: channelName
+              };
+              console.log('[SlackProtostub] Creating a new channel toCreate:', toCreate, '  channelObjUrl:', channelObjUrl);
+
+              _this._slack.channels.create(toCreate, function (err, data) {
+                if (err) {
+                  console.error('[SlackProtostub] ', err);
+                } else {
+                  if (data.ok) {
+                    console.log('[SlackProtostub] Channel Created with Sucess ', data);
+                    console.log('[SlackProtostub] Associate a new channel ID', data.channel.id, 'to urlDataObj', channelObjUrl);
+                    var count = 0;
+                    var key = 0; //Associate a channel to comm dataObject
+
+                    _this._subscribedList.forEach(function (obj) {
+                      if (obj.urlDataObj === channelObjUrl) {
+                        key = count;
+                      }
+
+                      count++;
+                    });
+
+                    _this._subscribedList[key].channelID = data.channel.id;
+                    console.log('[SlackProtostub] subscribed list', _this._subscribedList);
+                    resolve(true);
+                  }
+                }
+              });
+            });
+          }
+        }, {
+          key: "_sendHTTPRequest",
+          value: function _sendHTTPRequest(method, url) {
+            return new Promise(function (resolve, reject) {
+              var xhr = new XMLHttpRequest();
+
+              if ('withCredentials' in xhr) {
+                xhr.open(method, url, true);
+              } else if (typeof XDomainRequest !== 'undefined') {
+                // Otherwise, check if XDomainRequest.
+                // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+                xhr = new XDomainRequest();
+                xhr.open(method, url);
+              } else {
+                // Otherwise, CORS is not supported by the browser.
+                xhr = null;
+              }
+
+              if (xhr) {
+                xhr.onreadystatechange = function () {
+                  if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                      var info = JSON.parse(xhr.responseText);
+                      resolve(info);
+                    } else if (xhr.status === 400) {
+                      reject('There was an error processing the token');
+                    } else {
+                      reject('something else other than 200 was returned');
+                    }
+                  }
+                };
+
+                xhr.send();
+              } else {
+                reject('CORS not supported');
+              }
+            });
+          }
+          /*****************************************************************************************************
+          * It Updates the state of ProtoStub
+          * @param {String} value - status of protostub to be updated
+          * @param {String} reason - reason of this update, optional
+          *******************************************************************************************************/
+
+        }, {
+          key: "_sendStatus",
+          value: function _sendStatus(value, reason) {
+            var _this = this;
+
+            console.log('[SlackProtostub status changed] to ', value);
+            _this._state = value;
+            var msg = {
+              type: 'update',
+              from: _this._myUrl,
+              to: _this._myUrl + '/status',
+              body: {
+                value: value
+              }
+            };
+
+            if (reason) {
+              msg.body.desc = reason;
+            }
+
+            _this._bus.postMessage(msg);
+          }
+        }, {
+          key: "descriptor",
+          get: function get() {
+            return protostubDescriptor;
+          }
+        }, {
+          key: "name",
+          get: function get() {
+            return protostubDescriptor.name;
+          }
+        }, {
+          key: "config",
+          get: function get() {
+            return this._config;
+          }
+        }, {
+          key: "runtimeSession",
+          get: function get() {
+            return this._runtimeSessionURL;
+          }
+        }]);
+
+        return SlackProtoStub;
+      }());
+      /*export default function activate(url, bus, config, factory) {
+        return {
+          name: 'SlackProtoStub',
+          instance: new SlackProtoStub(url, bus, config, factory)
+        };
+      }*/
+
+    }
+  };
+});

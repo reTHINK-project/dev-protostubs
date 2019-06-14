@@ -1,1 +1,152 @@
-!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define("activate",[],t):"object"==typeof exports?exports.activate=t():e.activate=t()}("undefined"!=typeof self?self:this,function(){return function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}return n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{configurable:!1,enumerable:!0,get:r})},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,"a",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p="",n(n.s=0)}([function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0}),n.d(t,"default",function(){return l});var r=n(1);function o(e){return(o="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function i(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}function a(e,t){return!t||"object"!==o(t)&&"function"!=typeof t?function(e){if(void 0===e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return e}(e):t}function s(e,t,n){return(s="undefined"!=typeof Reflect&&Reflect.get?Reflect.get:function(e,t,n){var r=function(e,t){for(;!Object.prototype.hasOwnProperty.call(e,t)&&null!==(e=c(e)););return e}(e,t);if(r){var o=Object.getOwnPropertyDescriptor(r,t);return o.get?o.get.call(n):o.value}})(e,t,n||e)}function c(e){return(c=Object.setPrototypeOf?Object.getPrototypeOf:function(e){return e.__proto__||Object.getPrototypeOf(e)})(e)}function u(e,t){return(u=Object.setPrototypeOf||function(e,t){return e.__proto__=t,e})(e,t)}var f={name:"StravaProtoStub",language:"javascript",description:"Protostub of Strava",signature:"",configuration:{sessions_query_interval:3e5,domain:"localhost"},constraints:{browser:!0},interworking:!0,objectName:"fitness.strava.com"},l=function(e){function t(){return function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,t),a(this,c(t).call(this))}return function(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function");e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,writable:!0,configurable:!0}}),t&&u(e,t)}(t,r["a"]),function(e,t,n){t&&i(e.prototype,t),n&&i(e,n)}(t,[{key:"_start",value:function(e,n,r,o){s(c(t.prototype),"init",this).call(this,e,n,r,o,"StravaProtoStub")}},{key:"querySessions",value:function(e,t){var n=this;e!==t&&(e=t);var r=Math.round(new Date(e).getTime()/1e3),o=Math.round((new Date).getTime()/1e3),i=new XMLHttpRequest;i.withCredentials=!0,i.addEventListener("readystatechange",function(){if(4===this.readyState){var r=JSON.parse(this.responseText);if(console.log("[StravaProtoStub] response: ",r),401===this.status)return n.refreshAccessToken(e,t,"strava.com");r.map(function(e){var t=e.type,r=e.distance,o=e.start_date,i=e.elapsed_time,a=new Date(o),s=a.toISOString(),c=a.getTime()+1e3*i,u=new Date(c).toISOString();switch(t){case"Run":console.log("[StravaProtoStub] walking/running distance (m): ",r),n.writeToReporter("walk",r,s,u);break;case"Ride":console.log("[StravaProtoStub] biking distance (m): ",r),n.writeToReporter("bike",r,s,u)}})}}),i.open("GET","https://www.strava.com/api/v3/athlete/activities?after=".concat(r,"&before=").concat(o)),i.setRequestHeader("Authorization","Bearer ".concat(this._accessToken)),i.setRequestHeader("cache-control","no-cache"),i.send(null)}},{key:"descriptor",get:function(){return f}},{key:"name",get:function(){return f.name}}]),t}()},function(e,t,n){"use strict";function r(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}n.d(t,"a",function(){return o});var o=function(){function e(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e)}return function(e,t,n){t&&r(e.prototype,t),n&&r(e,n)}(e,[{key:"_init",value:function(e,t,n,r,o){if(this._stubName=o,!e)throw new Error("The runtimeProtoStubURL is a needed parameter");if(!t)throw new Error("The bus is a needed parameter");if(!n)throw new Error("The config is a needed parameter");if(!n.runtimeURL)throw new Error("The config.runtimeURL is a needed parameter");var i=this;console.log("[".concat(this._stubName,"] PROTOSTUB"),i),this._id=0,this._runtimeProtoStubURL=e,this._bus=t,this._config=n,this._domain=n.domain,this._runtimeSessionURL=n.runtimeURL,this._syncher=r.createSyncher(e,t,n),this._userActivityVertxHypertyURL="hyperty://sharing-cities-dsm/user-activity",i._sendStatus("created"),i.started=!1;t.addListener("*",function(e){if(console.log("".concat(i._stubName," new Message  : "),e),e.identity&&(i._identity=e.identity),"delete"!==e.type){if(e.hasOwnProperty("body")&&e.body.hasOwnProperty("identity")){if(e.body.identity.accessToken){i._accessToken=e.body.identity.accessToken;var t={id:e.id,type:"response",from:e.to,to:e.from,body:{code:200,runtimeURL:i._runtimeSessionURL}};console.log(i),i._bus.postMessage(t)}i.hypertyJSUrl=e.from}var n="hyperty-catalogue://catalogue."+i._domain+"/.well-known/dataschema/Context",r={id:"1276020076",values:[{type:"user_walking_context",name:"walking distance in meters",unit:"meter",value:0,startTime:"2018-03-25T12:00:00Z",endTime:"2018-03-25T12:10:00Z"},{type:"user_biking_context",name:"biking distance in meters",unit:"meter",value:0,startTime:"2018-03-26T12:00:00Z",endTime:"2018-03-26T12:10:00Z"}]};i._accessToken&&!i.started&&"create"===e.type&&i._resumeReporters("user_activity",e.to).then(function(t){console.log("[".concat(i._stubName,"._resumeReporters (result)  "),t),0==t?i._setUpReporter(i._identity,n,r,["context"],"user_activity",e.to).then(function(e){e&&i.startWorking(e,!1)}):i.startWorking(t,!0)}).catch(function(e){})}else i.stopWorking()})}},{key:"startWorking",value:function(e,t){var n=this;function r(){var t=e.metadata.created,r=e.metadata.lastModified;r||(r=t),n.querySessions(t,r),n.startInterval=setInterval(function(){(r=e.metadata.lastModified)||(r=t),n.querySessions(t,r)},n.config.sessions_query_interval),n.started=!0}n.reporter=e,n.hasStartedQuerying=!1,t&&(n.hasStartedQuerying=!0,r()),e.onSubscription(function(e){e.accept(),console.log("".concat(n._stubName," new subs"),e),n.hasStartedQuerying||(n.hasStartedQuerying=!0,r())}),console.log("".concat(n._stubName," User activity DO created: "),e),e.inviteObservers([n._userActivityVertxHypertyURL])}},{key:"stopWorking",value:function(){clearInterval(this.startInterval),this.started=!1}},{key:"_setUpReporter",value:function(e,t,n,r,o,i){var a=this;return new Promise(function(s,c){var u={resources:r,expires:3600,reporter:i,domain_registration:!1,domain_routing:!1};a._syncher.create(t,[],n,!0,!1,o,e,u).then(function(e){console.log("".concat(a._stubName," REPORTER RETURNED"),e),s(e)}).catch(function(e){console.error("".concat(a._stubName," err"),e),s(null)})})}},{key:"_resumeReporters",value:function(e,t){var n=this;return new Promise(function(r,o){n._syncher.resumeReporters({store:!0,reporter:t}).then(function(o){console.log("[".concat(n._stubName," Reporters resumed"),o);var i=Object.keys(o);if(!(i.length>0))return r(!1);i.forEach(function(i){if(console.log("[".concat(n._stubName),i),console.log("[".concat(n._stubName),o[i]),t==o[i].metadata.reporter&&o[i].metadata.name==e)return r(o[i])})}).catch(function(e){console.info("[".concat(n._stubName," Reporters:"),e)})})}},{key:"querySessions",value:function(e,t){}},{key:"writeToReporter",value:function(e,t,n,r){var o,i;"bike"===e?(o="user_biking_context",i="biking distance in meters"):"walk"===e&&(o="user_walking_context",i="walking distance in meters"),this.reporter.data.values=[{type:o,name:i,unit:"meter",value:t,startTime:n,endTime:r}]}},{key:"refreshAccessToken",value:function(e,t,n){var r=this;return new Promise(function(o,i){var a={type:"execute",from:r._runtimeProtoStubURL,to:r._runtimeSessionURL+"/idm",body:{method:"refreshAccessToken",params:{resources:["user_activity_context"],domain:n}}};r._bus.postMessage(a,function(n){console.log("[".concat(r._stubName,".refreshAccessToken] reply "),n),n.body.hasOwnProperty("value")?(r._accessToken=n.body.value,r.querySessions(e,t),o()):i(n.body)})})}},{key:"_sendStatus",value:function(e,t){console.log("[[".concat(this._stubName,"] status changed] to "),e),this._state=e;var n={type:"update",from:this._runtimeProtoStubURL,to:this._runtimeProtoStubURL+"/status",body:{value:e}};t&&(n.body.desc=t),this._bus.postMessage(n)}},{key:"descriptor",get:function(){return protostubDescriptor}},{key:"name",get:function(){return protostubDescriptor.name}},{key:"config",get:function(){return this._config}},{key:"runtimeSession",get:function(){return this._runtimeSessionURL}}]),e}()}]).default});
+"use strict";
+
+System.register(["../fitness/FitnessProtoStub.js"], function (_export, _context) {
+  "use strict";
+
+  var FitnessProtoStub, protostubDescriptor, StravaProtoStub;
+
+  function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+  function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+  function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+  function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+  function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+  function _get(target, property, receiver) { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(receiver); } return desc.value; }; } return _get(target, property, receiver || target); }
+
+  function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
+
+  function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+  function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+  function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+  return {
+    setters: [function (_fitnessFitnessProtoStubJs) {
+      FitnessProtoStub = _fitnessFitnessProtoStubJs.default;
+    }],
+    execute: function () {
+      protostubDescriptor = {
+        "name": "StravaProtoStub",
+        "language": "javascript",
+        "description": "Protostub of Strava",
+        "signature": "",
+        "configuration": {
+          "sessions_query_interval": 300000,
+          "domain": "localhost"
+        },
+        "constraints": {
+          "browser": true
+        },
+        "interworking": true,
+        "objectName": "fitness.strava.com"
+      };
+
+      _export("default", StravaProtoStub =
+      /*#__PURE__*/
+      function (_FitnessProtoStub) {
+        _inherits(StravaProtoStub, _FitnessProtoStub);
+
+        function StravaProtoStub() {
+          _classCallCheck(this, StravaProtoStub);
+
+          return _possibleConstructorReturn(this, _getPrototypeOf(StravaProtoStub).call(this));
+        }
+
+        _createClass(StravaProtoStub, [{
+          key: "_start",
+          value: function _start(runtimeProtoStubURL, bus, config, factory) {
+            _get(_getPrototypeOf(StravaProtoStub.prototype), "init", this).call(this, runtimeProtoStubURL, bus, config, factory, 'StravaProtoStub');
+          }
+        }, {
+          key: "querySessions",
+          value: function querySessions(startTime, lastModified) {
+            var _this = this;
+
+            if (startTime !== lastModified) {
+              startTime = lastModified;
+            }
+
+            var data = null;
+            var startTimeSeconds = Math.round(new Date(startTime).getTime() / 1000);
+            var endTimeSeconds = Math.round(new Date().getTime() / 1000);
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+            xhr.addEventListener("readystatechange", function () {
+              if (this.readyState === 4) {
+                var response = JSON.parse(this.responseText);
+                console.log("[StravaProtoStub] response: ", response);
+
+                if (this.status === 401) {
+                  return _this.refreshAccessToken(startTime, lastModified, 'strava.com');
+                }
+
+                response.map(function (activity) {
+                  // start, end
+                  var type = activity.type,
+                      distance = activity.distance,
+                      start_date = activity.start_date,
+                      elapsed_time = activity.elapsed_time;
+                  var startDate = new Date(start_date);
+                  var startISO = startDate.toISOString();
+                  var endMillis = startDate.getTime() + elapsed_time * 1000;
+                  var endISO = new Date(endMillis).toISOString();
+
+                  switch (type) {
+                    case "Run":
+                      // walking/running
+                      console.log("[StravaProtoStub] walking/running distance (m): ", distance);
+
+                      _this.writeToReporter('walk', distance, startISO, endISO);
+
+                      break;
+
+                    case "Ride":
+                      // biking
+                      console.log("[StravaProtoStub] biking distance (m): ", distance);
+
+                      _this.writeToReporter('bike', distance, startISO, endISO);
+
+                      break;
+
+                    default:
+                      break;
+                  }
+                });
+              }
+            });
+            xhr.open("GET", "https://www.strava.com/api/v3/athlete/activities?after=".concat(startTimeSeconds, "&before=").concat(endTimeSeconds));
+            xhr.setRequestHeader("Authorization", "Bearer ".concat(this._accessToken));
+            xhr.setRequestHeader("cache-control", "no-cache");
+            xhr.send(data);
+          }
+        }, {
+          key: "descriptor",
+          get: function get() {
+            return protostubDescriptor;
+          }
+        }, {
+          key: "name",
+          get: function get() {
+            return protostubDescriptor.name;
+          }
+        }]);
+
+        return StravaProtoStub;
+      }(FitnessProtoStub));
+      /*export default function activate(url, bus, config, factory) {
+        return {
+          name: "StravaProtoStub",
+          instance: new StravaProtoStub(url, bus, config, factory)
+        };
+      }*/
+
+    }
+  };
+});
