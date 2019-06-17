@@ -20,6 +20,9 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 **/
+
+
+
 import EventBus from 'vertx3-eventbus-client';
 import URI from 'urijs';
 //import { WalletReporter } from 'service-framework/dist/WalletManager';

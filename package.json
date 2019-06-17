@@ -22,7 +22,8 @@
     "@babel/polyfill": "^7.4.4",
     "all": "0.0.0",
     "atob": "^2.1.0",
-    "btoa": "^1.2.1"
+    "btoa": "^1.2.1",
+    "vertx3-eventbus-client": "^3.7.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

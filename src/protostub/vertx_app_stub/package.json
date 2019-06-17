@@ -1,0 +1,35 @@
+{
+  "name": "vertx_app_stub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sharing-cities-dsm.ps.js",
+  "scripts": {
+    "build": "browserify src/sharing-cities-dsm.ps.js --standalone activate -o dist/sharing-cities-dsm.ps.js",
+    "prepare": " browserify src/sharing-cities-dsm.ps.js --standalone activate -o dist/sharing-cities-dsm.ps.js ",
+    "start": "npm run build",
+    "init-setup": "npm install browserify babelify && npm install",
+    "develop": "webpack --mode development --watch",
+    "build2": "webpack --mode production"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^16.2.3",
+    "urijs": "^1.19.1",
+    "vertx3-eventbus-client": "^3.7.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/plugin-transform-modules-systemjs": "^7.4.4",
+    "babelify": "^10.0.0",
+    "webpack": "^4.34.0",
+    "webpack-cli": "^3.3.4"
+  }
+}

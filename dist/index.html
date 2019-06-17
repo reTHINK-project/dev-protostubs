@@ -7,6 +7,16 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-register.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/transform.js"></script>
+    <script type="systemjs-importmap">
+        {
+          "imports": {
+            "sockjs-client": "node_modules/sockjs-client/dist/sockjs.js",
+            "vertx3-eventbus-client": "./node_modules/vertx3-eventbus-client/vertx-eventbus.js",
+            "urijs": "./node_modules/urijs/src/URI.js"
+          }
+        }
+    </script>    
 
     <script>
 
@@ -15,11 +25,12 @@
             var url3 = "https://localhost:8080/.well-known/protocolstub/default.ps.js";
             var url4 = "https://localhost:8080/.well-known/protocolstub/fitness.google.com.ps.js";
             var url2 = "https://localhost:8080/.well-known/idp-proxy/edpdistribuicao.pt.idp.js";
+            var url5 = "https://localhost:8080/.well-known/protocolstub/sharing-cities-dsm.ps.js";
 
             var _this = this;
 
             var instance;
-            System.import(url1).then(mod1 => {
+            System.import(url5).then(mod1 => {
 //                console.log('import1 result ' + mod1);
                 instance = new mod1.default();
                 console.log('import1 name ' + instance.name);
