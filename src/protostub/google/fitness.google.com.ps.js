@@ -48,7 +48,7 @@ export default class GoogleProtoStub extends FitnessProtoStub {
   }
 
   _start(runtimeProtoStubURL, bus, config, factory) {
-    super.init(runtimeProtoStubURL, bus, config, factory, 'GoogleProtoStub');
+    super._init(runtimeProtoStubURL, bus, config, factory, 'GoogleProtoStub');
   }
   get descriptor() {
     return protostubDescriptor;

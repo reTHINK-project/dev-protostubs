@@ -1,0 +1,15 @@
+{
+  "name": "SlackProtoStub",
+  "version": "0.5.1",
+  "description": "Slack Protostub",
+  "main": "SlackProtoStub.ps.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "slack": "9.0.1"
+  },
+  "devDependencies": {}
+}

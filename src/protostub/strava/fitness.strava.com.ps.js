@@ -47,8 +47,9 @@ export default class StravaProtoStub extends FitnessProtoStub {
 
 
   _start(runtimeProtoStubURL, bus, config, factory) {
-    super.init(runtimeProtoStubURL, bus, config, factory, 'StravaProtoStub');
+    super._init(runtimeProtoStubURL, bus, config, factory, 'StravaProtoStub');
   }
+
   get descriptor() {
     return protostubDescriptor;
   }

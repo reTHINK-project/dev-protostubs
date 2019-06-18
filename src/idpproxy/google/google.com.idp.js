@@ -1,7 +1,7 @@
-import { IdpProxy } from "../../libs/idpproxy/OIDC.js"
+import { IdpProxy } from "../OIDC.js"
 import { googleInfo, googleAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authorisationEndpoint, accessTokenInput, mapping, refreshAccessTokenEndpoint, revokeAccessTokenEndpoint } from "./GoogleInfo.js"
 import { convertUserProfile } from "./GoogleConverter.js"
-import AbstractIdpProxyProtoStub from "../../libs/idpproxy/AbstractIdpProxyStub.js"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 const idpProxyDescriptor = {
   "name": "GoogleIdpProxyProtoStub",

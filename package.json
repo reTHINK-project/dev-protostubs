@@ -4,6 +4,12 @@
   "description": "Repository where all the protostubs and idp-proxyies are",
   "main": "webpack.config.js",
   "scripts": {
+    "develop": "run-p develop:*",
+    "develop:idp": "webpack --config webpack.idp.config.js --mode development --watch",
+    "develop:ps": "webpack --config webpack.ps.config.js --mode development --watch",
+    "build": "run-p build:*",
+    "build:idp": "webpack --config webpack.idp.config.js --mode production --watch",
+    "build:ps": "webpack --config webpack.ps.config.js --mode production --watch",
     "update:all": "node bin/update",
     "install:all": "node bin/preinstall",
     "test": "karma start"
@@ -22,7 +28,9 @@
     "@babel/polyfill": "^7.4.4",
     "all": "0.0.0",
     "atob": "^2.1.0",
+    "babel-loader": "^8.0.6",
     "btoa": "^1.2.1",
+    "npm-run-all": "^4.1.5",
     "vertx3-eventbus-client": "^3.7.1"
   },
   "devDependencies": {
@@ -52,6 +60,7 @@
     "mocha": "3.4.2",
     "sinon": "^2.4.1",
     "sinon-chai": "^2.14.0",
-    "webpack": "^3.11.0"
+    "webpack": "^4.34.0",
+    "webpack-cli": "^3.3.4"
   }
 }

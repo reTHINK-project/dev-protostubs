@@ -1,6 +1,6 @@
 import { IdpProxy } from "./IdpProxy.js"
 import { edpInfo, authEndpoint, accessTokenInput, accessTokenErrorMsg, revokeEndpoint } from "./EdpInfo.js"
-import AbstractIdpProxyProtoStub from "../../libs/idpproxy/AbstractIdpProxyStub.js"
+import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 const idpProxyDescriptor = {
   "name": "EdpIdpProxyProtoStub",
