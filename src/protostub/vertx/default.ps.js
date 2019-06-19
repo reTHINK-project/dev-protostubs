@@ -27,7 +27,8 @@ const protostubDescriptor = {
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws",
+//    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws",
+    "url": "wss://msg-node.rethink-dev.alticelabs.com/ws",
     "maxBuffer": 1000000
   },
   "constraints": {
