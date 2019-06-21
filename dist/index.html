@@ -19,6 +19,7 @@
             var url6 = "https://localhost/.well-known/protocolstub/fitness.strava.com.ps.js";
             var url7 = "https://localhost/.well-known/protocolstub/slack.slack.com.ps.js";
             var url8 = "https://localhost/.well-known/idp-proxy/strava.com.idp.js";
+            var url9 = "https://localhost/.well-known/protocolstub/default.ps.json";
 
 
             var _this = this;
@@ -36,78 +37,13 @@
                 })
             });
 
-            var load = function (url, clonedSystem) {
+            System.import(url9).then(mod => {
+                mod.json().then((desc)=>{
+                    console.log('import json result ' + desc);
 
-//                return new Promise(function (resolve, reject) {
-                 return clonedSystem.import(url).then(function (result) {
+                })
 
-                        var mod = clonedSystem.get(url);
-                        //sharedSystem.set(url, mod);
-
-                        /*
-
-                        return sharedSystem.import(url).then(function (myLib) {*/
-/*                        instance = new mod.default();
-                        resolve(instance);*/
-                        return result;
-
-                        //                        });
-
-
-                    }).catch(function (reason) {
-                        console.error(reason);
-                        reject();
-                    });
-
-//                });
-
-            }
-
-            /*            var system1 = new System.constructor();
-                        var system2 = new System.constructor();
-                        var system3 = new System.constructor();
-                        var sharedSystem = new System.constructor();
-            
-                        load(url2, system2).then(function (module) {
-                            console.log('import2 result ' + module.name);
-            
-                        }).catch(function (reason) {
-                            load(url2, system2).then(function (module) {
-                                console.log('import2 result ' + module.name);
-            
-                            }).catch(function(reason) {
-                                console.error('import2 error ' + reason);
-            
-                            })
-                        });
-            
-            
-                        load(url1, system1).then(function (module) {
-                            console.log('import1 result ' + module.name);
-            
-            
-                            load(url3, system3).then(function (module) {
-                                console.log('import3 result ' + module.name);
-            
-                            })
-            
-                        }).catch(function (reason) {
-                            load(url2, system2).then(function (module) {
-                                console.log('import3 result ' + module.name);
-            
-                            }).catch(function(reason) {
-                                console.error('import2 error ' + reason);
-            
-                            })
-                        });
-
-            Promise.all([System.import(url1), System.import(url2)]).then(values => {
-                const [mod1, mod2] = values
-                var instance1 = new mod1.default();
-                var instance2 = new mod2.default();
-
-                console.log(instance1, instance2)
-            });*/
+            });
 
 
         };

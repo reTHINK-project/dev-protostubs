@@ -21,22 +21,6 @@
 * limitations under the License.
 **/
 
-const protostubDescriptor = {
-  "name": "VertxProtoStub",
-  "language": "javascript",
-  "description": "Protostub to exchange messages with vertx",
-  "signature": "",
-  "configuration": {
-//    "url": "wss://msg-node.rethink-dev.alticelabs.com/localhost/ws",
-    "url": "wss://msg-node.rethink-dev.alticelabs.com/ws",
-    "maxBuffer": 1000000
-  },
-  "constraints": {
-    "browser": true
-  },
-  "interworking": false,
-  "objectName": "default"
-};
 
 
 class VertxProtoStub {
@@ -106,14 +90,6 @@ class VertxProtoStub {
     _this._sendStatus('created');
     _this._open(() => {});
 
-  }
-
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
   }
 
   /**

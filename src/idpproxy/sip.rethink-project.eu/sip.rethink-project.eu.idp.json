@@ -1,0 +1,14 @@
+ {
+	"name": "IMSIWProxyStub",
+	  "language": "javascript",
+	"description": "IDPProxy rethink-project.eu description",
+	"signature": "",
+	"configuration": {},
+	"constraints": {
+	  "browser": true,
+	  "onlyAccessToken": true
+	},
+	"interworking": true,
+	"objectName": "rethink-project.eu"
+  }
+  

@@ -15,7 +15,7 @@ module.exports = {
     "slack.slack.com.ps": './src/protostub/slack/slack.slack.com.ps.js',
     "fitness.strava.com.ps": './src/protostub/strava/fitness.strava.com.ps.js',
     "default.ps": './src/protostub/vertx/default.ps.js',
-    "sharing-cities-dsm.ps": './src/protostub/vertx_app_stub/src/sharing-cities-dsm.ps.js'
+    "sharing-cities-dsm.ps": './src/protostub/vertx_app_stub/sharing-cities-dsm.ps.js'
   },
   output: {
     path: path.join(__dirname,  'dist/.well-known/protocolstub' ),

@@ -7,18 +7,6 @@ import {
 } from "./Slack.js"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
-const idpProxyDescriptor = {
-  "name": "SlackProxyStub",
-  "language": "javascript",
-  "description": "IDPProxy slack description",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "slack.com"
-}
 
 /**
 * Slack Identity Provider Proxy Protocol Stub
@@ -49,13 +37,6 @@ class SlackProxyStub extends AbstractIdpProxyProtoStub {
     config.accessTokenEndpoint = accessTokenEndpoint;
     config.accessTokenInput = accessTokenInput;
     super._init(runtimeProtoStubURL, bus, config);
-  }
-  get descriptor() {
-    return idpProxyDescriptor;
-  }
-
-  get name() {
-    return idpProxyDescriptor.name;
   }
 }
 

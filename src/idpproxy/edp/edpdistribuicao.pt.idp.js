@@ -2,19 +2,6 @@ import { IdpProxy } from "./IdpProxy.js"
 import { edpInfo, authEndpoint, accessTokenInput, accessTokenErrorMsg, revokeEndpoint } from "./EdpInfo.js"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
-const idpProxyDescriptor = {
-  "name": "EdpIdpProxyProtoStub",
-  "language": "javascript",
-  "description": "IDPProxy for EDP Distribuição IDP",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "edpdistribuicao.pt"
-}
-
 /**
 * Google Identity Provider Proxy Protocol Stub
 */
@@ -44,13 +31,10 @@ class EdpIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.accessTokenErrorMsg = accessTokenErrorMsg;
     super._init(runtimeProtoStubURL, bus, config);
   }
-  get descriptor() {
-    return idpProxyDescriptor;
-  }
 
-  get name() {
+/*  get name() {
     return idpProxyDescriptor.name;
-  }
+  }*/
 }
 
 // export default IdpProxyProtoStub;

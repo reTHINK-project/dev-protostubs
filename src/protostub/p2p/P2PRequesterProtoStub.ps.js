@@ -27,44 +27,6 @@ import ConnectionController from './ConnectionController.js';
 
 // TODO: integrate the status eventing
 
-const protostubDescriptor = {
-  "name": "P2PRequesterStub",
-  "language": "javascript",
-  "description": "P2P Requester Protostub ",
-  "signature": "",
-  "configuration": {
-    "iceServers": [
-         {
-           "urls": "turn:numb.viagenie.ca",
-           "credential": "zJcH3erd9cUv5Zh",
-           "username": "luis-t-duarte@telecom.pt"
-         },
-         {
-                "urls": [
-                  "stun:stun.voiparound.com",
-                  "stun:stun.voipbuster.com",
-                  "stun:stun.voipstunt.com",
-                  "stun:stun.voxgratia.org",
-                  "stun:stun.ekiga.net",
-                  "stun:stun.schlund.de",
-                  "stun:stun.iptel.org",
-                  "stun:stun.l.google.com:19302",
-                  "stun:stun1.l.google.com:19302",
-                  "stun:stun.ideasip.com",
-                  "stun:stun4.l.google.com:19302",
-                  "stun:stun2.l.google.com:19302",
-                  "stun:stun3.l.google.com:19302"
-                ]
-        }
-      ],
-      "iceTransportPolicy": "all"
-  },
-  "constraints": {
-    "windowSandbox": true
-  },
-  "interworking": false,
-  "objectName": "P2PRequesterProtoStub"
-}
 
 /**
  * ProtoStub Interface
@@ -142,14 +104,6 @@ export default class P2PRequesterStub {
     if ( this._configuration.p2pHandler )
       this.connect( this._configuration.p2pHandler );
   }
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
-  }
-
 
   _onExecute(method, params) {
     let _this = this;

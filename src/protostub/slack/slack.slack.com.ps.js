@@ -5,18 +5,6 @@ import slack from 'slack';
 //import MessageBodyIdentity from 'service-framework/dist/IdentityFactory';
 //import {ContextReporter} from 'service-framework/dist/ContextManager';
 
-const protostubDescriptor = {
-  "name": "SlackProtoStub",
-  "language": "javascript",
-  "description": "Protostub to exchange messages with slack",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "slack.slack.com"
-}
 
 export default class SlackProtoStub {
 
@@ -89,13 +77,6 @@ export default class SlackProtoStub {
 
   }
 
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
-  }
 
   get config() { return this._config; }
 

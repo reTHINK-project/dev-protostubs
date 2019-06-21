@@ -24,21 +24,7 @@
 //import { Syncher } from "service-framework/dist/Syncher";
 import FitnessProtoStub from "../fitness/FitnessProtoStub.js";
 
-const protostubDescriptor = {
-  "name": "GoogleProtoStub",
-  "language": "javascript",
-  "description": "Protostub of Google",
-  "signature": "",
-  "configuration": {
-    "sessions_query_interval": 300000,
-    "domain": "localhost"
-  },
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "fitness.google.com"
-}
+
 
 export default class GoogleProtoStub extends FitnessProtoStub {
 
@@ -49,13 +35,6 @@ export default class GoogleProtoStub extends FitnessProtoStub {
 
   _start(runtimeProtoStubURL, bus, config, factory) {
     super._init(runtimeProtoStubURL, bus, config, factory, 'GoogleProtoStub');
-  }
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
   }
 
   querySessions(startTime, lastModified) {

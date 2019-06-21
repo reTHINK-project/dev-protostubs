@@ -1,18 +1,5 @@
 let domain = 'rethink-project.eu'
 
-const idpProxyDescriptor = {
-	"name": "IMSIWProxyStub",
-	  "language": "javascript",
-	"description": "IDPProxy rethink-project.eu description",
-	"signature": "",
-	"configuration": {},
-	"constraints": {
-	  "browser": true,
-	  "onlyAccessToken": true
-	},
-	"interworking": true,
-	"objectName": "rethink-project.eu"
-  }
   
 /**
  * Identity Provider Proxy Protocol Stub
@@ -43,13 +30,6 @@ class IMSIWProxyStub {
 		this._sendStatus('created')
 	}
 
-	get descriptor() {
-		return idpProxyDescriptor;
-	  }
-	  
-	  get name(){
-		return idpProxyDescriptor.name;
-	  }
 	  
 	_sendStatus(value, reason) {
 		let _this = this

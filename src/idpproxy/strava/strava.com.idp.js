@@ -4,19 +4,6 @@ import { APIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, authori
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
 
-const idpProxyDescriptor = {
-  "name": "StravaIdpProxyProtoStub",
-   "language": "javascript",
-  "description": "IDPProxy for Strava athletes plataform",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "strava.com"
-}
-
 /**
 * Strava Identity Provider Proxy Protocol Stub
 */
@@ -50,13 +37,6 @@ class StravaIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     super._init(runtimeProtoStubURL, bus, config);
   }
 
-  get descriptor() {
-    return idpProxyDescriptor;
-  }
-  
-  get name(){
-    return idpProxyDescriptor.name;
-  }
   }
 
 // export default IdpProxyProtoStub;

@@ -23,21 +23,6 @@
  **/
 import FitnessProtoStub from "../fitness/FitnessProtoStub.js";
 
-const protostubDescriptor = {
-  "name": "StravaProtoStub",
-  "language": "javascript",
-  "description": "Protostub of Strava",
-  "signature": "",
-  "configuration": {
-    "sessions_query_interval": 300000,
-    "domain": "localhost"
-  },
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "fitness.strava.com"
-}
 
 
 export default class StravaProtoStub extends FitnessProtoStub {
@@ -48,14 +33,6 @@ export default class StravaProtoStub extends FitnessProtoStub {
 
   _start(runtimeProtoStubURL, bus, config, factory) {
     super._init(runtimeProtoStubURL, bus, config, factory, 'StravaProtoStub');
-  }
-
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
   }
 
   querySessions(startTime, lastModified) {

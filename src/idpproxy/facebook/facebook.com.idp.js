@@ -4,18 +4,6 @@ import { convertUserProfile, userInfoEndpoint,
    authorisationEndpoint, validateAssertionEndpoint } from "./Facebook.js"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
-const idpProxyDescriptor = {
-  "name": "FacebookIdpProxyProtoStub",
-  "language": "javascript",
-  "description": "IDPProxy for Facebook idp",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": false,
-  "objectName": "facebook.com"
-}
 
 /**
 * Google Identity Provider Proxy Protocol Stub
@@ -45,13 +33,6 @@ class FacebookIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     config.authorisationEndpoint = authorisationEndpoint;
     config.validateAssertionEndpoint = validateAssertionEndpoint;
     super._init(runtimeProtoStubURL, bus, config);
-  }
-  get descriptor() {
-    return idpProxyDescriptor;
-  }
-  
-  get name(){
-    return idpProxyDescriptor.name;
   }
 }
 

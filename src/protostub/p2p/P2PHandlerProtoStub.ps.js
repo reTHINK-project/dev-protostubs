@@ -27,44 +27,6 @@
 //import {Syncher} from 'service-framework/dist/Syncher';
 import ConnectionController from './ConnectionController.js';
 
-const protostubDescriptor = {
-  "name": "P2PHandlerStub",
-  "language": "javascript",
-  "description": "P2P Handler Protostub ",
-  "signature": "",
-  "configuration": {
-    "iceServers": [
-         {
-           "urls": "turn:numb.viagenie.ca",
-           "credential": "zJcH3erd9cUv5Zh",
-           "username": "luis-t-duarte@telecom.pt"
-         },
-         {
-                "urls": [
-                  "stun:stun.voiparound.com",
-                  "stun:stun.voipbuster.com",
-                  "stun:stun.voipstunt.com",
-                  "stun:stun.voxgratia.org",
-                  "stun:stun.ekiga.net",
-                  "stun:stun.schlund.de",
-                  "stun:stun.iptel.org",
-                  "stun:stun.l.google.com:19302",
-                  "stun:stun1.l.google.com:19302",
-                  "stun:stun.ideasip.com",
-                  "stun:stun4.l.google.com:19302",
-                  "stun:stun2.l.google.com:19302",
-                  "stun:stun3.l.google.com:19302"
-                ]
-        }
-      ],
-      "iceTransportPolicy": "all"
-  },
-  "constraints": {
-    "windowSandbox": true
-  },
-  "interworking": false,
-  "objectName": "P2PHandlerProtoStub"
-}
 /**
  * ProtoStub Interface
  */
@@ -145,13 +107,6 @@ export default class P2PHandlerStub {
     });
   }
 
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
-  }
 
   /**
    * To disconnect the protocol stub.

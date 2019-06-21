@@ -26,26 +26,6 @@
 import ConnectionController from './ConnectionController.js'
 //import MessageBodyIdentity from 'service-framework/dist/IdentityFactory'
 
-const protostubDescriptor = {
-  "name": "IMSIWProtoStub",
-  "language": "javascript",
-  "description": "Description of IMSIWProtoStub",
-  "objectName": "sip.rethink-project.eu",
-  "configuration": {
-    "credential_server": "https://ims.rethink-project.eu/credential",
-    "domain": "hysmart.rethink.ptinovacao.pt"
-  },
-  "messageSchemas": "",
-  "dataObjects": [
-    "hyperty-catalogue://catalogue.hysmart.rethink.ptinovacao.pt/.well-known/dataschema/Connection"
-  ],
-  "signature": "",
-  "accessControlPolicy": "somePolicy",
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true
-}
 
 class Connection {
     constructor(dataObjectUrl) {
@@ -120,13 +100,6 @@ export default class IMSIWProtoStub {
         })
   this._sendStatus('created');
 	}
-  get descriptor() {
-    return protostubDescriptor;
-  }
-
-  get name(){
-    return protostubDescriptor.name;
-  }
 
   _sendStatus(value, reason) {
     let _this = this;

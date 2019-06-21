@@ -3,20 +3,6 @@ import { googleInfo, googleAPIInfo, accessTokenAuthorisationEndpoint, accessToke
 import { convertUserProfile } from "./GoogleConverter.js"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
-const idpProxyDescriptor = {
-  "name": "GoogleIdpProxyProtoStub",
-  "language": "javascript",
-  "description": "IDPProxy for google idp",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "google.com"
-}
-
-
 /**
 * Google Identity Provider Proxy Protocol Stub
 */
@@ -52,13 +38,6 @@ export default class GoogleIdpProxyProtoStub extends AbstractIdpProxyProtoStub {
     super._init(runtimeProtoStubURL, bus, config);
   }
 
-  get descriptor() {
-  return idpProxyDescriptor;
-}
-
-get name(){
-  return idpProxyDescriptor.name;
-}
 }
 
 // export default IdpProxyProtoStub;

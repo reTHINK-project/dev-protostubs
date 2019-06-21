@@ -3,18 +3,6 @@ import { mobieAPIInfo, accessTokenAuthorisationEndpoint, accessTokenEndpoint, au
 //import { convertUserProfile } from "./GoogleConverter"
 import AbstractIdpProxyProtoStub from "../AbstractIdpProxyStub.js"
 
-const idpProxyDescriptor = {
-  "name": "MobieIdpProxyProtoStub",
-  "language": "javascript",
-  "description": "IDPProxy for Mobi.e plataform",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "interworking": true,
-  "objectName": "mobie.pt"
-}
 
 /**
 * Mobie Identity Provider Proxy Protocol Stub
@@ -48,13 +36,6 @@ _start(runtimeProtoStubURL, bus, config) {
 //    config.convertUserProfile = convertUserProfile;
 //    config.mapping = mapping;
     super._init(runtimeProtoStubURL, bus, config);
-  }
-  get descriptor() {
-    return idpProxyDescriptor;
-  }
-  
-  get name(){
-    return idpProxyDescriptor.name;
   }
   }
 
