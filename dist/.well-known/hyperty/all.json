@@ -1,0 +1,19 @@
+{
+    "hyperties" : [
+        "HelloWorldReporter",
+        "Wallet",
+        "UserActivityObserver",
+        "LocationObserver",
+        "LocationReporter",
+        "ElearningPlayer",
+        "Connector",
+        "DTWebRTC",
+        "GroupChatManager",
+        "UserKwhObserver",
+        "UserAvailabilityObserver",
+        "UserAvailabilityReporter",
+        "DeviceManager",
+        "SimpleChat",
+        "HelloWorldObserver"
+      ]
+}

@@ -1,0 +1,12 @@
+ {
+  "name": "MobieIdpProxyProtoStub",
+  "language": "javascript",
+  "description": "IDPProxy for Mobi.e plataform",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "mobie.pt"
+}

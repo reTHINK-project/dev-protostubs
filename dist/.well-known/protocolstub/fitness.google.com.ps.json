@@ -1,0 +1,15 @@
+ {
+  "name": "GoogleProtoStub",
+  "language": "javascript",
+  "description": "Protostub of Google",
+  "signature": "",
+  "configuration": {
+    "sessions_query_interval": 300000,
+    "domain": "localhost"
+  },
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "fitness.google.com"
+}

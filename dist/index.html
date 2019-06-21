@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <title>SystemJS example with moment.js</title>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/system.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/3.1.6/extras/named-register.min.js"></script>
+
+    <script>
+
+        window.onload = function () {
+            var url1 = "https://localhost/.well-known/idp-proxy/google.com.idp.js";
+            var url3 = "https://localhost/.well-known/protocolstub/default.ps.js";
+            var url4 = "https://localhost/.well-known/protocolstub/fitness.google.com.ps.js";
+            var url2 = "https://localhost/.well-known/idp-proxy/edpdistribuicao.pt.idp.js";
+            var url5 = "https://localhost/.well-known/protocolstub/sharing-cities-dsm.ps.js";
+            var url6 = "https://localhost/.well-known/protocolstub/fitness.strava.com.ps.js";
+            var url7 = "https://localhost/.well-known/protocolstub/slack.slack.com.ps.js";
+            var url8 = "https://localhost/.well-known/idp-proxy/strava.com.idp.js";
+            var url9 = "https://localhost/.well-known/protocolstub/default.ps.json";
+
+
+            var _this = this;
+
+            var instance;
+            System.import(url7).then(mod1 => {
+//                console.log('import1 result ' + mod1);
+                instance = new mod1.default();
+                console.log('import1 name ' + instance.name);
+
+                System.import(url6).then(mod2 => {
+
+                    instance = new mod2.default();
+                    console.log('import2 result ' + instance.name);
+                })
+            });
+
+            System.import(url9).then(mod => {
+                mod.json().then((desc)=>{
+                    console.log('import json result ' + desc);
+
+                })
+
+            });
+
+
+        };
+
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
