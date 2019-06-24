@@ -1,0 +1,12 @@
+{
+  "name": "hello-world",
+  "version": "0.5.1",
+  "description": "Two simple Hello World Hyperties are provided:",
+  "main": "HelloWorldObserver.hy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

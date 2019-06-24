@@ -1,0 +1,17 @@
+{
+  "name": "location",
+  "version": "0.5.1",
+  "description": "The User Location is comprised by two Hyperties.",
+  "main": "LocationReporter.hy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "bootstrap": "^4.2.1"
+  },
+  "devDependencies": {
+    "urijs": "^1.19.0"
+  }
+}

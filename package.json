@@ -7,6 +7,9 @@
     "develop": "run-p develop:* && cp -r src/*/*.json dist/*/*json",
     "develop:idp": "webpack --config webpack.idp.config.js --mode development --watch ",
     "develop:ps": "webpack --config webpack.ps.config.js --mode development --watch ",
+    "develop:hy": "webpack --config webpack.hy.config.js --mode development --watch ",
+    "develop:server": "webpack --config webpack.server.config.js --mode development --watch ",
+    "develop:hy.json": "cp -r src/hyperty/*/*.hy.json dist/.well-known/hyperty/",
     "develop:idp.json": "cp -r src/idpproxy/*/*.idp.json dist/.well-known/idp-proxy/",
     "develop:ps.json": "cp -r src/protostub/*/*.ps.json dist/.well-known/protocolstub/",
     "build": "run-p build:*",
@@ -33,7 +36,7 @@
     "babel-loader": "^8.0.6",
     "btoa": "^1.2.1",
     "npm-run-all": "^4.1.5",
-    "vertx3-eventbus-client": "^3.7.1"
+    "runtime-core": "github:rethink-project/dev-runtime-core#develop"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.4",

@@ -1,0 +1,15 @@
+{
+  "name": "connector",
+  "version": "0.5.1",
+  "description": "Hyperty to make webrtc call",
+  "main": "Connector.hy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "vitor-t-silva@telecom.pt",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "webrtc-adapter": "^4.2.2"
+  }
+}
