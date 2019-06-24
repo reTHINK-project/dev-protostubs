@@ -1,4 +1,5 @@
 {
+  "name": "UserKwhObserver",
   "configuration": {},
   "hypertyType": [
     "availability_context"

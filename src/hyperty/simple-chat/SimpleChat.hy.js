@@ -32,10 +32,6 @@
 /*import {divideURL} from '../utils/utils';
 import Search from '../utils/Search';*/
 
-// Internals
-/*import { communicationObject, CommunicationStatus, communicationChildren } from './communication';
-import { UserInfo } from './UserInfo';*/
-import { hypertyDescriptor } from './HypertyDescriptor';
 
 /**
 * Hyperty Group Chat Manager API (HypertyChat)
@@ -46,14 +42,14 @@ class SimpleChat {
 
   constructor() {}
 
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
-
+  
   get runtimeHypertyURL(){
     return this._myUrl;
   }

@@ -1,4 +1,5 @@
 {
+  "name": "LocationObserver",
   "configuration": { },
   "hypertyType": [
     "heart_rate",

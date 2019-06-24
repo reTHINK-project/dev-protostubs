@@ -1,24 +1,19 @@
 //import { Syncher } from 'service-framework/dist/Syncher';
 import URI from 'urijs';
 import position from './position';
-import { hypertyDescriptor } from './ReporterHypertyDescriptor';
-//import Search from '../utils/Search';
-//import IdentityManager from 'service-framework/dist/IdentityManager';
-//import { Discovery } from 'service-framework/dist/Discovery';
-//import { callbackify } from 'util';
 
 class LocationHypertyFactory {
 
 
   constructor() {}
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
-
+  
   get runtimeHypertyURL(){
     return this.hypertyURL;
   }

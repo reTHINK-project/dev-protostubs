@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "ElearningPlayer",
   "configuration": {    "domain_registration": false,
     "domain_routing": false

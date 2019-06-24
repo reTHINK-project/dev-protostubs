@@ -25,19 +25,22 @@ function hypertyLoaded(result, runtimeLoader = null) {
     runtimeLoader.requireProtostub('sharing-cities-dsm');
     // load stub according to OS
     // if (isIOS) {
-    runtimeLoader.requireProtostub('fitness.strava.com').then(()=>{
-      domain = 'strava.com';
+    runtimeLoader.requireProtostub('fitness.google.com').then(()=>{
+      domain = 'google.com';
+      let runtimeDomain = window.rethink.domain;
       // }
       // else {
       //   runtimeLoader.requireProtostub('fitness.google.com');
       // idp = 'google.com';
       // }
+
+      let walletUrl = "https://"+runtimeDomain+'/.well-known/hyperty/Wallet.hy.js';
   
   
       runtimeLoader.authorise(domain, 'user_activity_context').then(function (value) {
-        const walletName = 'Wallet';
+/*        const walletName = 'Wallet';
         import('../../dev-hyperty/dist/' + walletName + '.hy')
-          .then((hypertyModule) => {
+          .then((hypertyModule) => {*/
             runtimeLoader.requireHyperty(walletUrl).then(function (res) {
               // your code
               console.log('loaded wallet ', res);
@@ -109,7 +112,7 @@ function hypertyLoaded(result, runtimeLoader = null) {
   
       });
   
-    });
+  //  });
 
 
 

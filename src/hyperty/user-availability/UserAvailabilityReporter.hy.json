@@ -1,4 +1,5 @@
 {
+  "name": "UserAvailabilityReporter",
   "configuration": { "expires": 3600 },
   "hypertyType": [
     "availability_context"

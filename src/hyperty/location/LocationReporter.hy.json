@@ -1,4 +1,5 @@
 {
+  "name": "LocationReporter",
   "configuration": {
     "domain_registration": false,
     "domain_routing": false

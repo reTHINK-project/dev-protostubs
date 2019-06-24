@@ -1,4 +1,5 @@
 {
+  "name": "UserActivityObserver",
   "configuration": {
     "discoveryProviders": ["fitness.google.com"],
     "domain_registration": false,

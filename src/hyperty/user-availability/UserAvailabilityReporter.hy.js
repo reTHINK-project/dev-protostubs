@@ -32,7 +32,6 @@
 //import {divideURL} from '../utils/utils.js';
 //import URI from 'urijs';
 
-import { hypertyDescriptor } from './ReporterHypertyDescriptor';
 import availability from './availability.js';
 
 /**
@@ -45,15 +44,14 @@ class UserAvailabilityReporter {
   constructor() {
 
   }
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
-
+  
   get runtimeHypertyURL(){
     return this.hypertyURL;
   }

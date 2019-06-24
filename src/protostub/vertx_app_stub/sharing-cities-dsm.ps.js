@@ -27,7 +27,7 @@ import EventBus from 'vertx3-eventbus-client';
 import URI from 'urijs';
 //import { WalletReporter } from 'service-framework/dist/WalletManager';
 //import { Syncher } from 'service-framework/dist/Syncher';
-const protostubDescriptor = {
+/*const protostubDescriptor = {
   "name": "VertxAppProtoStub",
   "language": "javascript",
   "description": "Protostub to exchange messages with vertx",
@@ -54,7 +54,7 @@ const protostubDescriptor = {
   },
   "interworking": true,
   "objectName": "sharing-cities-dsm"
-}
+}*/
 
 export default class VertxAppProtoStub {
   /**
@@ -187,13 +187,13 @@ export default class VertxAppProtoStub {
     });
 
   }
-  get descriptor() {
+/*  get descriptor() {
     return protostubDescriptor;
   }
 
   get name(){
     return protostubDescriptor.name;
-  }
+  }*/
 
   _open(config) {
 

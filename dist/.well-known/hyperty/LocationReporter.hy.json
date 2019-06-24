@@ -1,9 +1,8 @@
-export let hypertyDescriptor = {
-  "name": "Wallet",
+{
+  "name": "LocationReporter",
   "configuration": {
     "domain_registration": false,
-    "domain_routing": false,
-    "retries": 10
+    "domain_routing": false
   },
   "hypertyType": [
     "location-context"
@@ -14,6 +13,6 @@ export let hypertyDescriptor = {
   "language": "javascript",
   "signature": "",
   "dataObjects": [
-    "https://catalogue.%domain%/.well-known/dataschema/WalletData"
+    "https://catalogue.%domain%/.well-known/dataschema/Context"
   ]
 }

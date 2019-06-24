@@ -317,7 +317,7 @@ function getSectionTpl() {
 
   return new Promise((resolve, reject) => {
 
-    Handlebars.getTemplate('group-chat-manager/chat-section').then(function(html) {
+    Handlebars.getTemplate('examples/group-chat-manager/chat-section').then(function(html) {
 
       $('.chat-section').append(html);
 
@@ -461,7 +461,7 @@ function chatManagerReady(chatController, isOwner) {
   //let file = $( "input:file" )
   let textArea = messageForm.find('.materialize-textarea');
 
-  Handlebars.getTemplate('group-chat-manager/chat-header').then(function(template) {
+  Handlebars.getTemplate('examples/group-chat-manager/chat-header').then(function(template) {
     let name = chatController.dataObject.metadata.name;
     let resource = chatController.dataObject.url;
 

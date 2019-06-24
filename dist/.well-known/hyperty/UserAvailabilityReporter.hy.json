@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "UserAvailabilityReporter",
   "configuration": { "expires": 3600 },
   "hypertyType": [

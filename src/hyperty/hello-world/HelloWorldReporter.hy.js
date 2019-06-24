@@ -4,22 +4,7 @@
 //import {divideURL} from '../utils/utils';
 import hello from './hello';
 
-const hypertyDescriptor = {
-  "name": "HelloWorldReporter",
-  "language": "javascript",
-  "signature": "",
-  "configuration": {
-  },
-  "constraints": {
-    "browser": true
-  },
-  "hypertyType": [
-    "hello"
-  ],
-  "dataObjects": [
-    "https://%domain%/.well-known/dataschema/HelloWorldDataSchema"
-  ]
-};
+
 /**
 * Hyperty Connector;
 * @author Paulo Chainho [paulo-g-chainho@telecom.pt]
@@ -35,6 +20,16 @@ class HelloWorldReporter {
   constructor() {
 
  }
+
+ set name(name) {
+  this._name = name;
+}
+
+get name() {
+  return this._name;
+}
+
+
 
   _start(hypertyURL, bus, configuration, factory) {
 
@@ -79,14 +74,6 @@ class HelloWorldReporter {
 
     });*/
 
-  }
-
-  get descriptor() {
-    return hypertyDescriptor;
-  }
-
-  get name() {
-    return hypertyDescriptor.name;
   }
 
   get runtimeHypertyURL(){

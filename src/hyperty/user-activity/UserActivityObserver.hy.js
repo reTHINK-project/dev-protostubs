@@ -1,10 +1,5 @@
 //import { Syncher } from 'service-framework/dist/Syncher';
 import URI from 'urijs';
-import { hypertyDescriptor } from './HypertyDescriptor';
-//import Search from '../utils/Search';
-//import IdentityManager from 'service-framework/dist/IdentityManager';
-//import { Discovery } from 'service-framework/dist/Discovery';
-//import { ContextObserver } from 'service-framework/dist/ContextManager';
 
 
 /**
@@ -16,14 +11,14 @@ class UserActivityObserver {
 
   constructor() { }
 
+  set name(name) {
+    this._name = name;
+  }
+  
   get name() {
-    return hypertyDescriptor.name;
+    return this._name;
   }
-
-  get descriptor() {
-    return hypertyDescriptor;
-  }
-
+  
   get runtimeHypertyURL() {
     return this.hypertyURL;
   }

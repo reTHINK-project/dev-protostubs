@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "UserAvailabilityObserver",
   "configuration": {},
   "hypertyType": [

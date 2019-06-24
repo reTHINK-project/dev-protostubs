@@ -33,9 +33,6 @@
 import Search from '../utils/Search';*/
 
 // Internals
-/*import { communicationObject, CommunicationStatus, communicationChildren } from './communication';
-import { UserInfo } from './UserInfo';*/
-import { hypertyDescriptor } from './HypertyDescriptor';
 
 /**
 * Hyperty Group Chat Manager API (HypertyChat)
@@ -46,16 +43,14 @@ class GroupChatManager {
 
   constructor() {}
 
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-    console.log('[Connector.getDescriptor]');
-//    debugger;
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
-
+  
   get runtimeHypertyURL(){
     return this.hypertyURL;
   }

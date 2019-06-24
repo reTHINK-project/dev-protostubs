@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "Connector",
   "configuration": {
       "iceServers": [
@@ -34,4 +34,4 @@ export let hypertyDescriptor = {
   "dataObjects": [
     "https://catalogue.%domain%/.well-known/dataschema/Connection"
   ]
-};
+}

@@ -1,11 +1,9 @@
-export let hypertyDescriptor = {
-  "name": "LocationReporter",
-  "configuration": {
-    "domain_registration": false,
-    "domain_routing": false
-  },
+{
+  "name": "LocationObserver",
+  "configuration": { },
   "hypertyType": [
-    "location-context"
+    "heart_rate",
+    "sleep"
   ],
   "constraints": {
     "browser": true

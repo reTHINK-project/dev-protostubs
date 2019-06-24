@@ -21,47 +21,47 @@ export function hypertyDeployed(hyperty, runtimeLoader = null) {
   switch (hyperty.name) {
 
     case 'UserAvailabilityObserver':
-      template = 'user-availability/userAvailabilityObserver';
-      script = 'user-availability/UserAvailabilityObserverDemo.js';
+      template = 'examples/user-availability/userAvailabilityObserver';
+      script = 'examples/user-availability/UserAvailabilityObserverDemo.js';
       break;
 
       case 'DeviceManager':
-        template = 'device-manager/DeviceManager';
-        script = 'device-manager/DeviceManagerDemo.js';
+        template = 'examples/device-manager/DeviceManager';
+        script = 'examples/device-manager/DeviceManagerDemo.js';
         break;
 
     case 'Wallet':
-      template = 'wallet/Wallet';
-      script = 'wallet/wallet.js';
+      template = 'examples/wallet/Wallet';
+      script = 'examples/wallet/wallet.js';
       break;
 
     case 'UserActivityObserver':
-      template = 'user-activity/UserActivityObserver';
-      script = 'user-activity/UserActivityObserver.js';
+      template = 'examples/user-activity/UserActivityObserver';
+      script = 'examples/user-activity/UserActivityObserver.js';
       break;
 
     case 'UserKwhObserver':
-      template = 'observer-kwh/UserKwhObserver';
-      script = 'observer-kwh/UserKwhObserver.js';
+      template = 'examples/observer-kwh/UserKwhObserver';
+      script = 'examples/observer-kwh/UserKwhObserver.js';
       break;
 
     case 'UserAvailabilityReporter':
-      template = 'user-availability/userAvailabilityReporter';
-      script = 'user-availability/UserAvailabilityReporterDemo.js';
+      template = 'examples/user-availability/userAvailabilityReporter';
+      script = 'examples/user-availability/UserAvailabilityReporterDemo.js';
       break;
     case 'ElearningPlayer':
-      template = 'learning/learningPlayer';
-      script = 'learning/learningPlayerDemo.js';
+      template = 'examples/learning/learningPlayer';
+      script = 'examples/learning/learningPlayerDemo.js';
       break;
 
     case 'Connector':
-      template = 'connector/Connector';
-      script = 'connector/demo.js';
+      template = 'examples/connector/Connector';
+      script = 'examples/connector/demo.js';
       break;
 
     case 'GroupChatManager':
-      template = 'group-chat-manager/ChatManager';
-      script = 'group-chat-manager/demo.js';
+      template = 'examples/group-chat-manager/ChatManager';
+      script = 'examples/group-chat-manager/demo.js';
       break;
 
     case 'HelloWorldObserver':
@@ -70,37 +70,37 @@ export function hypertyDeployed(hyperty, runtimeLoader = null) {
       break;
 
     case 'HelloWorldReporter':
-      template = 'hello-world/helloWorld';
-      script = 'hello-world/helloReporter.js';
+      template = 'examples/hello-world/helloWorld';
+      script = 'examples/hello-world/helloReporter.js';
       break;
 
     case 'NodeHypertyObserver':
-      template = 'node-hyperty/NodeHyperty';
-      script = 'node-hyperty/NodeHypertyObserver.js';
+      template = 'examples/node-hyperty/NodeHyperty';
+      script = 'examples/node-hyperty/NodeHypertyObserver.js';
       break;
 
     case 'LocationReporter':
-      template = 'location/location';
-      script = 'location/location.js';
+      template = 'examples/location/location';
+      script = 'examples/location/location.js';
       break;
 
     case 'LocationObserver':
-      template = 'location/locationObserver';
-      script = 'location/locationObserver.js';
+      template = 'examples/location/locationObserver';
+      script = 'examples/location/locationObserver.js';
       break;
 
     case 'BraceletSensorObserver':
-      template = 'bracelet/bracelet';
-      script = 'bracelet/BraceletSensorObserver.js';
+      template = 'examples/bracelet/bracelet';
+      script = 'examples/bracelet/BraceletSensorObserver.js';
       break;
 
     case 'DTWebRTC':
-      template = 'dtwebrtc/dtwebrtc';
-      script = 'dtwebrtc/dtwebrtc.js';
+      template = 'examples/dtwebrtc/dtwebrtc';
+      script = 'examples/dtwebrtc/dtwebrtc.js';
       break;
     case 'SimpleChat':
-      template = 'simple-chat/SimpleChat';
-      script = 'simple-chat/demo.js';
+      template = 'examples/simple-chat/SimpleChat';
+      script = 'examples/simple-chat/demo.js';
       break;
   }
 

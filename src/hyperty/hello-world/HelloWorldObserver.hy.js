@@ -3,23 +3,7 @@
 // import {Syncher} from 'service-framework/dist/Syncher';
 // import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter';
-//import helloWorldObserverDescriptor from './HelloWorldObserverDesc'
 
-const hypertyDescriptor = {
-  "name": "HelloWorldObserver",
-  "language": "javascript",
-  "signature": "",
-  "configuration": {},
-  "constraints": {
-    "browser": true
-  },
-  "hypertyType": [
-    "hello"
-  ],
-  "dataObjects": [
-    "https://%domain%/.well-known/dataschema/HelloWorldDataSchema"
-  ]
-};
 
 /**
 * Hello World Observer
@@ -75,14 +59,14 @@ class HelloWorldObserver extends EventEmitter {
     _this._runtimeHypertyURL = hypertyURL;
   }
 
-
-  get descriptor() {
-    return hypertyDescriptor;
+  set name(name) {
+    this._name = name;
   }
 
-  get name(){
-    return hypertyDescriptor.name;
+  get name() {
+    return this._name;
   }
+
 
   get runtimeHypertyURL(){
     return this._runtimeHypertyURL;

@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "UserActivityObserver",
   "configuration": {
     "discoveryProviders": ["fitness.google.com"],

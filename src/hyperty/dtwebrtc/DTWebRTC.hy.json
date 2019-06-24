@@ -1,4 +1,5 @@
 {
+  "name": "DTWebRTC",
   "configuration": {
     "iceServers": [
          {

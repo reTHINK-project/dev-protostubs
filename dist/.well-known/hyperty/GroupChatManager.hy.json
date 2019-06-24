@@ -1,13 +1,9 @@
-export let hypertyDescriptor = {
-  "name": "SimpleChat",
+{
+  "name": "GroupChatManager",
   "language": "javascript",
   "signature": "",
   "configuration": { 
-    "domain_registration": false,
-    "backup": true,
-    "heartBeat": 60,
-    "offline": "hyperty://sharing-cities-dsm/offline-sub-mgr"
-     },
+    },
   "hypertyType": [
     "chat"
   ],

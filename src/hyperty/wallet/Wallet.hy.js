@@ -1,9 +1,4 @@
-//import { Syncher } from 'service-framework/dist/Syncher';
 import URI from 'urijs';
-import { hypertyDescriptor } from './HypertyDescriptor';
-//import Search from '../utils/Search';
-//import IdentityManager from 'service-framework/dist/IdentityManager';
-//import { Discovery } from 'service-framework/dist/Discovery';
 
 class Wallet {
 
@@ -26,12 +21,12 @@ class Wallet {
     this.messageRetries = config.retries;
   }
 
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
 
   get runtimeHypertyURL(){

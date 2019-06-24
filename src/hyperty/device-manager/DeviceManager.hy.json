@@ -1,4 +1,5 @@
 {
+  "name": "DeviceManager",
   "configuration": {},
   "hypertyType": [
     "device"

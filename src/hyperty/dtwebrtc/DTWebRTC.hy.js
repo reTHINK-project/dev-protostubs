@@ -3,7 +3,6 @@
 //import {Syncher} from 'service-framework/dist/Syncher';
 //import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
-import { hypertyDescriptor } from './HypertyDescriptor';
 //import Search from '../utils/Search';
 //import iceconfig from './stunTurnserverConfig';
 //import IdentityManager from 'service-framework/dist/IdentityManager';
@@ -16,14 +15,14 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     super(); // call event emitter constructor to be able to receive things
 
   }
-  get name(){
-    return hypertyDescriptor.name;
+  set name(name) {
+    this._name = name;
   }
-
-  get descriptor() {
-    return hypertyDescriptor;
+  
+  get name() {
+    return this._name;
   }
-
+  
   get runtimeHypertyURL(){
     return this.myUrl;
   }

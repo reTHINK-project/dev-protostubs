@@ -1,22 +1,17 @@
-//import { Syncher } from 'service-framework/dist/Syncher';
-//import {Discovery} from 'service-framework/dist/Discovery';
-//import URI from 'urijs'
-//import {ContextObserver} from 'service-framework/dist/ContextManager';
-import { hypertyDescriptor } from './ObserverHypertyDescriptor';
 
 
 class LocationObserverHyperty {
 
     constructor() {}
 
-  get name(){
-    return hypertyDescriptor.name;
-  }
-
-  get descriptor() {
-    return hypertyDescriptor;
-  }
-
+    set name(name) {
+      this._name = name;
+    }
+    
+    get name() {
+      return this._name;
+    }
+    
   get runtimeHypertyURL(){
     return this.hypertyURL;
   }

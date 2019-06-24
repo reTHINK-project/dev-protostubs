@@ -1,4 +1,4 @@
-export let hypertyDescriptor = {
+{
   "name": "DTWebRTC",
   "configuration": {
     "iceServers": [

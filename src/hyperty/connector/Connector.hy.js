@@ -32,7 +32,7 @@
 //import {divideURL} from '../utils/utils';
 
 // Internals
-import { hypertyDescriptor } from './ConnectorDescriptor';
+//import { hypertyDescriptor } from './ConnectorDescriptor';
 import ConnectionController from './ConnectionController';
 import { connection } from './connection';
 //import AbstractHyperty from '../AbstractHyperty';
@@ -48,15 +48,20 @@ class Connector  {
   * Create a new Hyperty Connector
   */
   constructor() {
+//    this.name = 'Connector';
+  }
+
+  set name (val){
+    this._name = val;
   }
 
   get name(){
-    return hypertyDescriptor.name;
+    return this._name;
   }
 
-  get descriptor() {
+/*  get descriptor() {
     return hypertyDescriptor;
-  }
+  }*/
 
   get runtimeHypertyURL(){
     return this._hypertyURL;
