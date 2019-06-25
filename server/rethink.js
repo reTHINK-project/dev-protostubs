@@ -15,21 +15,14 @@ import browserConfig from '../config.json';
 import { hypertyDeployed, hypertyFail } from './main';
 //import $ from 'jquery';
 //jQuery.noConflict();
+let config = JSON.parse(document.getElementById('config').innerHTML);
 
 
 window.KJUR = {};
 
-console.info('reTHINK config:', browserConfig);
-//let rethink = browserConfig.ENVIRONMENT === 'core' || browserConfig.ENVIRONMENT === 'all' ? rethinkCore : rethinkBrowser;
+console.info('reTHINK domain:', config);
 
-let domain = browserConfig.DOMAIN;
-let config = {
-  development: browserConfig.DEVELOPMENT,
-  runtimeURL: browserConfig.RUNTIME_URL,
-  domain: browserConfig.DOMAIN,
-  indexURL: browserConfig.INDEX_URL,
-  sandboxURL: browserConfig.SANDBOX_URL
-};
+let domain = config.domain;
 
 let runtimeLoader;
 let loading = false;

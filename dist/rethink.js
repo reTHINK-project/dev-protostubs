@@ -362,21 +362,14 @@ var _config_json__WEBPACK_IMPORTED_MODULE_1___namespace = /*#__PURE__*/__webpack
 
 //import $ from 'jquery';
 //jQuery.noConflict();
+let config = JSON.parse(document.getElementById('config').innerHTML);
 
 
 window.KJUR = {};
 
-console.info('reTHINK config:', _config_json__WEBPACK_IMPORTED_MODULE_1__);
-//let rethink = browserConfig.ENVIRONMENT === 'core' || browserConfig.ENVIRONMENT === 'all' ? rethinkCore : rethinkBrowser;
+console.info('reTHINK domain:', config);
 
-let domain = _config_json__WEBPACK_IMPORTED_MODULE_1__.DOMAIN;
-let config = {
-  development: _config_json__WEBPACK_IMPORTED_MODULE_1__.DEVELOPMENT,
-  runtimeURL: _config_json__WEBPACK_IMPORTED_MODULE_1__.RUNTIME_URL,
-  domain: _config_json__WEBPACK_IMPORTED_MODULE_1__.DOMAIN,
-  indexURL: _config_json__WEBPACK_IMPORTED_MODULE_1__.INDEX_URL,
-  sandboxURL: _config_json__WEBPACK_IMPORTED_MODULE_1__.SANDBOX_URL
-};
+let domain = config.domain;
 
 let runtimeLoader;
 let loading = false;
