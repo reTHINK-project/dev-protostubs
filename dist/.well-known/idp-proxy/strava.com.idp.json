@@ -1,0 +1,12 @@
+ {
+  "name": "StravaIdpProxyProtoStub",
+   "language": "javascript",
+  "description": "IDPProxy for Strava athletes plataform",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "strava.com"
+}

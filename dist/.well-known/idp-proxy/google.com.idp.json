@@ -1,0 +1,13 @@
+{
+  "name": "GoogleIdpProxyProtoStub",
+  "language": "javascript",
+  "description": "IDPProxy for google idp",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "google.com"
+}
+

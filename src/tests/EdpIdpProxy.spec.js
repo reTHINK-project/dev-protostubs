@@ -7,7 +7,7 @@ import $ from 'jquery';
 //import { generateGUID } from '../src/utils/utils';
 //import IdpProxy from '../GoogleIdpProxyStub.idp';
 import {login} from '../idpproxy/Login';
-import EdpIdpProxyProtoStub from '../idpproxy/edp/EdpIdpProxyStub.idp';
+import EdpIdpProxyProtoStub from '../idpproxy/edp/edpdistribuicao.pt.idp';
 
 
 chai.config.truncateThreshold = 0;
@@ -61,7 +61,7 @@ let bus = {
       this._listener(msg);
     } else if (this._replyCallback) this._replyCallback(msg);
   }
-};
+}
 
 let idpProxy = new EdpIdpProxyProtoStub(idpProxyUrl, bus, {});
 

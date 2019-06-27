@@ -1,0 +1,12 @@
+ {
+  "name": "SlackProtoStub",
+  "language": "javascript",
+  "description": "Protostub to exchange messages with slack",
+  "signature": "",
+  "configuration": {},
+  "constraints": {
+    "browser": true
+  },
+  "interworking": true,
+  "objectName": "slack.slack.com"
+}

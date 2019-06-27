@@ -1,0 +1,28 @@
+ {
+  "name": "VertxAppProtoStub",
+  "language": "javascript",
+  "description": "Protostub to exchange messages with vertx",
+  "signature": "",
+  "configuration": {
+    "url": "https://vertx-runtime.rethink-dev.alticelabs.com/eventbus",
+    "vertxbus_ping_interval": 10000,
+    "host": "sharing-cities-dsm",
+    "streams": [
+    ],
+    "publicWallets" : {
+        "identity": {
+          "userProfile": {
+            "guid": "user-guid://public-wallets",
+            "userURL": "user://public-wallets"
+          }
+        }
+      },
+    "timeoutValue": 500,
+    "version": 0.8
+  },
+  "constraints": {
+        "browser": true
+  },
+  "interworking": true,
+  "objectName": "sharing-cities-dsm"
+}

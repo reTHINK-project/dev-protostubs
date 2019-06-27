@@ -1,0 +1,14 @@
+{
+  "name": "dtwebrtc",
+  "version": "0.5.1",
+  "description": "",
+  "main": "DTWebRTC.hy.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "webrtc-adapter-test": "^0.2.10"
+  }
+}
