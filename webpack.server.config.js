@@ -16,9 +16,9 @@ module.exports = {
 //    libraryTarget: 'system'
   },
   devtool: process.env.MODE === 'dev' ? 'inline-eval-cheap-source-map' : false,
- /* module: {
+  module: {
     rules: [
-      { parser: { system: false } }
+      { parser: { system: false } },
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -27,5 +27,5 @@ module.exports = {
         ]
       }
     ]
-}*/
+}
 };

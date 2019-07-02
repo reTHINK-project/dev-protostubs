@@ -16,6 +16,7 @@
     "build:idp": "webpack --config webpack.idp.config.js --mode production --watch",
     "build:ps": "webpack --config webpack.ps.config.js --mode production --watch",
     "build:hy": "webpack --config webpack.hy.config.js --mode production --watch",
+    "build:server": "webpack --config webpack.server.config.js --mode production --watch",
     "update:all": "node bin/update",
     "install:all": "node bin/preinstall",
     "test": "karma start"
