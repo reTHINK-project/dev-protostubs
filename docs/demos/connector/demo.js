@@ -11,7 +11,7 @@ let runtime_domain = 'rethink.alticelabs.com';
 let hyperty_domain = 'rethink.alticelabs.com';
 let demoTemplate = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/Connector';
 let demoJs = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/demo.js';
-import rethink from 'runtime-core/dist/rethink';
+//import rethink from 'runtime-core/dist/rethink';
 
 let config = {
   domain: hyperty_domain
@@ -32,7 +32,7 @@ $(window).on( "load", function() {
 function loadRuntime() {
   var start = new Date().getTime();
   //Rethink runtime is included in index.html
-  rethink.install(config).then((runtime) => {
+  rethink.rethink.install(config).then((runtime) => {
     RUNTIME = runtime
     loadHyperty()
   }).catch((reason) => {
