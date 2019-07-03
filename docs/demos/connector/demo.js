@@ -6,16 +6,17 @@
 //import {getTemplate, serialize} from './utils';
 
 let RUNTIME;
-const hypertyURI = (hyperty_domain, hyperty) => `hyperty-catalogue://catalogue.${hyperty_domain}/.well-known/hyperty/${hyperty}`;
-let runtime_domain = 'hybroker.rethink.ptinovacao.pt';
-let hyperty_domain = 'hybroker.rethink.ptinovacao.pt';
-let demoTemplate = 'https://rawgit.com/reTHINK-project/dev-hyperty/master/examples/connector/Connector';
-let demoJs = 'https://rawgit.com/reTHINK-project/dev-hyperty/master/examples/connector/demo.js';
+const hypertyURI = (hyperty_domain, hyperty) => `https://${hyperty_domain}/.well-known/hyperty/${hyperty}.hy.js`;
+let runtime_domain = 'rethink.alticelabs.com';
+let hyperty_domain = 'rethink.alticelabs.com';
+let demoTemplate = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/Connector';
+let demoJs = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/demo.js';
+import rethink from 'runtime-core/dist/rethink';
 
 let config = {
-  domain: hyperty_domain,
-  development: false,
-  runtimeURL: `hyperty-catalogue://catalogue.${runtime_domain}/.well-known/runtime/Runtime`
+  domain: hyperty_domain
+//  development: false,
+//  runtimeURL: `hyperty-catalogue://catalogue.${runtime_domain}/.well-known/runtime/Runtime`
 };
 
 $(window).on( "load", function() {
@@ -31,7 +32,7 @@ $(window).on( "load", function() {
 function loadRuntime() {
   var start = new Date().getTime();
   //Rethink runtime is included in index.html
-  rethink.default.install(config).then((runtime) => {
+  rethink.install(config).then((runtime) => {
     RUNTIME = runtime
     loadHyperty()
   }).catch((reason) => {

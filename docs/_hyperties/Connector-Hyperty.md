@@ -11,7 +11,7 @@ thumb: redphone.png
 tagged: webrtc
 client: reTHINK Project
 demo: /demos/connector/
-catalogue: https://catalogue.hybroker.rethink.ptinovacao.pt/.well-known/hyperty/Connector
+catalogue: https://rethink.alticelabs.com/.well-known/hyperty/Connector.hy.js
 ---
 
 Connector Hyperty
