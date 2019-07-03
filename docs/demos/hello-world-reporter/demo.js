@@ -6,16 +6,14 @@
 let RUNTIME;
 let hypertyObserver = null;
 let hypertyReporter = null;
-const hypertyURI = (hyperty_domain, hyperty) => `hyperty-catalogue://catalogue.${hyperty_domain}/.well-known/hyperty/${hyperty}`;
-let runtime_domain = 'hybroker.rethink.ptinovacao.pt';
-let hyperty_domain = 'hybroker.rethink.ptinovacao.pt';
-let toHyperty;
 let firstContactRemote = true;
+let toHyperty;
+const hypertyURI = (hyperty_domain, hyperty) => `https://${hyperty_domain}/.well-known/hyperty/${hyperty}.hy.js`;
+let runtime_domain = 'rethink.alticelabs.com';
+let hyperty_domain = 'rethink.alticelabs.com';
 
 let config = {
-  domain: hyperty_domain,
-  development: false,
-  runtimeURL: `hyperty-catalogue://catalogue.${runtime_domain}/.well-known/runtime/Runtime`
+  domain: hyperty_domain
 };
 
 console.log('runtime config: ', config);
@@ -34,7 +32,7 @@ function loadRuntime()
 {
   var start = new Date().getTime();
   //Rethink runtime is included in index.html
-  rethink.default.install(config).then((runtime) => {
+  rethink.rethink.install(config).then((runtime) => {
       RUNTIME = runtime
       loadHypertyRep();
     });
@@ -83,7 +81,7 @@ function sayHelloToRemoteHyperty(event) {
 
   console.log(toHyperty);
 
-  hypertyReporter.instance.hello(toHyperty).then(function(helloObject) {
+  hypertyReporter.hello(toHyperty).then(function(helloObject) {
     $('.runtime-panel').append('<p><b>'
     +' Event: Hello sent to Remote Hyperty <br>'+
     '<hr style="border:1px solid;"/></b></p>');
@@ -123,6 +121,6 @@ function sayByeToHyperty(event) {
 
   let bye = $('.bye-panel');
   bye.addClass('hide');
-  hypertyReporter.instance.bye(msgToSend);
+  hypertyReporter.bye(msgToSend);
   $('.reporter-msg-panel').append('<p>'+msgToSend+'</p>');
 }

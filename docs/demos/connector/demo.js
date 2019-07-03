@@ -9,14 +9,11 @@ let RUNTIME;
 const hypertyURI = (hyperty_domain, hyperty) => `https://${hyperty_domain}/.well-known/hyperty/${hyperty}.hy.js`;
 let runtime_domain = 'rethink.alticelabs.com';
 let hyperty_domain = 'rethink.alticelabs.com';
-let demoTemplate = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/Connector';
-let demoJs = 'https://rawgit.com/reTHINK-project/dev-protostubs/master/dist/examples/connector/demo.js';
-//import rethink from 'runtime-core/dist/rethink';
+let demoTemplate = 'https://'+hyperty_domain+'/examples/connector/Connector';
+let demoJs = 'https://'+hyperty_domain+'/examples/connector/demo.js';
 
 let config = {
   domain: hyperty_domain
-//  development: false,
-//  runtimeURL: `hyperty-catalogue://catalogue.${runtime_domain}/.well-known/runtime/Runtime`
 };
 
 $(window).on( "load", function() {
@@ -76,7 +73,7 @@ function loadHyperty()
 function hypertyDeployed(result) {
   let hypertyObserver;
 
-  hypertyObserver = result.instance;
+  hypertyObserver = result;
 
   console.log('[HelloWorldDemo.hypertyDeployed] ',hypertyObserver);
 

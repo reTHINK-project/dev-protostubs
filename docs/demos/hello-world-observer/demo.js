@@ -6,14 +6,12 @@
 let RUNTIME;
 let hypertyObserver = null;
 let hypertyReporter = null;
-const hypertyURI = (hyperty_domain, hyperty) => `hyperty-catalogue://catalogue.${hyperty_domain}/.well-known/hyperty/${hyperty}`;
-let runtime_domain = 'hybroker.rethink.ptinovacao.pt';
-let hyperty_domain = 'hybroker.rethink.ptinovacao.pt';
+const hypertyURI = (hyperty_domain, hyperty) => `https://${hyperty_domain}/.well-known/hyperty/${hyperty}.hy.js`;
+let runtime_domain = 'rethink.alticelabs.com';
+let hyperty_domain = 'rethink.alticelabs.com';
 
 let config = {
-  domain: hyperty_domain,
-  development: false,
-  runtimeURL: `hyperty-catalogue://catalogue.${runtime_domain}/.well-known/runtime/Runtime`
+  domain: hyperty_domain
 };
 
 console.log('runtime config: ', config);
@@ -32,7 +30,7 @@ function loadRuntime()
 {
   var start = new Date().getTime();
   //Rethink runtime is included in index.html
-  rethink.default.install(config).then((runtime) => {
+  rethink.rethink.install(config).then((runtime) => {
       RUNTIME = runtime
       loadHypertyObs()
     });
@@ -59,7 +57,7 @@ function loadHypertyObs()
 function hypertyDeployed(result) {
   let hypertyObserver;
 
-  hypertyObserver = result.instance;
+  hypertyObserver = result;
 
   console.log('[HelloWorldDemo.hypertyDeployed] ',hypertyObserver);
 
@@ -70,7 +68,7 @@ function hypertyDeployed(result) {
 
     console.log('[HelloWorldDemo] Invitation received from:', JSON.stringify(identity));
 
-    $('.observer-msg-panel').append('<p>Invitation Received from:' + identity.userProfile.username + '</p>');
+    $('.observer-msg-panel').append('<p>Invitation Received from: ' + identity.userProfile.email + '</p>');
 
 
   });

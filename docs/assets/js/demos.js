@@ -15,7 +15,7 @@ function templateAreReady(name) {
    console.log('Get template: ', path, name);
 
    if (path.indexOf(name) != -1) {
-     path = path.replace(name + '/', 'https://rawgit.com/reTHINK-project/dev-hyperty/master/examples/' + name + '/');
+     path = path.replace(name + '/', 'https://rethink.alticelabs.com/examples/' + name + '/');
    } else {
      path = './' + path;
    }
