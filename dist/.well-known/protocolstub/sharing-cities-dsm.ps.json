@@ -4,7 +4,7 @@
   "description": "Protostub to exchange messages with vertx",
   "signature": "",
   "configuration": {
-    "url": "https://vertx-runtime.rethink-dev.alticelabs.com/eventbus",
+    "url": "https://vertx-runtime.rethink.alticelabs.com/eventbus",
     "vertxbus_ping_interval": 10000,
     "host": "sharing-cities-dsm",
     "streams": [
