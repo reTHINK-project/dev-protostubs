@@ -15,7 +15,7 @@ function templateAreReady(name) {
    console.log('Get template: ', path, name);
 
    if (path.indexOf(name) != -1) {
-     path = path.replace(name + '/', 'https://rethink.alticelabs.com/examples/' + name + '/');
+     path = 'https://rethink.alticelabs.com/' + path ;
    } else {
      path = './' + path;
    }
