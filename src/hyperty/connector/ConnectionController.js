@@ -54,7 +54,7 @@ class ConnectionController {
     // Prepare the PeerConnection
     let peerConnection = new RTCPeerConnection(_this._configuration);
 
-    peerConnection.addEventListener('signalingstatechange', function(event) {
+    peerConnection.addEventListener('signalingstatechange', function (event) {
 
       console.info('[Connector.ConnectionController ]signalingstatechange', event.currentTarget.signalingState);
 
@@ -69,7 +69,7 @@ class ConnectionController {
 
     });
 
-    peerConnection.addEventListener('iceconnectionstatechange', function(event) {
+    peerConnection.addEventListener('iceconnectionstatechange', function (event) {
       console.info('[Connector.ConnectionController ]iceconnectionstatechange', event.currentTarget.iceConnectionState, _this.dataObjectReporter);
       let data = _this.dataObjectReporter.data;
       if (data.hasOwnProperty('status')) {
@@ -77,7 +77,7 @@ class ConnectionController {
       }
     });
 
-    peerConnection.addEventListener('icecandidate', function(event) {
+    peerConnection.addEventListener('icecandidate', function (event) {
 
       console.info('[Connector.ConnectionController ]icecandidate changes', event.candidate, _this.dataObjectReporter);
 
@@ -109,13 +109,13 @@ class ConnectionController {
     });
 
     // Add stream to PeerConnection
-    peerConnection.addEventListener('addstream', function(event) {
+    peerConnection.addEventListener('addstream', function (event) {
       console.info('[Connector.ConnectionController ]Add Stream: ', event);
 
       if (_this._onAddStream) _this._onAddStream(event);
     });
 
-    peerConnection.onremovestream = function(event) {
+    peerConnection.onremovestream = function (event) {
       console.info('[Connector.ConnectionController ]Stream removed: ', event);
     };
 
@@ -148,7 +148,7 @@ class ConnectionController {
     console.info('[Connector.ConnectionController ]set data object reporter: ', dataObjectReporter);
     _this._dataObjectReporter = dataObjectReporter;
 
-    dataObjectReporter.onSubscription(function(event) {
+    dataObjectReporter.onSubscription(function (event) {
       if (event.type === 'subscribe') event.accept();
       else {//to handle reject from remote peer
         _this._removeMediaStream();
@@ -269,12 +269,12 @@ class ConnectionController {
 
       console.log('Process Peer data: ', peerData);
 
-      peerData.iceCandidates.forEach(function(ice) {
+      peerData.iceCandidates.forEach(function (ice) {
         _this._processPeerInformation(ice);
       });
     }
 
-    dataObjectObserver.onChange('*', function(event) {
+    dataObjectObserver.onChange('*', function (event) {
       console.info('[Connector.ConnectionController ]Observer on change message: ', event);
       _this._processPeerInformation(event.data);
     });
@@ -293,7 +293,7 @@ class ConnectionController {
 
     if (data.type === 'candidate') {
       console.info('[Connector.ConnectionController ]Process Ice Candidate: ', data);
-      _this.peerConnection.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}), _this._remoteDescriptionSuccess, _this._remoteDescriptionError);
+      _this.peerConnection.addIceCandidate(new RTCIceCandidate(data), _this._remoteDescriptionSuccess, _this._remoteDescriptionError);
     }
   }
 
@@ -308,7 +308,7 @@ class ConnectionController {
   _createOffer() {
     let _this = this;
 
-    _this.peerConnection.createOffer(function(description) {
+    _this.peerConnection.createOffer(function (description) {
       _this._onLocalSessionCreated(description);
     }, _this._infoError);
 
@@ -317,7 +317,7 @@ class ConnectionController {
   _createAnswer() {
     let _this = this;
 
-    _this.peerConnection.createAnswer(function(description) {
+    _this.peerConnection.createAnswer(function (description) {
       _this._onLocalSessionCreated(description);
     }, _this._infoError);
   }
@@ -326,7 +326,7 @@ class ConnectionController {
 
     let _this = this;
 
-    _this.peerConnection.setLocalDescription(description, function() {
+    _this.peerConnection.setLocalDescription(description, function () {
 
       let data = _this.dataObjectReporter.data;
 
@@ -338,11 +338,11 @@ class ConnectionController {
       // new model
       data.connectionDescription = sdpConnection;
 
-/*      if (_this.mode === 'offer') {
-        data.ownerPeer.connectionDescription = sdpConnection;
-      } else {
-        data.Peer.connectionDescription = sdpConnection;
-      }*/
+      /*      if (_this.mode === 'offer') {
+              data.ownerPeer.connectionDescription = sdpConnection;
+            } else {
+              data.Peer.connectionDescription = sdpConnection;
+            }*/
 
     }, _this._infoError);
 
@@ -391,7 +391,7 @@ class ConnectionController {
 
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       let syncher = _this._syncher;
       let remoteData = _this.dataObjectObserver.data;
@@ -409,18 +409,18 @@ class ConnectionController {
       try {
         console.info('[Connector.ConnectionController ]------------------------ Syncher Create ---------------------- \n');
 
-        syncher.create(_this._objectDescURL, [remotePeer], _this.connectionObject, false, false, remoteData.name, {}, {resources: ['audio', 'video']})
-        .then(function(dataObjectReporter) {
-          console.info('[Connector.ConnectionController ]2. Return the Data Object Reporter ', dataObjectReporter);
+        syncher.create(_this._objectDescURL, [remotePeer], _this.connectionObject, false, false, remoteData.name, {}, { resources: ['audio', 'video'] })
+          .then(function (dataObjectReporter) {
+            console.info('[Connector.ConnectionController ]2. Return the Data Object Reporter ', dataObjectReporter);
 
-          _this.mediaStream = stream;
-          _this.dataObjectReporter = dataObjectReporter;
-          resolve(true);
-        })
-        .catch(function(reason) {
-          console.error(reason);
-          reject(false);
-        });
+            _this.mediaStream = stream;
+            _this.dataObjectReporter = dataObjectReporter;
+            resolve(true);
+          })
+          .catch(function (reason) {
+            console.error(reason);
+            reject(false);
+          });
 
       } catch (e) {
         reject('error accepting connection');
@@ -442,11 +442,11 @@ class ConnectionController {
     let declineReason = 400;
     if (reason) declineReason = reason;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       try {
-      //  _this.connectionEvent.ack(declineReason);
-        _this.disconnect().then(()=>{
+        //  _this.connectionEvent.ack(declineReason);
+        _this.disconnect().then(() => {
           resolve(true);
         });
       } catch (e) {
@@ -467,7 +467,7 @@ class ConnectionController {
 
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       try {
 
@@ -502,7 +502,7 @@ class ConnectionController {
   disableAudio(value) {
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       try {
         let localStream = _this.peerConnection.getLocalStreams()[0];
@@ -531,7 +531,7 @@ class ConnectionController {
   disableVideo(value) {
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       try {
         let localStream = _this.peerConnection.getLocalStreams()[0];
@@ -560,7 +560,7 @@ class ConnectionController {
 
     let _this = this;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
       try {
         let remoteStream = _this.peerConnection.getRemoteStreams()[0];

@@ -320,9 +320,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
     if (data.candidate) {
       console.info('Process Ice Candidate: ', data);
-      this.pc.addIceCandidate(new RTCIceCandidate({
-        candidate: data.candidate
-      }));
+      this.pc.addIceCandidate(new RTCIceCandidate(data));
     }
   }
 
