@@ -53,7 +53,7 @@
     "chai-arrays": "^1.1.0",
     "chai-as-promised": "^7.1.1",
     "chai-json-schema": "^1.5.1",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
