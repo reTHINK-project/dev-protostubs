@@ -12,6 +12,6 @@
     "bootstrap": "^4.2.1"
   },
   "devDependencies": {
-    "urijs": "^1.19.0"
+    "urijs": "^1.19.8"
   }
 }
